@@ -1,5 +1,11 @@
+// @vitest-environment jsdom
 import { describe, it, expect, beforeEach } from "vitest";
-import { useMembershipStore, generateUniqueDemoId } from "../features/membership/stores/membershipStore";
+import {
+  useMembershipStore,
+  generateUniqueDemoId,
+  validateSavingsConfig,
+  DEFAULT_SAVINGS_CONFIG,
+} from "../features/membership/stores/membershipStore";
 import { useAuthStore } from "../stores/authStore";
 import { Role } from "../types";
 
@@ -446,7 +452,7 @@ describe("PHASE 3 & 3.1 — Membership Management Lifecycle, SoD & Audit Remedia
     });
   });
 
-  describe("7. Configurable Savings Parameters (Phase 3.2 P1 Remediation)", () => {
+  describe("7. Configurable Savings Parameters & Persistence (Phase 3.2 & 3.3 Remediation)", () => {
     it("should provide default illustration savings parameters clearly labeled", () => {
       const config = useMembershipStore.getState().savingsConfig;
       expect(config.simpananPokokNominal).toBe(100000);
@@ -487,6 +493,85 @@ describe("PHASE 3 & 3.1 — Membership Management Lifecycle, SoD & Audit Remedia
       expect(newMember?.saldoPokok).toBe(0);
       expect(newMember?.saldoWajib).toBe(0);
       expect(newMember?.saldoSukarela).toBe(0);
+    });
+
+    it("should ensure actual member balances never change when illustration parameters are updated", () => {
+      // Existing member Siti Rahma has saldoPokok: 100000, saldoWajib: 600000
+      const prevMember = useMembershipStore.getState().getMemberByDemoId("DEMO-ID-0001");
+      const prevSaldoPokok = prevMember?.saldoPokok;
+      const prevSaldoWajib = prevMember?.saldoWajib;
+      const prevSaldoSukarela = prevMember?.saldoSukarela;
+
+      // Update illustration parameters
+      useMembershipStore.getState().updateSavingsConfig({
+        simpananPokokNominal: 500000,
+        simpananWajibBulanan: 200000,
+      });
+
+      // Verify balances remain strictly unchanged
+      const currentMember = useMembershipStore.getState().getMemberByDemoId("DEMO-ID-0001");
+      expect(currentMember?.saldoPokok).toBe(prevSaldoPokok);
+      expect(currentMember?.saldoWajib).toBe(prevSaldoWajib);
+      expect(currentMember?.saldoSukarela).toBe(prevSaldoSukarela);
+    });
+
+    it("should persist savings configuration to localStorage without wiping existing applications or members", () => {
+      const prevAppsCount = useMembershipStore.getState().applications.length;
+      const prevMembersCount = useMembershipStore.getState().members.length;
+
+      useMembershipStore.getState().updateSavingsConfig({
+        simpananPokokNominal: 350000,
+        simpananWajibBulanan: 150000,
+      });
+
+      // Applications and members remain intact
+      expect(useMembershipStore.getState().applications.length).toBe(prevAppsCount);
+      expect(useMembershipStore.getState().members.length).toBe(prevMembersCount);
+
+      // Verify stored JSON structure
+      const rawStored = localStorage.getItem("kmb_membership_store_v1");
+      expect(rawStored).toBeTruthy();
+      const parsed = JSON.parse(rawStored!);
+      expect(parsed.savingsConfig).toBeDefined();
+      expect(parsed.savingsConfig.simpananPokokNominal).toBe(350000);
+      expect(parsed.savingsConfig.simpananWajibBulanan).toBe(150000);
+    });
+
+    it("should restore configured savings parameters upon simulated page reload / store re-initialization", () => {
+      // 1. Update config
+      useMembershipStore.getState().updateSavingsConfig({
+        simpananPokokNominal: 450000,
+        simpananWajibBulanan: 180000,
+      });
+
+      // 2. Simulate browser reload: reading fresh state from localStorage via validateSavingsConfig
+      const rawStored = localStorage.getItem("kmb_membership_store_v1");
+      expect(rawStored).toBeTruthy();
+      const parsed = JSON.parse(rawStored!);
+
+      const restoredConfig = validateSavingsConfig(parsed.savingsConfig);
+      expect(restoredConfig.simpananPokokNominal).toBe(450000);
+      expect(restoredConfig.simpananWajibBulanan).toBe(180000);
+      expect(restoredConfig.label).toBe("Nominal Ilustrasi — Dapat Diubah");
+    });
+
+    it("should safely fall back to DEFAULT_SAVINGS_CONFIG when stored data is corrupted, negative, or invalid", () => {
+      // Non-numeric or negative values
+      expect(validateSavingsConfig({ simpananPokokNominal: -500, simpananWajibBulanan: 50000 })).toEqual(
+        DEFAULT_SAVINGS_CONFIG
+      );
+      expect(validateSavingsConfig({ simpananPokokNominal: "invalid", simpananWajibBulanan: 50000 })).toEqual(
+        DEFAULT_SAVINGS_CONFIG
+      );
+      // Beyond reasonable upper bound (> 1 billion)
+      expect(
+        validateSavingsConfig({ simpananPokokNominal: 2_000_000_000, simpananWajibBulanan: 50000 })
+      ).toEqual(DEFAULT_SAVINGS_CONFIG);
+      // Corrupted / null / missing
+      expect(validateSavingsConfig(null)).toEqual(DEFAULT_SAVINGS_CONFIG);
+      expect(validateSavingsConfig(undefined)).toEqual(DEFAULT_SAVINGS_CONFIG);
+      expect(validateSavingsConfig("corrupted-string")).toEqual(DEFAULT_SAVINGS_CONFIG);
+      expect(validateSavingsConfig({})).toEqual(DEFAULT_SAVINGS_CONFIG);
     });
 
     it("should reset savings configuration to default when resetToSeed is called", () => {

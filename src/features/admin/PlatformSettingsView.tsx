@@ -5,9 +5,12 @@ import { useToastStore } from "@/stores/toastStore";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
+import { Input } from "@/components/ui/Input";
 import { ConfirmationDialog } from "@/components/ui/Modal";
 import { BusinessModuleKey } from "@/types";
 import { canPerformAction } from "@/lib/rbac";
+import { formatIDR } from "@/lib/utils";
+import { useMembershipStore } from "@/features/membership/stores/membershipStore";
 import {
   RotateCcw,
   Layers,
@@ -22,10 +25,77 @@ import {
 export const PlatformSettingsView: React.FC = () => {
   const { config, toggleModule, resetConfig } = useConfigStore();
   const { currentUser, resetToDefault } = useAuthStore();
+  const { savingsConfig, updateSavingsConfig, resetSavingsConfig } = useMembershipStore();
   const { addToast } = useToastStore();
 
   const [activeTab, setActiveTab] = useState<"platform" | "cooperative" | "reset">("platform");
   const [isResetDialogOpen, setIsResetDialogOpen] = useState(false);
+
+  const [inputPokok, setInputPokok] = useState<string>(() => String(savingsConfig.simpananPokokNominal));
+  const [inputWajib, setInputWajib] = useState<string>(() => String(savingsConfig.simpananWajibBulanan));
+  const [savingsFormError, setSavingsFormError] = useState<string | null>(null);
+
+  React.useEffect(() => {
+    setInputPokok(String(savingsConfig.simpananPokokNominal));
+    setInputWajib(String(savingsConfig.simpananWajibBulanan));
+  }, [savingsConfig]);
+
+  const handleSaveSavingsConfig = (e: React.FormEvent) => {
+    e.preventDefault();
+    setSavingsFormError(null);
+
+    const numPokok = Number(inputPokok);
+    const numWajib = Number(inputWajib);
+
+    if (isNaN(numPokok) || !isFinite(numPokok) || numPokok < 0) {
+      const msg = "Nominal Simpanan Pokok harus berupa angka positif atau nol.";
+      setSavingsFormError(msg);
+      addToast({ type: "danger", title: "Validasi Gagal", message: msg });
+      return;
+    }
+
+    if (numPokok > 1_000_000_000) {
+      const msg = "Nominal Simpanan Pokok melebihi batas maksimum wajar (Rp 1.000.000.000).";
+      setSavingsFormError(msg);
+      addToast({ type: "danger", title: "Validasi Gagal", message: msg });
+      return;
+    }
+
+    if (isNaN(numWajib) || !isFinite(numWajib) || numWajib < 0) {
+      const msg = "Nominal Simpanan Wajib harus berupa angka positif atau nol.";
+      setSavingsFormError(msg);
+      addToast({ type: "danger", title: "Validasi Gagal", message: msg });
+      return;
+    }
+
+    if (numWajib > 1_000_000_000) {
+      const msg = "Nominal Simpanan Wajib melebihi batas maksimum wajar (Rp 1.000.000.000).";
+      setSavingsFormError(msg);
+      addToast({ type: "danger", title: "Validasi Gagal", message: msg });
+      return;
+    }
+
+    updateSavingsConfig({
+      simpananPokokNominal: numPokok,
+      simpananWajibBulanan: numWajib,
+    });
+
+    addToast({
+      type: "success",
+      title: "Parameter Demonstrasi Diperbarui",
+      message: `Simpanan Pokok diubah ke ${formatIDR(numPokok)}, Simpanan Wajib ke ${formatIDR(numWajib)}/bln.`,
+    });
+  };
+
+  const handleResetSavingsConfig = () => {
+    resetSavingsConfig();
+    setSavingsFormError(null);
+    addToast({
+      type: "info",
+      title: "Parameter Demonstrasi Dikembalikan",
+      message: "Nominal simpanan demonstrasi dikembalikan ke nilai default ilustrasi.",
+    });
+  };
 
   // Authority check based on IA Section 5.4
   const canUpdatePlatformConfig = canPerformAction(currentUser.role, "platform_config", "update");
@@ -298,35 +368,105 @@ export const PlatformSettingsView: React.FC = () => {
             </CardContent>
           </Card>
 
-          {/* Parameter Produk Finansial Simulasi */}
+          {/* Parameter Produk Finansial Demonstrasi (Configurable Demo Parameters) */}
           <Card>
             <CardHeader>
-              <CardTitle className="text-sm">Parameter Produk Finansial Demonstrasi</CardTitle>
-              <CardDescription>
-                Daftar ambang batas nominal dan kebijakan demonstrasi saat ini.
-              </CardDescription>
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                <div>
+                  <CardTitle className="text-sm">Parameter Simpanan Demonstrasi (Simulasi Frontend)</CardTitle>
+                  <CardDescription>
+                    Pengaturan nilai simulasi simpanan pokok dan wajib untuk demonstrasi platform KMB.
+                  </CardDescription>
+                </div>
+                <Badge variant="warning" size="sm">
+                  Nominal Ilustrasi — Bukan Kebijakan Resmi
+                </Badge>
+              </div>
             </CardHeader>
-            <CardContent className="space-y-3 text-xs">
-              <div className="flex justify-between items-center p-3 bg-ink-50 rounded border border-ink-200">
-                <div>
-                  <span className="font-semibold text-ink-900 block">Simpanan Pokok Anggota</span>
-                  <span className="text-ink-500 text-[11px]">Wajib disetor saat pendaftaran pertama kali</span>
-                </div>
-                <span className="font-mono font-bold text-forest-800">Rp 100.000</span>
+            <CardContent className="space-y-4 text-xs">
+              {/* Disclaimer Notice */}
+              <div className="p-3.5 bg-warning-100/30 border border-warning-base/30 rounded-lg text-ink-700 space-y-1">
+                <span className="font-bold text-ink-900 block text-[11px]">
+                  * Batasan Simulasi Demonstrasi:
+                </span>
+                <p className="leading-relaxed text-[11px]">
+                  Perubahan pada kontrol di bawah ini murni mengubah nilai parameter ilustrasi pada frontend demonstrasi (tampilan beranda publik, formulir pendaftaran calon, dan buku induk). Tindakan ini <strong>tidak menetapkan keputusan legal AD/ART</strong> dan <strong>tidak mengubah saldo aktual</strong> anggota yang sudah terdaftar. Status kewenangan kebijakan resmi koperasi berstatus <em>PROPOSED / UNRESOLVED</em> (U-11).
+                </p>
               </div>
-              <div className="flex justify-between items-center p-3 bg-ink-50 rounded border border-ink-200">
-                <div>
-                  <span className="font-semibold text-ink-900 block">Simpanan Wajib Bulanan</span>
-                  <span className="text-ink-500 text-[11px]">Disetor rutin setiap bulan buku berjalan</span>
+
+              {savingsFormError && (
+                <div className="p-3 bg-danger-100 border border-danger-base/30 rounded-lg text-xs text-danger-700">
+                  {savingsFormError}
                 </div>
-                <span className="font-mono font-bold text-forest-800">Rp 50.000 / bln</span>
-              </div>
-              <div className="flex justify-between items-center p-3 bg-ink-50 rounded border border-ink-200">
-                <div>
-                  <span className="font-semibold text-ink-900 block">Ambang Batas Otorisasi Pinjaman Level 2 (Finance Officer)</span>
-                  <span className="text-ink-500 text-[11px]">Pinjaman di atas batas ini wajib dieskalasi ke Level 3 Pengurus</span>
+              )}
+
+              <form onSubmit={handleSaveSavingsConfig} className="space-y-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="space-y-1">
+                    <Input
+                      label="Simpanan Pokok Ilustrasi (Rp)"
+                      type="number"
+                      min="0"
+                      max="1000000000"
+                      value={inputPokok}
+                      onChange={(e) => setInputPokok(e.target.value)}
+                      helperText={`Nilai aktif: ${formatIDR(Number(inputPokok) || 0)}`}
+                    />
+                    <span className="text-[11px] text-ink-500 block">
+                      Disetor sekali saat pendaftaran pertama kali (ilustrasi).
+                    </span>
+                  </div>
+
+                  <div className="space-y-1">
+                    <Input
+                      label="Simpanan Wajib Bulanan Ilustrasi (Rp)"
+                      type="number"
+                      min="0"
+                      max="1000000000"
+                      value={inputWajib}
+                      onChange={(e) => setInputWajib(e.target.value)}
+                      helperText={`Nilai aktif: ${formatIDR(Number(inputWajib) || 0)}/bln`}
+                    />
+                    <span className="text-[11px] text-ink-500 block">
+                      Disetor rutin setiap bulan buku berjalan (ilustrasi).
+                    </span>
+                  </div>
                 </div>
-                <span className="font-mono font-bold text-amber-800">s.d. Rp 10.000.000</span>
+
+                <div className="flex flex-col sm:flex-row items-center justify-between gap-2 pt-2 border-t border-ink-100">
+                  <span className="text-[11px] text-ink-500 italic">
+                    Tersimpan di penyimpanan lokal peramban (localStorage).
+                  </span>
+                  <div className="flex items-center gap-2 w-full sm:w-auto">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={handleResetSavingsConfig}
+                      className="w-full sm:w-auto"
+                    >
+                      Kembalikan ke Nilai Awal
+                    </Button>
+                    <Button
+                      type="submit"
+                      variant="primary"
+                      size="sm"
+                      className="w-full sm:w-auto"
+                    >
+                      Simpan Perubahan
+                    </Button>
+                  </div>
+                </div>
+              </form>
+
+              <div className="pt-3 border-t border-ink-200">
+                <div className="flex justify-between items-center p-3 bg-ink-50 rounded border border-ink-200">
+                  <div>
+                    <span className="font-semibold text-ink-900 block">Ambang Batas Otorisasi Pinjaman Level 2 (Finance Officer)</span>
+                    <span className="text-ink-500 text-[11px]">Pinjaman di atas batas ini wajib dieskalasi ke Level 3 Pengurus</span>
+                  </div>
+                  <span className="font-mono font-bold text-amber-800">s.d. Rp 10.000.000</span>
+                </div>
               </div>
             </CardContent>
           </Card>

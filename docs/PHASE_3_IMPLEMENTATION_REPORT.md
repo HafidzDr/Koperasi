@@ -281,3 +281,81 @@ Sepanjang Phase 3.2, batasan arsitektur tetap dipatuhi secara ketat:
 5. **Automated Responsive Verification (`node scripts/verify_responsive.js`):**
    - Headless Chrome CDP verification pada 8 breakpoint standar (320px s.d. 1920px) untuk route `/` dan `/daftar`.
    - Hasil: **16 dari 16 skenario PASS** (0px horizontal overflow, DOM valid, buttons found, no clipping).
+
+
+---
+
+## 8. Phase 3.3 — Configuration Persistence & Component Test Integrity
+
+Pada Phase 3.3, dilakukan perbaikan terarah terhadap persistensi konfigurasi simpanan demonstrasi, integrasi kontrol UI pengaturan, konsistensi tampilan reaktif, serta pembaruan pengujian komponen profil anggota ke lingkungan DOM riil menggunakan React Testing Library.
+
+### A. Riwayat Pengujian & Hasil Historis Proyek
+
+- **Phase 3 Awal (Baseline):** 35 pengujian unit lulus (Hasil historis).
+- **Phase 3.1 (Audit Remediation 1):** 43 pengujian unit & integrasi lulus (Hasil historis).
+- **Phase 3.2 (Final Consistency):** 53 pengujian unit, integrasi & SSR render lulus (Hasil historis).
+- **Phase 3.3 (Final Persistence & DOM Test Integrity — Hasil Akhir):** **57 pengujian lulus (100% PASS)** pada 4 file pengujian tanpa kegagalan.
+
+### B. Rincian Temuan Audit & Solusi Phase 3.3
+
+| No | Temuan Audit | Kategori | File Terdampak | Tindakan Perbaikan Kode |
+|---|---|---|---|---|
+| 1 | **`savingsConfig` Belum Tersimpan ke localStorage & Hilang Setelah Reload** | P1 | `src/features/membership/stores/membershipStore.ts`<br>`src/tests/membership.test.ts` | Struktur persistensi diperluas agar `savingsConfig` ikut disimpan ke `kmb_membership_store_v1`. Fungsi `getInitialState()` memuat dan memvalidasi konfigurasi dengan `validateSavingsConfig()`. Diterapkan fallback aman ke `DEFAULT_SAVINGS_CONFIG` bila data hilang, rusak, bernilai negatif, atau melebihi batas atas wajar. Kompatibel penuh dengan data versi lama. `resetToSeed()` mengembalikan konfigurasi ke default tanpa menghapus data pengajuan atau anggota. |
+| 2 | **`updateSavingsConfig()` Belum Terhubung ke UI Pengaturan & Nominal Masih Hardcoded** | P1 | `src/features/admin/PlatformSettingsView.tsx` | Menghubungkan kontrol konfigurasi interaktif pada Tab 2 ("Cooperative & Product Configuration"). Diberikan label tegas **Nominal Ilustrasi — Bukan Kebijakan Resmi** beserta *disclaimer* bahwa kontrol ini murni simulasi frontend dan tidak menetapkan AD/ART (status otoritas resmi U-11 *PROPOSED / UNRESOLVED*). Dilengkapi validasi numerik positif (maks. Rp1.000.000.000), tombol "Simpan Perubahan", tombol "Kembalikan ke Nilai Awal", serta toast notifikasi berhasil/gagal. |
+| 3 | **`HomeView.tsx` Masih Menggunakan Nilai Default Statis** | P1 | `src/features/public/HomeView.tsx` | Mengganti import konstanta statis dengan pembacaan reaktif `const { savingsConfig } = useMembershipStore()`. Nilai ilustrasi Simpanan Pokok dan Wajib di beranda publik kini selalu sinkron dengan pengaturan aktif. |
+| 4 | **Pengujian Komponen Profil Menggunakan `renderToString()` Tanpa DOM Riil** | P2 | `src/tests/memberProfilePortal.test.tsx` | Pengujian dimigrasikan ke pengujian DOM riil menggunakan `@testing-library/react` dan environment `jsdom`. Seluruh skenario (memberId valid, tanpa memberId, ID tidak dikenal, pencegahan fallback `members[0]`) diuji pada elemen DOM asli. Ditambahkan pengujian khusus reaktivitas: pergantian akun aktif pada auth store memperbarui DOM profil yang sedang terpasang tanpa unmount manual. |
+
+### C. Mekanisme Persistensi & Keamanan Data (LocalStorage)
+
+1. **Serialisasi Terpadu:**
+   `localStorage.setItem(STORAGE_KEY, JSON.stringify({ applications, members, savingsConfig }))`
+2. **Validasi & Fallback Defensif (`validateSavingsConfig`):**
+   - Tipe data numerik diperiksa (`!isNaN` dan `isFinite`).
+   - Batas minimum: $\ge 0$ (mencegah nominal negatif).
+   - Batas maksimum: $\le 1.000.000.000$ (mencegah input tidak masuk akal).
+   - Data rusak/null/undefined otomatis kembali ke default tanpa merusak data aplikasi atau data anggota yang sudah tersimpan.
+3. **Integritas Saldo:** Pembaruan parameter simpanan ilustrasi tidak pernah mengubah saldo aktual (`saldoPokok`, `saldoWajib`, `saldoSukarela`) anggota terdaftar.
+
+### D. Hasil Quality Gates Phase 3.3 (Hasil Akhir)
+
+1. **TypeScript Strict Typecheck (`pnpm typecheck`):**
+   ```bash
+   $ tsc --noEmit
+   Exit code: 0 (Clean, 0 errors)
+   ```
+
+2. **ESLint Code Quality (`pnpm lint`):**
+   ```bash
+   $ eslint "src/**/*.{ts,tsx}" --max-warnings 0
+   Exit code: 0 (Clean, 0 warnings, 0 errors)
+   ```
+
+3. **Vitest Unit, Integration & Real DOM Component Tests (`pnpm test`):**
+   ```
+    RUN  v5.0.5 C:/Users/ocitt/OneDrive/Dokumen/Finance
+
+    ✓ src/tests/menuVisibility.test.ts (11 tests) 7ms
+    ✓ src/tests/rbac.test.ts (14 tests) 9ms
+    ✓ src/tests/membership.test.ts (27 tests) 15ms
+    ✓ src/tests/memberProfilePortal.test.tsx (5 tests) 85ms
+
+    Test Files  4 passed (4)
+         Tests  57 passed (57)
+      Duration  2.65s
+   ```
+   *Total 57 dari 57 tes LULUS (100% PASS).*
+
+4. **Production Build (`pnpm build`):**
+   ```bash
+   $ tsc --noEmit && vite build
+   ✓ 2465 modules transformed.
+   dist/index.html                   0.89 kB │ gzip:   0.51 kB
+   dist/assets/index-BzBvXs4H.css   37.70 kB │ gzip:   6.91 kB
+   dist/assets/index-FfxhFNyw.js   575.96 kB │ gzip: 160.58 kB
+   ✓ built in 4.15s
+   Exit code: 0
+   ```
+
+5. **Automated Responsive Verification (`node scripts/verify_responsive.js`):**
+   - Headless Chrome CDP verification pada 8 breakpoint standar (320px s.d. 1920px) untuk route `/` dan `/daftar`.
+   - Hasil: **16 dari 16 skenario PASS** (0px horizontal overflow, DOM valid, buttons found, no clipping).

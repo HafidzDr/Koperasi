@@ -22,3 +22,4 @@ export const DEFAULT_SAVINGS_CONFIG: SavingsConfig = {
   disclaimer:
     "Nominal simpanan pokok dan wajib di bawah ini merupakan nilai ilustrasi demonstrasi sistem dan bukan ketentuan final/resmi AD/ART koperasi. Besaran resmi akan diputuskan dalam Rapat Anggota.",
 };
+

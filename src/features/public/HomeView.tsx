@@ -1,8 +1,8 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { useConfigStore } from "@/stores/configStore";
+import { useMembershipStore } from "@/features/membership/stores/membershipStore";
 import { formatIDR } from "@/lib/utils";
-import { DEFAULT_SAVINGS_CONFIG } from "@/features/membership/config/savingsConfig";
 import { Button } from "@/components/ui/Button";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
@@ -19,6 +19,7 @@ import {
 
 export const HomeView: React.FC = () => {
   const { config } = useConfigStore();
+  const { savingsConfig } = useMembershipStore();
 
   const values = [
     {
@@ -142,7 +143,7 @@ export const HomeView: React.FC = () => {
               </div>
               <CardTitle>Simpanan Anggota</CardTitle>
               <CardDescription>
-                Simpanan Pokok (Ilustrasi: {formatIDR(DEFAULT_SAVINGS_CONFIG.simpananPokokNominal)}), Simpanan Wajib (Ilustrasi: {formatIDR(DEFAULT_SAVINGS_CONFIG.simpananWajibBulanan)}/bln), dan Simpanan Sukarela yang fleksibel ditarik kapan saja.
+                Simpanan Pokok (Ilustrasi: {formatIDR(savingsConfig.simpananPokokNominal)}), Simpanan Wajib (Ilustrasi: {formatIDR(savingsConfig.simpananWajibBulanan)}/bln), dan Simpanan Sukarela yang fleksibel ditarik kapan saja.
               </CardDescription>
             </CardHeader>
             <CardContent>

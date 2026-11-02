@@ -404,28 +404,83 @@ const initialMembers: Member[] = [
 
 const STORAGE_KEY = "kmb_membership_store_v1";
 
-function getInitialState(): { applications: MembershipApplication[]; members: Member[] } {
+export function validateSavingsConfig(raw: unknown): SavingsConfig {
+  if (
+    typeof raw === "object" &&
+    raw !== null &&
+    "simpananPokokNominal" in raw &&
+    "simpananWajibBulanan" in raw
+  ) {
+    const c = raw as Record<string, unknown>;
+    const pokok = Number(c.simpananPokokNominal);
+    const wajib = Number(c.simpananWajibBulanan);
+
+    if (
+      !isNaN(pokok) &&
+      isFinite(pokok) &&
+      pokok >= 0 &&
+      pokok <= 1_000_000_000 &&
+      !isNaN(wajib) &&
+      isFinite(wajib) &&
+      wajib >= 0 &&
+      wajib <= 1_000_000_000
+    ) {
+      return {
+        simpananPokokNominal: pokok,
+        simpananWajibBulanan: wajib,
+        label: typeof c.label === "string" ? c.label : DEFAULT_SAVINGS_CONFIG.label,
+        badgeLabel: typeof c.badgeLabel === "string" ? c.badgeLabel : DEFAULT_SAVINGS_CONFIG.badgeLabel,
+        disclaimer: typeof c.disclaimer === "string" ? c.disclaimer : DEFAULT_SAVINGS_CONFIG.disclaimer,
+      };
+    }
+  }
+  return DEFAULT_SAVINGS_CONFIG;
+}
+
+function getInitialState(): {
+  applications: MembershipApplication[];
+  members: Member[];
+  savingsConfig: SavingsConfig;
+} {
   if (typeof window === "undefined") {
-    return { applications: initialApplications, members: initialMembers };
+    return {
+      applications: initialApplications,
+      members: initialMembers,
+      savingsConfig: DEFAULT_SAVINGS_CONFIG,
+    };
   }
   try {
     const saved = localStorage.getItem(STORAGE_KEY);
     if (saved) {
       const parsed = JSON.parse(saved);
-      if (Array.isArray(parsed.applications) && Array.isArray(parsed.members)) {
-        return { applications: parsed.applications, members: parsed.members };
-      }
+      const applications =
+        Array.isArray(parsed.applications) ? parsed.applications : initialApplications;
+      const members = Array.isArray(parsed.members) ? parsed.members : initialMembers;
+      const savingsConfig = validateSavingsConfig(parsed.savingsConfig);
+
+      return { applications, members, savingsConfig };
     }
   } catch {
     // fallback
   }
-  return { applications: initialApplications, members: initialMembers };
+  return {
+    applications: initialApplications,
+    members: initialMembers,
+    savingsConfig: DEFAULT_SAVINGS_CONFIG,
+  };
 }
 
-function saveToStorage(applications: MembershipApplication[], members: Member[]) {
+function saveToStorage(
+  applications: MembershipApplication[],
+  members: Member[],
+  savingsConfig: SavingsConfig
+) {
   if (typeof window === "undefined") return;
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify({ applications, members }));
+    localStorage.setItem(
+      STORAGE_KEY,
+      JSON.stringify({ applications, members, savingsConfig })
+    );
   } catch {
     // ignore
   }
@@ -485,18 +540,21 @@ export const useMembershipStore = create<MembershipState>((rawSet, get) => {
   const set: typeof rawSet = (updater) => {
     rawSet(updater);
     const updated = get();
-    saveToStorage(updated.applications, updated.members);
+    saveToStorage(updated.applications, updated.members, updated.savingsConfig);
   };
   return {
     applications: initial.applications,
     members: initial.members,
-    savingsConfig: DEFAULT_SAVINGS_CONFIG,
+    savingsConfig: initial.savingsConfig,
 
     // ----------------------------------------------------------------------
     // SAVINGS CONFIGURATION ACTIONS (Demonstrasi / Ilustrasi)
     // ----------------------------------------------------------------------
     updateSavingsConfig: (updates: Partial<SavingsConfig>) => {
-      set({ savingsConfig: { ...get().savingsConfig, ...updates } });
+      const current = get().savingsConfig;
+      const merged = { ...current, ...updates };
+      const validated = validateSavingsConfig(merged);
+      set({ savingsConfig: validated });
     },
 
     resetSavingsConfig: () => {
@@ -1056,6 +1114,7 @@ export const useMembershipStore = create<MembershipState>((rawSet, get) => {
         members: initialMembers,
         savingsConfig: DEFAULT_SAVINGS_CONFIG,
       });
+      saveToStorage(initialApplications, initialMembers, DEFAULT_SAVINGS_CONFIG);
     },
   };
 });
