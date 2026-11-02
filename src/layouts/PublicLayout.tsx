@@ -28,8 +28,10 @@ export const PublicLayout: React.FC = () => {
 
       {/* 2. Public Header */}
       <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-none border-b border-ink-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
-          <BrandLogo size="md" to="/" />
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-3 sm:gap-4 min-w-0">
+          <div className="min-w-0 shrink">
+            <BrandLogo size="md" to="/" />
+          </div>
 
           {/* Desktop Nav */}
           <nav className="hidden md:flex items-center space-x-6 text-sm font-medium text-ink-700">
@@ -68,7 +70,7 @@ export const PublicLayout: React.FC = () => {
           {/* Mobile Menu Trigger */}
           <button
             onClick={() => setMobileMenuOpen(true)}
-            className="md:hidden p-2 rounded-md text-ink-700 hover:text-ink-900 hover:bg-ink-100"
+            className="md:hidden p-2 rounded-md text-ink-700 hover:text-ink-900 hover:bg-ink-100 shrink-0"
             aria-label="Buka menu navigasi"
           >
             <Menu className="w-6 h-6" />
@@ -165,18 +167,18 @@ export const PublicLayout: React.FC = () => {
 
           {/* Legal Notice */}
           <div className="pt-6 border-t border-ink-800 flex flex-col sm:flex-row items-center justify-between gap-3 text-ink-500 text-[11px]">
-            <p>
+            <p className="text-center sm:text-left">
               © {new Date().getFullYear()} {config.name}. Seluruh hak cipta dilindungi.
             </p>
-            <div className="flex items-center gap-4">
+            <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-4">
               <span className="flex items-center gap-1">
-                <Shield className="w-3.5 h-3.5 text-forest-500" /> Prototipe Demonstrasi
+                <Shield className="w-3.5 h-3.5 text-forest-500 shrink-0" /> Prototipe Demonstrasi
               </span>
               <span className="flex items-center gap-1">
-                <Award className="w-3.5 h-3.5 text-forest-500" /> Data 100% Sintetis
+                <Award className="w-3.5 h-3.5 text-forest-500 shrink-0" /> Data 100% Sintetis
               </span>
               <span className="flex items-center gap-1">
-                <Users className="w-3.5 h-3.5 text-forest-500" /> Multi-Peran Terpadu
+                <Users className="w-3.5 h-3.5 text-forest-500 shrink-0" /> Multi-Peran Terpadu
               </span>
             </div>
           </div>

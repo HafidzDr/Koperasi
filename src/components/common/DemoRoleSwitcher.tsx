@@ -101,39 +101,40 @@ export const DemoRoleSwitcher: React.FC = () => {
   return (
     <>
       {/* Top Demo Bar */}
-      <div className="bg-forest-900 text-forest-50 px-4 py-1.5 text-xs flex flex-wrap items-center justify-between gap-2 border-b border-forest-800 select-none">
-        <div className="flex items-center gap-2">
-          <Badge variant="forest" size="sm" className="bg-forest-800 text-white border-forest-700">
-            DEMO SIMULATION
+      <div className="bg-forest-900 text-forest-50 px-3 sm:px-4 py-1.5 text-xs flex items-center justify-between gap-2 border-b border-forest-800 select-none min-w-0">
+        <div className="flex items-center gap-1.5 sm:gap-2 min-w-0 flex-1">
+          <Badge variant="forest" size="sm" className="bg-forest-800 text-white border-forest-700 shrink-0 text-[10px] px-1.5 py-0.5 sm:text-xs sm:px-2 sm:py-0.5">
+            DEMO
           </Badge>
-          <span className="hidden sm:inline text-forest-100/90">
+          <span className="hidden sm:inline text-forest-100/90 truncate">
             Konteks Aktif: <strong className="text-white">{currentUser.roleName}</strong> ({currentUser.name})
           </span>
-          <span className="sm:hidden text-white font-medium truncate max-w-[140px]">
+          <span className="sm:hidden text-white font-medium truncate text-[11px]">
             {currentUser.name}
           </span>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5 shrink-0">
           {/* Module config button: only visible & actionable for roles with platform_config:update */}
           {canUpdatePlatformConfig && (
             <button
               onClick={() => setIsModuleModalOpen(true)}
-              className="flex items-center gap-1.5 px-2 py-1 rounded bg-forest-800/80 hover:bg-forest-800 text-forest-100 hover:text-white transition-colors"
+              className="flex items-center gap-1 px-1.5 py-1 sm:px-2 rounded bg-forest-800/80 hover:bg-forest-800 text-forest-100 hover:text-white transition-colors text-[11px]"
               title="Kelola Aktivasi Modul Bisnis (Administrator Teknis)"
             >
-              <Layers className="w-3.5 h-3.5" />
+              <Layers className="w-3.5 h-3.5 shrink-0" />
               <span className="hidden md:inline">Modul Bisnis</span>
             </button>
           )}
 
           <button
             onClick={() => setIsModalOpen(true)}
-            className="flex items-center gap-1.5 px-2.5 py-1 rounded bg-forest-700 hover:bg-forest-600 text-white font-medium transition-colors"
+            className="flex items-center gap-1 px-2 py-1 sm:px-2.5 rounded bg-forest-700 hover:bg-forest-600 text-white font-medium transition-colors text-[11px] sm:text-xs shrink-0"
           >
-            <Users className="w-3.5 h-3.5" />
-            <span>Ganti Peran ({currentRole})</span>
-            <ChevronDown className="w-3 h-3 opacity-70" />
+            <Users className="w-3.5 h-3.5 shrink-0" />
+            <span className="hidden sm:inline">Peran:</span>
+            <span className="capitalize">{currentRole}</span>
+            <ChevronDown className="w-3 h-3 opacity-70 shrink-0" />
           </button>
         </div>
       </div>

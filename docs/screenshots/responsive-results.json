@@ -1,0 +1,322 @@
+[
+  {
+    "page": "public_home",
+    "viewport": "320x640",
+    "width": 320,
+    "height": 640,
+    "metrics": {
+      "innerWidth": 320,
+      "clientWidth": 320,
+      "docScrollWidth": 320,
+      "bodyScrollWidth": 320,
+      "hasOverflow": false,
+      "rawMarkdownFound": false,
+      "overflowingElements": [],
+      "clippedElements": [],
+      "buttonsSample": []
+    },
+    "screenshot": "public_home_320.png",
+    "fileSize": 37087,
+    "status": "PASS"
+  },
+  {
+    "page": "public_home",
+    "viewport": "375x667",
+    "width": 375,
+    "height": 667,
+    "metrics": {
+      "innerWidth": 375,
+      "clientWidth": 375,
+      "docScrollWidth": 375,
+      "bodyScrollWidth": 375,
+      "hasOverflow": false,
+      "rawMarkdownFound": false,
+      "overflowingElements": [],
+      "clippedElements": [],
+      "buttonsSample": []
+    },
+    "screenshot": "public_home_375.png",
+    "fileSize": 42433,
+    "status": "PASS"
+  },
+  {
+    "page": "public_home",
+    "viewport": "390x844",
+    "width": 390,
+    "height": 844,
+    "metrics": {
+      "innerWidth": 390,
+      "clientWidth": 390,
+      "docScrollWidth": 390,
+      "bodyScrollWidth": 390,
+      "hasOverflow": false,
+      "rawMarkdownFound": false,
+      "overflowingElements": [],
+      "clippedElements": [],
+      "buttonsSample": []
+    },
+    "screenshot": "public_home_390.png",
+    "fileSize": 50024,
+    "status": "PASS"
+  },
+  {
+    "page": "public_home",
+    "viewport": "768x1024",
+    "width": 768,
+    "height": 1024,
+    "metrics": {
+      "innerWidth": 768,
+      "clientWidth": 768,
+      "docScrollWidth": 768,
+      "bodyScrollWidth": 768,
+      "hasOverflow": false,
+      "rawMarkdownFound": false,
+      "overflowingElements": [],
+      "clippedElements": [],
+      "buttonsSample": []
+    },
+    "screenshot": "public_home_768.png",
+    "fileSize": 103315,
+    "status": "PASS"
+  },
+  {
+    "page": "public_home",
+    "viewport": "1024x768",
+    "width": 1024,
+    "height": 768,
+    "metrics": {
+      "innerWidth": 1024,
+      "clientWidth": 1024,
+      "docScrollWidth": 1024,
+      "bodyScrollWidth": 1024,
+      "hasOverflow": false,
+      "rawMarkdownFound": false,
+      "overflowingElements": [],
+      "clippedElements": [],
+      "buttonsSample": []
+    },
+    "screenshot": "public_home_1024.png",
+    "fileSize": 82013,
+    "status": "PASS"
+  },
+  {
+    "page": "public_home",
+    "viewport": "1280x800",
+    "width": 1280,
+    "height": 800,
+    "metrics": {
+      "innerWidth": 1280,
+      "clientWidth": 1280,
+      "docScrollWidth": 1280,
+      "bodyScrollWidth": 1280,
+      "hasOverflow": false,
+      "rawMarkdownFound": false,
+      "overflowingElements": [],
+      "clippedElements": [],
+      "buttonsSample": []
+    },
+    "screenshot": "public_home_1280.png",
+    "fileSize": 86949,
+    "status": "PASS"
+  },
+  {
+    "page": "public_home",
+    "viewport": "1440x900",
+    "width": 1440,
+    "height": 900,
+    "metrics": {
+      "innerWidth": 1440,
+      "clientWidth": 1440,
+      "docScrollWidth": 1440,
+      "bodyScrollWidth": 1440,
+      "hasOverflow": false,
+      "rawMarkdownFound": false,
+      "overflowingElements": [],
+      "clippedElements": [],
+      "buttonsSample": []
+    },
+    "screenshot": "public_home_1440.png",
+    "fileSize": 91490,
+    "status": "PASS"
+  },
+  {
+    "page": "public_home",
+    "viewport": "1920x1080",
+    "width": 1920,
+    "height": 1080,
+    "metrics": {
+      "innerWidth": 1920,
+      "clientWidth": 1920,
+      "docScrollWidth": 1920,
+      "bodyScrollWidth": 1920,
+      "hasOverflow": false,
+      "rawMarkdownFound": false,
+      "overflowingElements": [],
+      "clippedElements": [],
+      "buttonsSample": []
+    },
+    "screenshot": "public_home_1920.png",
+    "fileSize": 116531,
+    "status": "PASS"
+  },
+  {
+    "page": "public_daftar",
+    "viewport": "320x640",
+    "width": 320,
+    "height": 640,
+    "metrics": {
+      "innerWidth": 320,
+      "clientWidth": 320,
+      "docScrollWidth": 320,
+      "bodyScrollWidth": 320,
+      "hasOverflow": false,
+      "rawMarkdownFound": false,
+      "overflowingElements": [],
+      "clippedElements": [],
+      "buttonsSample": []
+    },
+    "screenshot": "public_daftar_320.png",
+    "fileSize": 40523,
+    "status": "PASS"
+  },
+  {
+    "page": "public_daftar",
+    "viewport": "375x667",
+    "width": 375,
+    "height": 667,
+    "metrics": {
+      "innerWidth": 375,
+      "clientWidth": 375,
+      "docScrollWidth": 375,
+      "bodyScrollWidth": 375,
+      "hasOverflow": false,
+      "rawMarkdownFound": false,
+      "overflowingElements": [],
+      "clippedElements": [],
+      "buttonsSample": []
+    },
+    "screenshot": "public_daftar_375.png",
+    "fileSize": 45360,
+    "status": "PASS"
+  },
+  {
+    "page": "public_daftar",
+    "viewport": "390x844",
+    "width": 390,
+    "height": 844,
+    "metrics": {
+      "innerWidth": 390,
+      "clientWidth": 390,
+      "docScrollWidth": 390,
+      "bodyScrollWidth": 390,
+      "hasOverflow": false,
+      "rawMarkdownFound": false,
+      "overflowingElements": [],
+      "clippedElements": [],
+      "buttonsSample": []
+    },
+    "screenshot": "public_daftar_390.png",
+    "fileSize": 50528,
+    "status": "PASS"
+  },
+  {
+    "page": "public_daftar",
+    "viewport": "768x1024",
+    "width": 768,
+    "height": 1024,
+    "metrics": {
+      "innerWidth": 768,
+      "clientWidth": 768,
+      "docScrollWidth": 768,
+      "bodyScrollWidth": 768,
+      "hasOverflow": false,
+      "rawMarkdownFound": false,
+      "overflowingElements": [],
+      "clippedElements": [],
+      "buttonsSample": []
+    },
+    "screenshot": "public_daftar_768.png",
+    "fileSize": 102369,
+    "status": "PASS"
+  },
+  {
+    "page": "public_daftar",
+    "viewport": "1024x768",
+    "width": 1024,
+    "height": 768,
+    "metrics": {
+      "innerWidth": 1024,
+      "clientWidth": 1024,
+      "docScrollWidth": 1024,
+      "bodyScrollWidth": 1024,
+      "hasOverflow": false,
+      "rawMarkdownFound": false,
+      "overflowingElements": [],
+      "clippedElements": [],
+      "buttonsSample": []
+    },
+    "screenshot": "public_daftar_1024.png",
+    "fileSize": 74649,
+    "status": "PASS"
+  },
+  {
+    "page": "public_daftar",
+    "viewport": "1280x800",
+    "width": 1280,
+    "height": 800,
+    "metrics": {
+      "innerWidth": 1280,
+      "clientWidth": 1280,
+      "docScrollWidth": 1280,
+      "bodyScrollWidth": 1280,
+      "hasOverflow": false,
+      "rawMarkdownFound": false,
+      "overflowingElements": [],
+      "clippedElements": [],
+      "buttonsSample": []
+    },
+    "screenshot": "public_daftar_1280.png",
+    "fileSize": 76069,
+    "status": "PASS"
+  },
+  {
+    "page": "public_daftar",
+    "viewport": "1440x900",
+    "width": 1440,
+    "height": 900,
+    "metrics": {
+      "innerWidth": 1440,
+      "clientWidth": 1440,
+      "docScrollWidth": 1440,
+      "bodyScrollWidth": 1440,
+      "hasOverflow": false,
+      "rawMarkdownFound": false,
+      "overflowingElements": [],
+      "clippedElements": [],
+      "buttonsSample": []
+    },
+    "screenshot": "public_daftar_1440.png",
+    "fileSize": 88300,
+    "status": "PASS"
+  },
+  {
+    "page": "public_daftar",
+    "viewport": "1920x1080",
+    "width": 1920,
+    "height": 1080,
+    "metrics": {
+      "innerWidth": 1920,
+      "clientWidth": 1920,
+      "docScrollWidth": 1920,
+      "bodyScrollWidth": 1920,
+      "hasOverflow": false,
+      "rawMarkdownFound": false,
+      "overflowingElements": [],
+      "clippedElements": [],
+      "buttonsSample": []
+    },
+    "screenshot": "public_daftar_1920.png",
+    "fileSize": 115880,
+    "status": "PASS"
+  }
+]

@@ -10,17 +10,27 @@ interface ConfigState {
 
 const STORAGE_KEY = "kmb_demo_config";
 
+function sanitizeConfig(config: CooperativeConfig): CooperativeConfig {
+  return {
+    ...config,
+    tagline: (config.tagline || defaultCooperativeConfig.tagline).replace(/\*\*/g, "").replace(/\*/g, "").trim(),
+  };
+}
+
 function getInitialConfig(): CooperativeConfig {
-  if (typeof window === "undefined") return defaultCooperativeConfig;
+  if (typeof window === "undefined") return sanitizeConfig(defaultCooperativeConfig);
   try {
     const saved = localStorage.getItem(STORAGE_KEY);
     if (saved) {
-      return JSON.parse(saved);
+      return sanitizeConfig({
+        ...defaultCooperativeConfig,
+        ...JSON.parse(saved),
+      });
     }
   } catch {
     // fallback
   }
-  return defaultCooperativeConfig;
+  return sanitizeConfig(defaultCooperativeConfig);
 }
 
 export const useConfigStore = create<ConfigState>((set) => ({

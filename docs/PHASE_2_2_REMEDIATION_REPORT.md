@@ -106,22 +106,44 @@ Seluruh perintah pengujian dijalankan ulang secara terpisah dengan hasil sukses 
 
 ---
 
-## 6. BUKTI PENGUJIAN RESPONSIVE (BROWSER AUTOMATION)
+## 6. HASIL VERIFIKASI RESPONSIVITAS & AUTOMATED BROWSER AUDIT
 
-Pengujian visual otomatis dijalankan menggunakan Google Chrome headless (`C:\Program Files\Google\Chrome\Application\chrome.exe` dengan `--headless=new`) terhadap server preview aplikasi lokal (`http://localhost:4173`).
+### 6.1 Metodologi Pengujian Responsivitas Nyata
+Pengujian responsivitas otomatis dijalankan menggunakan Google Chrome headless (`C:\Program Files\Google\Chrome\Application\chrome.exe` dengan `--headless=new`) melalui skrip otomasi [`scripts/verify_responsive.js`](file:///c:/Users/ocitt/OneDrive/Dokumen/Finance/scripts/verify_responsive.js).
 
-Sebanyak **16 berkas tangkapan layar (screenshots)** aktual telah berhasil disimpan di direktori `docs/screenshots/`:
+Fitur keamanan dan validitas pengujian:
+1. **Profil Sementara Terisolasi (`--user-data-dir`):** Setiap pengujian menggunakan direktori profil sementara unik di OS temp, memastikan `localStorage` lama tidak memengaruhi data simulasi aktif.
+2. **Sanitasi Tagline Bersih:** Sanitasi aktif diterapkan pada `configStore.ts` untuk memastikan tidak ada karakter Markdown `**` atau `*` mentah yang tampil pada UI.
+3. **Audit DOM Mendalam:** Mengukur secara presisi `window.innerWidth`, `document.documentElement.clientWidth`, `document.documentElement.scrollWidth`, dan `document.body.scrollWidth`.
+4. **Deteksi Overflow & Clipping Elemen:** Memeriksa seluruh bounding rect elemen interaktif (`button`, `input`, `select`, `h1`, `p`) terhadap batas viewport dan kontainer dengan `overflow: hidden`/`clip`.
+5. **Ekspor Laporan Terstruktur:** Seluruh data hasil uji disimpan dalam berkas terstruktur [`docs/screenshots/responsive-results.json`](file:///c:/Users/ocitt/OneDrive/Dokumen/Finance/docs/screenshots/responsive-results.json).
 
-| Viewport | Dimensi | Halaman Beranda Publik | Halaman Wizard Pendaftaran | Status Tata Letak |
-|---|---|---|---|:---:|
-| **320px** | 320 × 640 | `docs/screenshots/public_home_320.png` | `docs/screenshots/public_daftar_320.png` | **LULUS** (Tidak ada horizontal overflow, header kompak) |
-| **375px** | 375 × 667 | `docs/screenshots/public_home_375.png` | `docs/screenshots/public_daftar_375.png` | **LULUS** (Single column grid, tap target 44px+) |
-| **390px** | 390 × 844 | `docs/screenshots/public_home_390.png` | `docs/screenshots/public_daftar_390.png` | **LULUS** (Step wizard rapi, tombol terbaca jelas) |
-| **768px** | 768 × 1024 | `docs/screenshots/public_home_768.png` | `docs/screenshots/public_daftar_768.png` | **LULUS** (Transisi tablet 2 kolom seimbang) |
-| **1024px** | 1024 × 768 | `docs/screenshots/public_home_1024.png` | `docs/screenshots/public_daftar_1024.png` | **LULUS** (Desktop layout optimal, navigasi horizontal) |
-| **1280px** | 1280 × 800 | `docs/screenshots/public_home_1280.png` | `docs/screenshots/public_daftar_1280.png` | **LULUS** (Editorial minimalism, ruang baca nyaman) |
-| **1440px** | 1440 × 900 | `docs/screenshots/public_home_1440.png` | `docs/screenshots/public_daftar_1440.png` | **LULUS** (Max-width container terpusat rapi) |
-| **1920px** | 1920 × 1080 | `docs/screenshots/public_home_1920.png` | `docs/screenshots/public_daftar_1920.png` | **LULUS** (Ultra-wide display proporsional tanpa distorsi) |
+### 6.2 Tabel Pengukuran Aktual 16 Kasus Uji
+
+| Halaman | Viewport | Lebar Viewport (`innerW`) | `docScrollWidth` | `bodyScrollWidth` | Horizontal Overflow | Raw Markdown `**` | Clipping Unintended | Ukuran PNG | Status |
+|---|---|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
+| `public_home` | 320 × 640 | 320 px | 320 px | 320 px | **OK (0 px)** | **OK (Nihil)** | **OK (0)** | 37 KB | **PASS** |
+| `public_home` | 375 × 667 | 375 px | 375 px | 375 px | **OK (0 px)** | **OK (Nihil)** | **OK (0)** | 42 KB | **PASS** |
+| `public_home` | 390 × 844 | 390 px | 390 px | 390 px | **OK (0 px)** | **OK (Nihil)** | **OK (0)** | 50 KB | **PASS** |
+| `public_home` | 768 × 1024 | 768 px | 768 px | 768 px | **OK (0 px)** | **OK (Nihil)** | **OK (0)** | 103 KB | **PASS** |
+| `public_home` | 1024 × 768 | 1024 px | 1024 px | 1024 px | **OK (0 px)** | **OK (Nihil)** | **OK (0)** | 82 KB | **PASS** |
+| `public_home` | 1280 × 800 | 1280 px | 1280 px | 1280 px | **OK (0 px)** | **OK (Nihil)** | **OK (0)** | 87 KB | **PASS** |
+| `public_home` | 1440 × 900 | 1440 px | 1440 px | 1440 px | **OK (0 px)** | **OK (Nihil)** | **OK (0)** | 91 KB | **PASS** |
+| `public_home` | 1920 × 1080 | 1920 px | 1920 px | 1920 px | **OK (0 px)** | **OK (Nihil)** | **OK (0)** | 117 KB | **PASS** |
+| `public_daftar` | 320 × 640 | 320 px | 320 px | 320 px | **OK (0 px)** | **OK (Nihil)** | **OK (0)** | 41 KB | **PASS** |
+| `public_daftar` | 375 × 667 | 375 px | 375 px | 375 px | **OK (0 px)** | **OK (Nihil)** | **OK (0)** | 45 KB | **PASS** |
+| `public_daftar` | 390 × 844 | 390 px | 390 px | 390 px | **OK (0 px)** | **OK (Nihil)** | **OK (0)** | 51 KB | **PASS** |
+| `public_daftar` | 768 × 1024 | 768 px | 768 px | 768 px | **OK (0 px)** | **OK (Nihil)** | **OK (0)** | 102 KB | **PASS** |
+| `public_daftar` | 1024 × 768 | 1024 px | 1024 px | 1024 px | **OK (0 px)** | **OK (Nihil)** | **OK (0)** | 75 KB | **PASS** |
+| `public_daftar` | 1280 × 800 | 1280 px | 1280 px | 1280 px | **OK (0 px)** | **OK (Nihil)** | **OK (0)** | 76 KB | **PASS** |
+| `public_daftar` | 1440 × 900 | 1440 px | 1440 px | 1440 px | **OK (0 px)** | **OK (Nihil)** | **OK (0)** | 88 KB | **PASS** |
+| `public_daftar` | 1920 × 1080 | 1920 px | 1920 px | 1920 px | **OK (0 px)** | **OK (Nihil)** | **OK (0)** | 116 KB | **PASS** |
+
+### 6.3 Verifikasi Visual Detail pada Viewport Kritis (320px)
+- **`HomeView.tsx`:** Judul KMB menggunakan `text-2xl` dengan `break-words` sehingga tidak terpotong. Tagline tampil bersih dalam tipografi italic netral tanpa karakter asteris mentah. Dua tombol CTA utama tersusun vertikal penuh (`flex-col w-full`) dengan target sentuh nyaman. Metadata badan hukum/NIKOP terpusat rapi dan melipat responsif.
+- **`RegistrationWizardView.tsx`:** Step indicator bar menampilkan 4 lingkaran nomor ringkas (1-4) tanpa teks berjejal di layar 320px, disertai label status langkah terpadu di bawahnya. Kartu formulir memiliki padding adaptif `p-3.5 sm:p-6` sehingga input dan select memiliki ruang bernapas luas. Kotak simulasi dokumen dan rincian simpanan pokok/wajib melipat rapi ke satu kolom. Tombol navigasi "Sebelumnya" dan "Selanjutnya/Kirim Permohonan" berukuran proporsional dan tidak mengalami clipping.
+- **`PublicLayout.tsx` & `BrandLogo.tsx`:** Header publik menyajikan logo adaptif `text-xs sm:text-base` yang mencegah desakan terhadap tombol pemicu navigasi drawer (`Menu`). Drawer mobile berfungsi penuh dengan backdrop interaktif. Footer menyajikan grid kolom tunggal pada mobile dan hak cipta/trust badge yang melipat rapi (`flex-wrap`).
+- **`DemoRoleSwitcher.tsx`:** Bar simulasi demo di bagian atas menggunakan tata letak `flex items-center justify-between` satu baris yang ramping dengan penyingkatan nama akun otomatis (`truncate`) dan tombol ganti peran kompak (`shrink-0`), menjamin tidak ada tumpang tindih elemen.
 
 ---
 
@@ -129,10 +151,11 @@ Sebanyak **16 berkas tangkapan layar (screenshots)** aktual telah berhasil disim
 
 - **Repository:** `https://github.com/HafidzDr/Koperasi.git`
 - **Branch:** `feat/phase-2-frontend-foundation`
-- **Baseline Commit (main):** `acdb0e4` (dipertahankan utuh)
+- **Baseline Commit (main):** `acdb0e4` (dipertahankan utuh dan bersih)
 - **Phase 2 Baseline:** `afed1ff`
 - **Phase 2.1 Commit:** `0b9e524`
-- **Pesan Commit Remediasi Phase 2.2:** `fix(phase-2): harden route permissions and demo controls`
+- **Phase 2.2 Commit:** `23c2ba7` (`fix(phase-2): harden route permissions and demo controls`)
+- **Pesan Commit Responsivitas & Clipping:** `fix(phase-2): resolve mobile clipping and verify responsive layouts`
 
 ---
 
@@ -148,3 +171,4 @@ Dengan tuntasnya pengerasan RBAC, penegakan prinsip deny-by-default, penyatuan l
 
 ---
 *Laporan ini disusun secara resmi sebagai bukti penutupan Phase 2.2.*
+

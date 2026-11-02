@@ -36,13 +36,13 @@ export const AboutView: React.FC = () => {
               <span className="text-ink-500">Sebutan Singkat</span>
               <span className="font-semibold">{config.shortName} ({config.acronym})</span>
             </div>
-            <div className="flex justify-between py-1.5 border-b border-ink-100">
-              <span className="text-ink-500">Nomor Badan Hukum (Demo)</span>
-              <span className="font-mono font-semibold">{config.legalNumber}</span>
+            <div className="flex justify-between py-1.5 border-b border-ink-100 gap-2">
+              <span className="text-ink-500 shrink-0">Nomor Badan Hukum (Demo)</span>
+              <span className="font-mono font-semibold break-all text-right">{config.legalNumber}</span>
             </div>
-            <div className="flex justify-between py-1.5 border-b border-ink-100">
-              <span className="text-ink-500">NIKOP Registrasi (Demo)</span>
-              <span className="font-mono font-semibold">{config.cooperativeRegistrationNumber}</span>
+            <div className="flex justify-between py-1.5 border-b border-ink-100 gap-2">
+              <span className="text-ink-500 shrink-0">NIKOP Registrasi (Demo)</span>
+              <span className="font-mono font-semibold break-all text-right">{config.cooperativeRegistrationNumber}</span>
             </div>
             <div className="flex justify-between py-1.5 border-b border-ink-100">
               <span className="text-ink-500">Tahun Berdiri Simulasi</span>

@@ -12,25 +12,25 @@ export const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(
     const id = customId || generatedId;
 
     return (
-      <div className="flex items-start gap-2.5 text-left">
+      <div className="flex items-start gap-2.5 text-left min-w-0">
         <input
           ref={ref}
           type="checkbox"
           id={id}
           disabled={disabled}
           className={cn(
-            "w-4 h-4 mt-0.5 rounded border-ink-300 text-forest-700",
+            "w-4 h-4 mt-0.5 rounded border-ink-300 text-forest-700 shrink-0",
             "focus:ring-2 focus:ring-forest-600 focus:ring-offset-1 focus:ring-offset-white",
             "disabled:cursor-not-allowed disabled:opacity-50",
             className
           )}
           {...props}
         />
-        <div className="text-xs">
-          <label htmlFor={id} className="font-medium text-ink-800 cursor-pointer select-none">
+        <div className="text-xs min-w-0">
+          <label htmlFor={id} className="font-medium text-ink-800 cursor-pointer select-none break-words">
             {label}
           </label>
-          {description && <p className="text-ink-600 mt-0.5">{description}</p>}
+          {description && <p className="text-ink-600 mt-0.5 break-words">{description}</p>}
         </div>
       </div>
     );

@@ -47,40 +47,40 @@ export const HomeView: React.FC = () => {
             Platform Digital Koperasi Indonesia
           </Badge>
 
-          <h1 className="text-3xl sm:text-5xl font-bold tracking-tight text-ink-900 leading-tight">
+          <h1 className="text-2xl sm:text-4xl md:text-5xl font-bold tracking-tight text-ink-900 leading-tight break-words">
             {config.name}
           </h1>
 
-          <p className="text-base sm:text-lg text-ink-600 leading-relaxed font-normal">
-            *"{config.tagline}"* — Ekosistem layanan simpan pinjam dan usaha koperasi yang transparan, akuntabel, dan inklusif untuk seluruh anggota di seluruh Nusantara.
+          <p className="text-sm sm:text-lg text-ink-600 leading-relaxed font-normal">
+            <span className="font-semibold text-ink-800 italic">"{config.tagline}"</span> — Ekosistem layanan simpan pinjam dan usaha koperasi yang transparan, akuntabel, dan inklusif untuk seluruh anggota di seluruh Nusantara.
           </p>
 
-          <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
-            <Link to="/daftar">
-              <Button size="lg" variant="primary" rightIcon={<ArrowRight className="w-4 h-4" />}>
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-3 pt-2 w-full max-w-sm sm:max-w-none mx-auto">
+            <Link to="/daftar" className="w-full sm:w-auto">
+              <Button size="lg" variant="primary" rightIcon={<ArrowRight className="w-4 h-4" />} className="w-full sm:w-auto text-sm sm:text-base px-5">
                 Daftar Menjadi Anggota
               </Button>
             </Link>
-            <Link to="/portal">
-              <Button size="lg" variant="outline">
+            <Link to="/portal" className="w-full sm:w-auto">
+              <Button size="lg" variant="outline" className="w-full sm:w-auto text-sm sm:text-base px-5">
                 Buka Portal Anggota
               </Button>
             </Link>
           </div>
 
           {/* Institutional Trust Badges */}
-          <div className="pt-6 border-t border-ink-200/80 flex flex-wrap items-center justify-center gap-6 text-xs text-ink-600 font-medium">
-            <span className="flex items-center gap-1.5">
-              <Building2 className="w-4 h-4 text-forest-700" />
-              Badan Hukum: <strong className="text-ink-800">{config.legalNumber}</strong>
+          <div className="pt-6 border-t border-ink-200/80 flex flex-wrap items-center justify-center gap-3 sm:gap-6 text-xs text-ink-600 font-medium">
+            <span className="flex items-center gap-1.5 min-w-0">
+              <Building2 className="w-4 h-4 text-forest-700 shrink-0" />
+              <span className="break-all sm:break-normal">Badan Hukum: <strong className="text-ink-800">{config.legalNumber}</strong></span>
             </span>
-            <span className="flex items-center gap-1.5">
-              <FileCheck2 className="w-4 h-4 text-forest-700" />
-              NIKOP: <strong className="text-ink-800">{config.cooperativeRegistrationNumber}</strong>
+            <span className="flex items-center gap-1.5 min-w-0">
+              <FileCheck2 className="w-4 h-4 text-forest-700 shrink-0" />
+              <span className="break-all sm:break-normal">NIKOP: <strong className="text-ink-800">{config.cooperativeRegistrationNumber}</strong></span>
             </span>
-            <span className="flex items-center gap-1.5">
-              <Layers className="w-4 h-4 text-forest-700" />
-              Arsitektur: <strong className="text-ink-800">Platform Core + Modular</strong>
+            <span className="flex items-center gap-1.5 min-w-0">
+              <Layers className="w-4 h-4 text-forest-700 shrink-0" />
+              <span>Arsitektur: <strong className="text-ink-800">Platform Core + Modular</strong></span>
             </span>
           </div>
         </div>
@@ -203,18 +203,18 @@ export const HomeView: React.FC = () => {
 
       {/* 4. Join CTA Section */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-12">
-        <div className="bg-forest-900 text-white rounded-xl p-8 sm:p-12 text-center md:text-left flex flex-col md:flex-row items-center justify-between gap-8">
+        <div className="bg-forest-900 text-white rounded-xl p-6 sm:p-12 text-center md:text-left flex flex-col md:flex-row items-center justify-between gap-6 md:gap-8">
           <div className="max-w-xl space-y-3">
-            <h3 className="text-2xl font-bold text-forest-50">
+            <h3 className="text-xl sm:text-2xl font-bold text-forest-50">
               Siap Bertumbuh Bersama Koperasi KMB?
             </h3>
             <p className="text-xs sm:text-sm text-forest-100/90 leading-relaxed">
               Bergabunglah dengan ratusan anggota produktif lainnya. Pendaftaran mudah, aman, dan seluruh data keanggotaan terkelola secara akuntabel.
             </p>
           </div>
-          <div className="flex flex-wrap gap-3">
-            <Link to="/daftar">
-              <Button size="lg" className="bg-white text-forest-900 hover:bg-forest-50">
+          <div className="w-full sm:w-auto flex flex-col sm:flex-row gap-3">
+            <Link to="/daftar" className="w-full sm:w-auto">
+              <Button size="lg" className="w-full sm:w-auto bg-white text-forest-900 hover:bg-forest-50 text-sm sm:text-base px-5">
                 Mulai Pendaftaran Online
               </Button>
             </Link>

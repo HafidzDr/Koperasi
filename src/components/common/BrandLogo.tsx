@@ -17,18 +17,18 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({
 }) => {
   const iconSizes = {
     sm: "w-7 h-7",
-    md: "w-9 h-9",
-    lg: "w-11 h-11",
+    md: "w-8 h-8 sm:w-9 sm:h-9",
+    lg: "w-10 h-10 sm:w-11 sm:h-11",
   };
 
   const textSizes = {
-    sm: "text-sm",
-    md: "text-base",
-    lg: "text-lg",
+    sm: "text-xs",
+    md: "text-xs sm:text-sm md:text-base",
+    lg: "text-sm sm:text-base md:text-lg",
   };
 
   const content = (
-    <div className={cn("inline-flex items-center gap-2.5 select-none", className)}>
+    <div className={cn("inline-flex items-center gap-2 sm:gap-2.5 select-none min-w-0 max-w-full", className)}>
       {/* 2D Flat Geometric Monochromatic Logomark (daun bertaut melingkar) */}
       <div
         className={cn(
@@ -45,10 +45,10 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({
       </div>
 
       {variant !== "icon-only" && (
-        <div className="flex flex-col text-left leading-none">
+        <div className="flex flex-col text-left leading-tight min-w-0">
           <span
             className={cn(
-              "font-semibold tracking-tight text-ink-900",
+              "font-semibold tracking-tight text-ink-900 truncate",
               variant === "light" && "text-white",
               textSizes[size]
             )}
@@ -57,7 +57,7 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({
           </span>
           <span
             className={cn(
-              "text-[10px] uppercase tracking-widest text-ink-600 mt-1 font-medium",
+              "text-[9px] sm:text-[10px] uppercase tracking-widest text-ink-600 font-medium truncate",
               variant === "light" && "text-forest-100/80"
             )}
           >
@@ -70,7 +70,10 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({
 
   if (to) {
     return (
-      <Link to={to} className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-forest-600 rounded">
+      <Link
+        to={to}
+        className="inline-flex items-center min-w-0 max-w-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-forest-600 rounded"
+      >
         {content}
       </Link>
     );

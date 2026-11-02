@@ -135,11 +135,11 @@ export const RegistrationWizardView: React.FC = () => {
   }
 
   return (
-    <div className="max-w-2xl mx-auto px-4 py-10 space-y-6">
+    <div className="max-w-2xl mx-auto px-4 py-8 sm:py-10 space-y-6">
       {/* Wizard Header */}
       <div className="text-center space-y-2">
         <Badge variant="forest">Wizard Pendaftaran</Badge>
-        <h1 className="text-2xl font-bold text-ink-900">
+        <h1 className="text-xl sm:text-2xl font-bold text-ink-900 break-words">
           Formulir Permohonan Menjadi Anggota
         </h1>
         <p className="text-xs text-ink-600">
@@ -148,47 +148,57 @@ export const RegistrationWizardView: React.FC = () => {
       </div>
 
       {/* Step Indicator */}
-      <div className="flex items-center justify-between border-b border-ink-200 pb-3 text-xs select-none">
-        {[
-          { num: 1, label: "Identitas" },
-          { num: 2, label: "Domisili" },
-          { num: 3, label: "Dokumen Demo" },
-          { num: 4, label: "Komitmen" },
-        ].map((s) => (
-          <div
-            key={s.num}
-            className={`flex items-center gap-2 ${
-              currentStep === s.num
-                ? "text-forest-800 font-bold"
-                : currentStep > s.num
-                ? "text-success-700 font-medium"
-                : "text-ink-400"
-            }`}
-          >
-            <span
-              className={`w-6 h-6 rounded-full flex items-center justify-center text-xs ${
+      <div className="space-y-2 border-b border-ink-200 pb-3">
+        <div className="flex items-center justify-between text-xs select-none">
+          {[
+            { num: 1, label: "Identitas" },
+            { num: 2, label: "Domisili" },
+            { num: 3, label: "Dokumen Demo" },
+            { num: 4, label: "Komitmen" },
+          ].map((s) => (
+            <div
+              key={s.num}
+              className={`flex items-center gap-1.5 sm:gap-2 ${
                 currentStep === s.num
-                  ? "bg-forest-700 text-white"
+                  ? "text-forest-800 font-bold"
                   : currentStep > s.num
-                  ? "bg-success-100 text-success-700"
-                  : "bg-ink-100 text-ink-500"
+                  ? "text-success-700 font-medium"
+                  : "text-ink-400"
               }`}
             >
-              {s.num}
-            </span>
-            <span className="hidden sm:inline">{s.label}</span>
-          </div>
-        ))}
+              <span
+                className={`w-6 h-6 rounded-full flex items-center justify-center text-xs shrink-0 ${
+                  currentStep === s.num
+                    ? "bg-forest-700 text-white"
+                    : currentStep > s.num
+                    ? "bg-success-100 text-success-700"
+                    : "bg-ink-100 text-ink-500"
+                }`}
+              >
+                {s.num}
+              </span>
+              <span className="hidden sm:inline">{s.label}</span>
+            </div>
+          ))}
+        </div>
+        <p className="sm:hidden text-xs font-semibold text-forest-800 text-center">
+          {[
+            "1. Identitas Calon Anggota",
+            "2. Domisili & Pekerjaan",
+            "3. Simulasi Dokumen Demo",
+            "4. Komitmen Simpanan & AD/ART",
+          ][currentStep - 1]}
+        </p>
       </div>
 
       {/* Form Content */}
       <form onSubmit={handleSubmit(onSubmit)}>
         <Card>
-          <CardContent className="p-6 space-y-4">
+          <CardContent className="p-4 sm:p-6 space-y-4 min-w-0">
             {/* STEP 1: IDENTITAS */}
             {currentStep === 1 && (
               <div className="space-y-4">
-                <div className="p-3 bg-forest-50 border border-forest-100 rounded text-xs text-forest-900 flex items-start gap-2">
+                <div className="p-3 bg-forest-50 border border-forest-100 rounded text-xs text-forest-900 flex items-start gap-2 break-words">
                   <ShieldAlert className="w-4 h-4 shrink-0 text-forest-700 mt-0.5" />
                   <span>
                     <strong>Keamanan Data Demonstrasi:</strong> Formulir ini murni untuk demonstrasi prototype. Dilarang memasukkan NIK 16 digit nasional asli. Gunakan format tunggal ID Demonstrasi yang telah disediakan.
@@ -250,8 +260,8 @@ export const RegistrationWizardView: React.FC = () => {
             {/* STEP 3: SIMULASI UNGGAH DOKUMEN */}
             {currentStep === 3 && (
               <div className="space-y-4">
-                <div className="border-2 border-dashed border-ink-300 rounded-lg p-6 text-center space-y-3 bg-ink-50/50">
-                  <FileText className="w-8 h-8 text-forest-700 mx-auto" />
+                <div className="border-2 border-dashed border-ink-300 rounded-lg p-4 sm:p-6 text-center space-y-3 bg-ink-50/50">
+                  <FileText className="w-8 h-8 text-forest-700 mx-auto shrink-0" />
                   <div>
                     <h4 className="text-sm font-semibold text-ink-900">
                       Simulasi Dokumen Identitas Contoh
@@ -274,19 +284,20 @@ export const RegistrationWizardView: React.FC = () => {
                           message: "Placeholder 'SIMULATED DOCUMENT' berhasil disematkan.",
                         });
                       }}
+                      className="w-full sm:w-auto text-xs px-3 py-2"
                     >
-                      Gunakan Dokumen Contoh Demo (Rekomendasi)
+                      Gunakan Dokumen Contoh Demo
                     </Button>
                   ) : (
-                    <div className="p-3 bg-white border border-forest-600 rounded-md inline-flex items-center gap-3 text-xs text-forest-900 font-mono">
-                      <span className="font-bold">SIMULATED DOCUMENT</span>
+                    <div className="p-2.5 sm:p-3 bg-white border border-forest-600 rounded-md inline-flex flex-wrap items-center justify-center gap-2 text-xs text-forest-900 font-mono">
+                      <span className="font-bold text-[11px] sm:text-xs">SIMULATED DOCUMENT</span>
                       <Badge variant="success" size="sm">
                         Terlampir (Mock)
                       </Badge>
                       <button
                         type="button"
                         onClick={() => setIsSimulatedDocUploaded(false)}
-                        className="text-danger-700 hover:underline text-[11px]"
+                        className="text-danger-700 hover:underline text-[11px] ml-1"
                       >
                         Ganti
                       </button>
@@ -299,17 +310,17 @@ export const RegistrationWizardView: React.FC = () => {
             {/* STEP 4: KOMITMEN SIMPANAN & AD/ART */}
             {currentStep === 4 && (
               <div className="space-y-4">
-                <div className="p-4 bg-ink-100 rounded-lg space-y-2 text-xs">
+                <div className="p-3.5 sm:p-4 bg-ink-100 rounded-lg space-y-2 text-xs">
                   <h4 className="font-bold text-ink-900">Kewajiban Keanggotaan KMB:</h4>
-                  <div className="flex justify-between py-1 border-b border-ink-200">
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between py-1 border-b border-ink-200 gap-1">
                     <span>1. Simpanan Pokok (Sekali saat bergabung)</span>
                     <strong className="text-forest-900 font-mono">{formatIDR(100000)}</strong>
                   </div>
-                  <div className="flex justify-between py-1 border-b border-ink-200">
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between py-1 border-b border-ink-200 gap-1">
                     <span>2. Simpanan Wajib (Rutin per bulan)</span>
                     <strong className="text-forest-900 font-mono">{formatIDR(50000)}/bln</strong>
                   </div>
-                  <p className="text-[11px] text-ink-600 pt-1">
+                  <p className="text-[11px] text-ink-600 pt-1 leading-relaxed">
                     *Simpanan Pokok dan Wajib adalah modal bersama anggota yang dapat diambil kembali saat berhenti dari keanggotaan sesuai AD/ART.
                   </p>
                 </div>
@@ -342,7 +353,7 @@ export const RegistrationWizardView: React.FC = () => {
           </CardContent>
 
           {/* Wizard Footer Controls */}
-          <CardFooter className="flex items-center justify-between">
+          <CardFooter className="flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-between gap-3 p-4">
             {currentStep > 1 ? (
               <Button
                 type="button"
@@ -350,11 +361,12 @@ export const RegistrationWizardView: React.FC = () => {
                 size="sm"
                 onClick={prevStep}
                 leftIcon={<ArrowLeft className="w-3.5 h-3.5" />}
+                className="w-full sm:w-auto"
               >
                 Sebelumnya
               </Button>
             ) : (
-              <div />
+              <div className="hidden sm:block" />
             )}
 
             {currentStep < 4 ? (
@@ -364,6 +376,7 @@ export const RegistrationWizardView: React.FC = () => {
                 size="sm"
                 onClick={nextStep}
                 rightIcon={<ArrowRight className="w-3.5 h-3.5" />}
+                className="w-full sm:w-auto"
               >
                 Selanjutnya
               </Button>
@@ -374,6 +387,7 @@ export const RegistrationWizardView: React.FC = () => {
                 size="sm"
                 isLoading={isSubmitting}
                 rightIcon={<CheckCircle2 className="w-3.5 h-3.5" />}
+                className="w-full sm:w-auto"
               >
                 Kirim Permohonan
               </Button>

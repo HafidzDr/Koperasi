@@ -32,11 +32,11 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
     const hasError = Boolean(errorMessage);
 
     return (
-      <div className="w-full space-y-1.5 text-left">
+      <div className="w-full min-w-0 space-y-1.5 text-left">
         {label && (
           <label
             htmlFor={id}
-            className="block text-xs font-semibold text-ink-700 uppercase tracking-wider"
+            className="block text-xs font-semibold text-ink-700 uppercase tracking-wider break-words"
           >
             {label}
           </label>
@@ -47,7 +47,7 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
           disabled={disabled}
           aria-invalid={hasError}
           className={cn(
-            "w-full h-10 px-3 bg-white border rounded-md text-sm text-ink-900 transition-colors",
+            "w-full min-w-0 h-10 px-3 bg-white border rounded-md text-sm text-ink-900 transition-colors",
             "border-ink-300 focus:outline-none focus:border-forest-600 focus:ring-1 focus:ring-forest-600",
             "disabled:bg-ink-100 disabled:text-ink-500 disabled:cursor-not-allowed",
             hasError && "border-danger-base focus:border-danger-700",

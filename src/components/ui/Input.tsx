@@ -31,16 +31,16 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
     const hasError = Boolean(errorMessage);
 
     return (
-      <div className="w-full space-y-1.5 text-left">
+      <div className="w-full min-w-0 space-y-1.5 text-left">
         {label && (
           <label
             htmlFor={id}
-            className="block text-xs font-semibold text-ink-700 uppercase tracking-wider"
+            className="block text-xs font-semibold text-ink-700 uppercase tracking-wider break-words"
           >
             {label}
           </label>
         )}
-        <div className="relative flex items-center">
+        <div className="relative flex items-center min-w-0">
           {leftAddon && (
             <div className="absolute left-3 flex items-center pointer-events-none text-ink-500 text-sm">
               {leftAddon}
@@ -59,7 +59,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
                 : undefined
             }
             className={cn(
-              "w-full h-10 px-3 bg-white border rounded-md text-sm text-ink-900 transition-colors",
+              "w-full min-w-0 h-10 px-3 bg-white border rounded-md text-sm text-ink-900 transition-colors",
               "border-ink-300 placeholder:text-ink-500",
               "focus:outline-none focus:border-forest-600 focus:ring-1 focus:ring-forest-600",
               "disabled:bg-ink-100 disabled:text-ink-500 disabled:cursor-not-allowed",
