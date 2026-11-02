@@ -2,11 +2,13 @@ import React, { useState } from "react";
 import { Outlet, Link, useLocation } from "react-router-dom";
 import { BrandLogo } from "@/components/common/BrandLogo";
 import { DemoRoleSwitcher } from "@/components/common/DemoRoleSwitcher";
+import { AccessDeniedView } from "@/components/common/AccessDeniedView";
 import { useAuthStore } from "@/stores/authStore";
 import { useConfigStore } from "@/stores/configStore";
 import { Avatar } from "@/components/ui/Avatar";
 import { Badge } from "@/components/ui/Badge";
 import { Drawer } from "@/components/ui/Drawer";
+import { isPublicContext } from "@/lib/rbac";
 import {
   LayoutDashboard,
   Wallet,
@@ -27,6 +29,23 @@ export const MemberLayout: React.FC = () => {
   const { config } = useConfigStore();
   const location = useLocation();
   const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
+
+  // Layout Guard: Only 'member' role is allowed into MemberLayout
+  if (currentUser.role !== "member") {
+    return (
+      <div className="min-h-screen bg-ink-50">
+        <DemoRoleSwitcher />
+        <AccessDeniedView
+          reason={
+            isPublicContext(currentUser.role)
+              ? "Portal Anggota memerlukan akun Anggota aktif terautentikasi. Anda sedang dalam konteks Publik."
+              : `Peran Anda (${currentUser.roleName}) adalah akun internal manajemen/administrasi, bukan akun Anggota Koperasi.`
+          }
+          currentPath={location.pathname}
+        />
+      </div>
+    );
+  }
 
   const menuItems = [
     { label: "Ringkasan", href: "/portal", icon: LayoutDashboard },
@@ -63,7 +82,7 @@ export const MemberLayout: React.FC = () => {
           </div>
 
           {/* Member Card Teaser */}
-          <div className="p-3 m-3 bg-forest-50 border border-forest-100 rounded-lg">
+          <div className="p-3 m-3 bg-forest-50 border border-forest-100 rounded-lg text-left">
             <div className="flex items-center gap-2.5">
               <Avatar name={currentUser.name} size="sm" />
               <div className="min-w-0">
@@ -81,7 +100,7 @@ export const MemberLayout: React.FC = () => {
           </div>
 
           {/* Nav Items */}
-          <nav className="flex-1 px-3 py-2 space-y-1 overflow-y-auto">
+          <nav className="flex-1 px-3 py-2 space-y-1 overflow-y-auto text-left">
             {menuItems.map((item) => {
               const Icon = item.icon;
               const isActive =
@@ -99,172 +118,148 @@ export const MemberLayout: React.FC = () => {
                       : "text-ink-700 hover:text-ink-900 hover:bg-ink-100/70"
                   }`}
                 >
-                  <Icon className={`w-4 h-4 ${isActive ? "text-forest-700" : "text-ink-500"}`} />
-                  <span>{item.label}</span>
+                  <Icon className="w-4 h-4 shrink-0" />
+                  <span className="truncate">{item.label}</span>
                 </Link>
               );
             })}
           </nav>
 
-          {/* Footer Sidebar */}
-          <div className="p-3 border-t border-ink-100">
+          {/* Footer User Info */}
+          <div className="p-3 border-t border-ink-100 bg-ink-50">
             <button
               onClick={() => setRole("public_visitor")}
-              className="w-full flex items-center justify-between px-3 py-2 text-xs font-medium text-ink-600 hover:text-danger-700 hover:bg-danger-100/40 rounded transition-colors"
+              className="w-full flex items-center justify-between text-xs text-ink-600 hover:text-danger-700 transition-colors py-1 px-2 rounded"
             >
-              <span className="flex items-center gap-2">
-                <LogOut className="w-4 h-4" /> Keluar Sesi
-              </span>
+              <span>Keluar ke Publik</span>
+              <LogOut className="w-3.5 h-3.5" />
             </button>
           </div>
         </aside>
 
-        {/* 3. Main Work Area */}
-        <div className="flex-1 flex flex-col min-w-0 overflow-y-auto pb-16 lg:pb-0">
-          {/* Portal Top Bar */}
-          <header className="sticky top-0 z-30 bg-white/95 border-b border-ink-200 h-14 px-4 sm:px-6 flex items-center justify-between gap-4">
+        {/* 3. Main Content Area */}
+        <div className="flex-1 flex flex-col min-w-0 overflow-y-auto">
+          {/* Topbar */}
+          <header className="h-14 bg-white border-b border-ink-200 px-4 sm:px-6 flex items-center justify-between shrink-0">
             <div className="flex items-center gap-3">
               <button
                 onClick={() => setMobileDrawerOpen(true)}
-                className="lg:hidden p-1.5 rounded text-ink-700 hover:bg-ink-100"
-                aria-label="Buka menu navigasi portal"
+                className="lg:hidden p-1.5 rounded-md text-ink-600 hover:bg-ink-100"
+                aria-label="Buka menu navigasi"
               >
                 <Menu className="w-5 h-5" />
               </button>
-              <div className="lg:hidden">
-                <BrandLogo variant="icon-only" size="sm" to="/portal" />
+
+              <div className="flex items-center gap-2 text-xs text-ink-600">
+                <span className="font-semibold text-ink-900">Portal Anggota</span>
+                <span>/</span>
+                <span className="text-ink-500 font-mono">
+                  {location.pathname.replace(/^\/portal/, "") || "ringkasan"}
+                </span>
               </div>
-              <h1 className="text-sm font-semibold text-ink-900 hidden sm:block">
-                Portal Anggota KMB
-              </h1>
             </div>
 
             <div className="flex items-center gap-3">
-              <Link
-                to="/portal/notifikasi"
-                className="relative p-2 rounded-full text-ink-600 hover:text-ink-900 hover:bg-ink-100 transition-colors"
+              <button
+                className="p-1.5 text-ink-600 hover:bg-ink-100 rounded-full relative"
                 aria-label="Notifikasi"
               >
                 <Bell className="w-4 h-4" />
                 <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-forest-700" />
-              </Link>
-              <div className="h-4 w-[1px] bg-ink-200" />
-              <div className="flex items-center gap-2">
+              </button>
+
+              <div className="flex items-center gap-2 pl-3 border-l border-ink-200">
                 <Avatar name={currentUser.name} size="sm" />
-                <div className="hidden sm:block text-left leading-none">
-                  <span className="text-xs font-semibold text-ink-900 block truncate max-w-[120px]">
-                    {currentUser.name}
-                  </span>
-                  <Badge variant="success" size="sm" className="text-[10px] px-1 py-0 mt-0.5">
-                    Anggota Aktif
-                  </Badge>
-                </div>
+                <span className="text-xs font-medium text-ink-900 hidden md:inline">
+                  {currentUser.name}
+                </span>
+                <Badge variant="forest" size="sm" className="hidden sm:inline">
+                  Anggota
+                </Badge>
               </div>
             </div>
           </header>
 
-          {/* Main Content Viewport */}
+          {/* Main Viewport */}
           <main className="flex-1 p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto w-full">
             <Outlet />
           </main>
         </div>
       </div>
 
-      {/* 4. Mobile Drawer */}
-      <Drawer
-        isOpen={mobileDrawerOpen}
-        onClose={() => setMobileDrawerOpen(false)}
-        title="Menu Anggota"
-        side="left"
-      >
-        <div className="space-y-1">
-          {menuItems.map((item) => {
-            const Icon = item.icon;
-            const isActive = location.pathname === item.href;
-            return (
-              <Link
-                key={item.href}
-                to={item.href}
-                onClick={() => setMobileDrawerOpen(false)}
-                className={`flex items-center gap-3 px-3 py-2.5 rounded-md text-xs font-medium ${
-                  isActive
-                    ? "bg-forest-100 text-forest-900 font-semibold"
-                    : "text-ink-700 hover:bg-ink-50"
-                }`}
-              >
-                <Icon className="w-4 h-4 text-forest-700" />
-                <span>{item.label}</span>
-              </Link>
-            );
-          })}
-        </div>
-      </Drawer>
-
-      {/* 5. Mobile Bottom Navigation Bar (< 768px) */}
-      <nav
-        aria-label="Navigasi bawah mobile"
-        className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-white border-t border-ink-200 flex items-center justify-around h-14 px-2 safe-bottom"
-      >
+      {/* 4. Mobile Bottom Navigation Bar (≤ 768px) */}
+      <nav className="lg:hidden bg-white border-t border-ink-200 flex items-center justify-around py-1.5 px-2 shrink-0 z-20">
         <Link
           to="/portal"
-          className={`flex flex-col items-center justify-center flex-1 py-1 text-[10px] ${
+          className={`flex flex-col items-center gap-0.5 text-[10px] p-1 ${
             location.pathname === "/portal"
-              ? "text-forest-700 font-semibold"
-              : "text-ink-600 hover:text-ink-900"
+              ? "text-forest-800 font-bold"
+              : "text-ink-600"
           }`}
         >
-          <LayoutDashboard className="w-4 h-4 mb-0.5" />
+          <LayoutDashboard className="w-4 h-4" />
           <span>Ringkasan</span>
         </Link>
-
         {config.activeModules.savings && (
           <Link
             to="/portal/simpanan"
-            className={`flex flex-col items-center justify-center flex-1 py-1 text-[10px] ${
+            className={`flex flex-col items-center gap-0.5 text-[10px] p-1 ${
               location.pathname.startsWith("/portal/simpanan")
-                ? "text-forest-700 font-semibold"
-                : "text-ink-600 hover:text-ink-900"
+                ? "text-forest-800 font-bold"
+                : "text-ink-600"
             }`}
           >
-            <Wallet className="w-4 h-4 mb-0.5" />
+            <Wallet className="w-4 h-4" />
             <span>Simpanan</span>
           </Link>
         )}
-
         {config.activeModules.loans && (
           <Link
             to="/portal/pinjaman"
-            className={`flex flex-col items-center justify-center flex-1 py-1 text-[10px] ${
+            className={`flex flex-col items-center gap-0.5 text-[10px] p-1 ${
               location.pathname.startsWith("/portal/pinjaman")
-                ? "text-forest-700 font-semibold"
-                : "text-ink-600 hover:text-ink-900"
+                ? "text-forest-800 font-bold"
+                : "text-ink-600"
             }`}
           >
-            <CreditCard className="w-4 h-4 mb-0.5" />
+            <CreditCard className="w-4 h-4" />
             <span>Pinjaman</span>
           </Link>
         )}
-
-        <Link
-          to="/portal/pembayaran"
-          className={`flex flex-col items-center justify-center flex-1 py-1 text-[10px] ${
-            location.pathname.startsWith("/portal/pembayaran")
-              ? "text-forest-700 font-semibold"
-              : "text-ink-600 hover:text-ink-900"
-          }`}
-        >
-          <Receipt className="w-4 h-4 mb-0.5" />
-          <span>Bayar</span>
-        </Link>
-
         <button
           onClick={() => setMobileDrawerOpen(true)}
-          className="flex flex-col items-center justify-center flex-1 py-1 text-[10px] text-ink-600 hover:text-ink-900"
+          className="flex flex-col items-center gap-0.5 text-[10px] p-1 text-ink-600"
         >
-          <Menu className="w-4 h-4 mb-0.5" />
+          <Menu className="w-4 h-4" />
           <span>Lainnya</span>
         </button>
       </nav>
+
+      {/* 5. Mobile Drawer */}
+      <Drawer
+        isOpen={mobileDrawerOpen}
+        onClose={() => setMobileDrawerOpen(false)}
+        title="Menu Anggota KMB"
+        side="left"
+      >
+        <div className="space-y-1 text-left">
+          {menuItems.map((item) => (
+            <Link
+              key={item.href}
+              to={item.href}
+              onClick={() => setMobileDrawerOpen(false)}
+              className={`flex items-center gap-3 px-3 py-2.5 rounded-md text-xs ${
+                location.pathname === item.href
+                  ? "bg-forest-100 text-forest-900 font-bold"
+                  : "text-ink-700 hover:bg-ink-100"
+              }`}
+            >
+              <item.icon className="w-4 h-4" />
+              <span>{item.label}</span>
+            </Link>
+          ))}
+        </div>
+      </Drawer>
     </div>
   );
 };

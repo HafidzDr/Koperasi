@@ -56,3 +56,4 @@ export function formatDateTime(dateInput: string | Date): string {
     return String(dateInput);
   }
 }
+

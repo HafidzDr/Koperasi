@@ -224,3 +224,4 @@ export const HomeView: React.FC = () => {
     </div>
   );
 };
+

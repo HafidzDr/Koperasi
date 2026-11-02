@@ -60,3 +60,4 @@ export const useConfigStore = create<ConfigState>((set) => ({
     set({ config: defaultCooperativeConfig });
   },
 }));
+

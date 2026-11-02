@@ -19,6 +19,7 @@ import {
   ShieldAlert,
   Send,
   Eye,
+  Lock,
 } from "lucide-react";
 
 interface Applicant {
@@ -76,7 +77,9 @@ export const MemberVerificationView: React.FC = () => {
   // Authority rules (Information Architecture Seksi 5.4)
   const isStaff = currentUser.role === "staff";
   const isManagerOrBoard = currentUser.role === "manager";
-  const isAdmin = currentUser.role === "admin" || currentUser.role === "super_admin";
+  const isAuditor = currentUser.role === "auditor";
+  const isAdminOrSuperAdmin = currentUser.role === "admin" || currentUser.role === "super_admin";
+  const isFinancialStaff = currentUser.role === "finance_officer" || currentUser.role === "treasurer";
 
   const handleRecommendByStaff = (appId: string) => {
     setApplicants((prev) =>
@@ -109,10 +112,10 @@ export const MemberVerificationView: React.FC = () => {
   return (
     <div className="space-y-6 text-left">
       {/* Page Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 bg-white border border-ink-200 rounded-lg">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 bg-white border border-ink-200 rounded-lg shadow-subtle">
         <div>
           <h1 className="text-xl font-bold text-ink-900">
-            Verifikasi & Persetujuan Keanggotaan
+            Verifikasi & Rekomendasi Keanggotaan
           </h1>
           <p className="text-xs text-ink-600 mt-1">
             Pemisahan 5 tahap: Kelengkapan → Verifikasi Staf → Rekomendasi → Persetujuan Pengurus → Penerbitan Nomor Anggota
@@ -131,20 +134,39 @@ export const MemberVerificationView: React.FC = () => {
               Kewenangan: Persetujuan Final Pengurus
             </Badge>
           )}
-          {isAdmin && (
+          {isAuditor && (
+            <Badge variant="neutral" size="md">
+              Auditor: Mode Inspeksi Read-Only
+            </Badge>
+          )}
+          {isAdminOrSuperAdmin && (
             <Badge variant="warning" size="md">
-              Admin: Tanpa Otoritas Persetujuan Organisasi
+              Admin Teknis: Tanpa Otoritas Organisasi
+            </Badge>
+          )}
+          {isFinancialStaff && (
+            <Badge variant="neutral" size="md">
+              Keuangan: Di Luar Domain Keanggotaan
             </Badge>
           )}
         </div>
       </div>
 
-      {/* SoD Notice Warning if Admin */}
-      {isAdmin && (
-        <div className="p-3.5 bg-warning-100/60 border border-warning-base/30 rounded-lg flex items-start gap-3 text-xs text-warning-700">
+      {/* SoD Notice Warning if Admin or Financial role */}
+      {isAdminOrSuperAdmin && (
+        <div className="p-3.5 bg-warning-100/60 border border-warning-base/30 rounded-lg flex items-start gap-3 text-xs text-warning-800">
           <ShieldAlert className="w-5 h-5 shrink-0 mt-0.5 text-warning-700" />
           <div>
-            <strong>Prinsip Separation of Duties (SoD):</strong> Akun Administrator Sistem bertugas memelihara infrastruktur teknis dan tidak memiliki kewenangan organisasi untuk menyetujui atau menolak keanggotaan koperasi. Silakan gunakan <em>Demo Role Switcher</em> untuk beralih ke <strong>Staf Operasional</strong> atau <strong>Manajer / Pengurus</strong>.
+            <strong>Prinsip Separation of Duties (SoD):</strong> Akun Administrator Sistem bertugas memelihara infrastruktur teknis dan tidak memiliki kewenangan organisasi untuk menyetujui atau menolak keanggotaan koperasi. Silakan gunakan <em>Demo Role Switcher</em> untuk beralih ke <strong>Staf Operasional</strong> (verifikasi) atau <strong>Manajer / Pengurus</strong> (persetujuan final).
+          </div>
+        </div>
+      )}
+
+      {isAuditor && (
+        <div className="p-3.5 bg-ink-100 border border-ink-200 rounded-lg flex items-start gap-3 text-xs text-ink-800">
+          <Lock className="w-5 h-5 shrink-0 mt-0.5 text-ink-600" />
+          <div>
+            <strong>Mode Auditor (Read-Only):</strong> Anda memiliki akses membaca penuh terhadap berkas pendaftaran dan catatan verifikasi kepatuhan, namun dilarang melakukan aksi mutasi, rekomendasi, maupun persetujuan data.
           </div>
         </div>
       )}
@@ -211,16 +233,24 @@ export const MemberVerificationView: React.FC = () => {
                     </Badge>
                   </TableCell>
                   <TableCell className="text-right">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => {
-                        setSelectedApplicant(app);
-                        setIsActionModalOpen(true);
-                      }}
-                    >
-                      Proses Berkas
-                    </Button>
+                    {isAuditor ? (
+                      <span className="text-[11px] text-ink-500 italic">Hanya Baca</span>
+                    ) : (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          setSelectedApplicant(app);
+                          setIsActionModalOpen(true);
+                        }}
+                      >
+                        {isStaff
+                          ? "Verifikasi & Rekomendasi"
+                          : isManagerOrBoard
+                          ? "Persetujuan Final"
+                          : "Tinjau Berkas"}
+                      </Button>
+                    )}
                   </TableCell>
                 </TableRow>
               ))}
@@ -282,7 +312,7 @@ export const MemberVerificationView: React.FC = () => {
               <div>Status Saat Ini: <strong>{selectedApplicant.status}</strong></div>
             </div>
 
-            {/* If Staff */}
+            {/* If Staff: Only Verify & Recommend, NO final approval button */}
             {isStaff && (
               <div className="space-y-3 pt-2">
                 <p className="text-ink-700">
@@ -315,7 +345,7 @@ export const MemberVerificationView: React.FC = () => {
               </div>
             )}
 
-            {/* If Manager / Board */}
+            {/* If Manager / Board: Has Final Approval Authority */}
             {isManagerOrBoard && (
               <div className="space-y-3 pt-2">
                 <p className="text-ink-700">
@@ -348,14 +378,33 @@ export const MemberVerificationView: React.FC = () => {
               </div>
             )}
 
-            {/* If Admin */}
-            {isAdmin && (
-              <div className="space-y-3 pt-2 text-danger-700">
+            {/* If Auditor: Read-Only message */}
+            {isAuditor && (
+              <div className="p-3 bg-ink-100 rounded text-ink-700 space-y-1">
+                <strong>Mode Auditor Independen:</strong> Peran ini memiliki hak inspeksi kepatuhan (*Read-Only*) dan tidak berwenang memberikan rekomendasi atau persetujuan transaksi organisasi.
+              </div>
+            )}
+
+            {/* If Admin / Super Admin */}
+            {isAdminOrSuperAdmin && (
+              <div className="space-y-2 pt-2 text-warning-800 bg-warning-100/50 p-3 rounded border border-warning-base/30">
+                <p className="font-semibold">
+                  Akses Dibatasi (Separation of Duties):
+                </p>
                 <p>
                   Peran <strong>{currentUser.roleName}</strong> tidak memiliki otoritas organisasi untuk mengeksekusi rekomendasi maupun persetujuan final keanggotaan.
                 </p>
-                <p className="text-ink-600">
-                  Gunakan bilah demo di atas untuk beralih peran ke <em>Staf Operasional</em> atau <em>Manajer / Pengurus</em>.
+                <p className="text-[11px] text-ink-600">
+                  Gunakan panel <em>Demo Role Switcher</em> di kanan bawah untuk beralih ke <strong>Staf Operasional</strong> atau <strong>Manajer / Pengurus</strong>.
+                </p>
+              </div>
+            )}
+
+            {/* If Financial Staff */}
+            {isFinancialStaff && (
+              <div className="space-y-2 pt-2 text-ink-700 bg-ink-100 p-3 rounded">
+                <p>
+                  Peran <strong>{currentUser.roleName}</strong> berfokus pada domain keuangan/kas dan tidak memiliki kewenangan verifikasi atau persetujuan keanggotaan organisasi.
                 </p>
               </div>
             )}

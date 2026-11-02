@@ -11,3 +11,4 @@ export const App: React.FC = () => {
     </React.StrictMode>
   );
 };
+

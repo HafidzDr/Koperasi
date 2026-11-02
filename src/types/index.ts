@@ -6,7 +6,7 @@ export type Role =
   | "finance_officer"
   | "treasurer"
   | "manager"
-  | "supervisor"
+  | "auditor"
   | "admin"
   | "super_admin";
 
@@ -103,3 +103,4 @@ export interface LoanSummary {
   statusKolektibilitas: "Lancar" | "DPK" | "Kurang Lancar" | "Diragukan" | "Macet";
   jatuhTempoBerikutnya: string;
 }
+

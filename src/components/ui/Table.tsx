@@ -62,3 +62,4 @@ export const TableCell: React.FC<React.TdHTMLAttributes<HTMLTableCellElement>> =
     {children}
   </td>
 );
+

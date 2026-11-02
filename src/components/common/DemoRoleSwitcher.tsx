@@ -4,6 +4,7 @@ import { useConfigStore } from "@/stores/configStore";
 import { useToastStore } from "@/stores/toastStore";
 import { demoRoleCatalog } from "@/mocks/seedData";
 import { Role } from "@/types";
+import { AUTHENTICATED_ROLES, PUBLIC_CONTEXTS } from "@/lib/rbac";
 import { useNavigate } from "react-router-dom";
 import {
   Users,
@@ -11,6 +12,8 @@ import {
   ShieldCheck,
   ChevronDown,
   Layers,
+  Globe,
+  Lock,
 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
@@ -25,13 +28,21 @@ export const DemoRoleSwitcher: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isModuleModalOpen, setIsModuleModalOpen] = useState(false);
 
+  const authenticatedRoles = demoRoleCatalog.filter((r) =>
+    AUTHENTICATED_ROLES.includes(r.id)
+  );
+  const publicContexts = demoRoleCatalog.filter((r) =>
+    PUBLIC_CONTEXTS.includes(r.id)
+  );
+
   const handleSwitchRole = (role: Role, defaultPath: string) => {
     setRole(role);
     setIsModalOpen(false);
+    const selected = demoRoleCatalog.find((r) => r.id === role);
     addToast({
       type: "info",
       title: "Peran Demonstrasi Diubah",
-      message: `Beralih ke peran ${demoRoleCatalog.find((r) => r.id === role)?.name} (${demoRoleCatalog.find((r) => r.id === role)?.demoUser}).`,
+      message: `Beralih ke peran ${selected?.name} (${selected?.demoUser}).`,
     });
     navigate(defaultPath);
   };
@@ -54,10 +65,10 @@ export const DemoRoleSwitcher: React.FC = () => {
       <div className="bg-forest-900 text-forest-50 px-4 py-1.5 text-xs flex flex-wrap items-center justify-between gap-2 border-b border-forest-800 select-none">
         <div className="flex items-center gap-2">
           <Badge variant="forest" size="sm" className="bg-forest-800 text-white border-forest-700">
-            DEMO MODE
+            DEMO SIMULATION
           </Badge>
           <span className="hidden sm:inline text-forest-100/90">
-            Peran Aktif: <strong className="text-white">{currentUser.roleName}</strong> ({currentUser.name})
+            Konteks Aktif: <strong className="text-white">{currentUser.roleName}</strong> ({currentUser.name})
           </span>
           <span className="sm:hidden text-white font-medium truncate max-w-[140px]">
             {currentUser.name}
@@ -90,8 +101,8 @@ export const DemoRoleSwitcher: React.FC = () => {
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         title="Pilih Peran Demonstrasi (Demo Role Switcher)"
-        description="Pilih salah satu dari 8 peran operasional terautentikasi atau 2 konteks publik untuk meninjau sistem."
-        maxWidth="lg"
+        description="Beralih peran untuk melihat bagaimana seluruh sistem, hak akses rute, navigasi menu, dan tindakan beradaptasi sesuai Matriks Kewenangan (IA Seksi 5.4)."
+        maxWidth="xl"
         footer={
           <div className="w-full flex items-center justify-between">
             <Button
@@ -109,41 +120,104 @@ export const DemoRoleSwitcher: React.FC = () => {
           </div>
         }
       >
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          {demoRoleCatalog.map((role) => {
-            const isSelected = role.id === currentRole;
-            return (
-              <button
-                key={role.id}
-                onClick={() => handleSwitchRole(role.id, role.defaultPath)}
-                className={`p-3 rounded-lg border text-left transition-all flex flex-col justify-between ${
-                  isSelected
-                    ? "bg-forest-50 border-forest-600 ring-1 ring-forest-600"
-                    : "bg-white border-ink-200 hover:border-ink-300 hover:bg-ink-50/50"
-                }`}
-              >
-                <div>
-                  <div className="flex items-center justify-between mb-1.5">
-                    <span className="text-xs font-bold text-ink-900">{role.name}</span>
-                    <Badge variant={isSelected ? "forest" : "neutral"} size="sm">
-                      {role.category}
-                    </Badge>
-                  </div>
-                  <p className="text-[11px] text-ink-600 leading-normal line-clamp-2 mb-2">
-                    {role.description}
-                  </p>
-                </div>
-                <div className="flex items-center justify-between text-[11px] pt-2 border-t border-ink-100 text-ink-500 font-mono">
-                  <span>Nama: {role.demoUser}</span>
-                  {isSelected && (
-                    <span className="flex items-center gap-1 text-forest-700 font-semibold font-sans">
-                      <ShieldCheck className="w-3.5 h-3.5" /> Aktif
-                    </span>
-                  )}
-                </div>
-              </button>
-            );
-          })}
+        <div className="space-y-6 text-left max-h-[68vh] overflow-y-auto pr-1">
+          {/* Group 1: Authenticated Demo Accounts (8 Roles) */}
+          <div>
+            <div className="flex items-center gap-2 mb-3 pb-2 border-b border-ink-100">
+              <Lock className="w-4 h-4 text-forest-700" />
+              <h3 className="text-xs font-bold uppercase tracking-wider text-ink-900">
+                Authenticated Demo Accounts (8 Akun Terautentikasi)
+              </h3>
+              <Badge variant="forest" size="sm">
+                8 Peran
+              </Badge>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {authenticatedRoles.map((role) => {
+                const isSelected = role.id === currentRole;
+                return (
+                  <button
+                    key={role.id}
+                    onClick={() => handleSwitchRole(role.id, role.defaultPath)}
+                    className={`p-3 rounded-lg border text-left transition-all flex flex-col justify-between ${
+                      isSelected
+                        ? "bg-forest-50 border-forest-600 ring-1 ring-forest-600"
+                        : "bg-white border-ink-200 hover:border-ink-300 hover:bg-ink-50/50"
+                    }`}
+                  >
+                    <div>
+                      <div className="flex items-center justify-between mb-1.5">
+                        <span className="text-xs font-bold text-ink-900">{role.name}</span>
+                        <Badge variant={isSelected ? "forest" : "neutral"} size="sm">
+                          {role.category}
+                        </Badge>
+                      </div>
+                      <p className="text-[11px] text-ink-600 leading-normal line-clamp-2 mb-2">
+                        {role.description}
+                      </p>
+                    </div>
+                    <div className="flex items-center justify-between text-[11px] pt-2 border-t border-ink-100 text-ink-500 font-mono">
+                      <span>Nama: {role.demoUser}</span>
+                      {isSelected && (
+                        <span className="flex items-center gap-1 text-forest-700 font-semibold font-sans">
+                          <ShieldCheck className="w-3.5 h-3.5" /> Aktif
+                        </span>
+                      )}
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Group 2: Public Preview (2 Contexts) */}
+          <div>
+            <div className="flex items-center gap-2 mb-3 pb-2 border-b border-ink-100">
+              <Globe className="w-4 h-4 text-forest-700" />
+              <h3 className="text-xs font-bold uppercase tracking-wider text-ink-900">
+                Public Preview (Konteks Publik Non-Otentikasi)
+              </h3>
+              <Badge variant="neutral" size="sm">
+                2 Konteks
+              </Badge>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {publicContexts.map((role) => {
+                const isSelected = role.id === currentRole;
+                return (
+                  <button
+                    key={role.id}
+                    onClick={() => handleSwitchRole(role.id, role.defaultPath)}
+                    className={`p-3 rounded-lg border text-left transition-all flex flex-col justify-between ${
+                      isSelected
+                        ? "bg-forest-50 border-forest-600 ring-1 ring-forest-600"
+                        : "bg-white border-ink-200 hover:border-ink-300 hover:bg-ink-50/50"
+                    }`}
+                  >
+                    <div>
+                      <div className="flex items-center justify-between mb-1.5">
+                        <span className="text-xs font-bold text-ink-900">{role.name}</span>
+                        <Badge variant={isSelected ? "forest" : "neutral"} size="sm">
+                          {role.category}
+                        </Badge>
+                      </div>
+                      <p className="text-[11px] text-ink-600 leading-normal line-clamp-2 mb-2">
+                        {role.description}
+                      </p>
+                    </div>
+                    <div className="flex items-center justify-between text-[11px] pt-2 border-t border-ink-100 text-ink-500 font-mono">
+                      <span>Nama: {role.demoUser}</span>
+                      {isSelected && (
+                        <span className="flex items-center gap-1 text-forest-700 font-semibold font-sans">
+                          <ShieldCheck className="w-3.5 h-3.5" /> Aktif
+                        </span>
+                      )}
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
         </div>
       </Modal>
 
@@ -160,12 +234,12 @@ export const DemoRoleSwitcher: React.FC = () => {
           </Button>
         }
       >
-        <div className="space-y-3">
+        <div className="space-y-3 text-left">
           <div className="p-3 bg-forest-50 rounded-md border border-forest-100 text-xs text-forest-900">
             Platform Core (7 fondasi) selalu aktif di latar belakang. Modul di bawah merupakan modul bisnis opsional.
           </div>
 
-          <div className="divide-y divide-ink-100 border border-ink-200 rounded-md overflow-hidden bg-white">
+          <div className="divide-y divide-ink-100 border border-ink-200 rounded-md overflow-hidden bg-white max-h-[50vh] overflow-y-auto">
             {[
               { key: "savings", name: "Savings Management (Simpanan)", core: false, note: undefined },
               { key: "loans", name: "Loan Management (Pinjaman)", core: false, note: undefined },

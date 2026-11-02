@@ -110,10 +110,10 @@ export const demoRoleCatalog: RoleInfo[] = [
     avatarInitial: "HK",
   },
   {
-    id: "supervisor",
-    name: "Pengawas / Auditor",
+    id: "auditor",
+    name: "Auditor",
     category: "Governance",
-    description: "Akses inspeksi kepatuhan dan audit trail lengkap (Read-Only).",
+    description: "Akses inspeksi kepatuhan dan audit trail lengkap (Read-Only murni).",
     defaultPath: "/admin/audit",
     demoUser: "Bambang Irawan",
     avatarInitial: "BI",
@@ -189,12 +189,12 @@ export const demoUsers: Record<Role, DemoUser> = {
     role: "manager",
     roleName: "Ketua Pengurus / Manajer",
   },
-  supervisor: {
+  auditor: {
     id: "user-auditor-01",
     name: "Bambang Irawan",
     email: "bambang.pengawas@koperasimakmur.invalid",
-    role: "supervisor",
-    roleName: "Pengawas & Auditor",
+    role: "auditor",
+    roleName: "Auditor Independen & Pengawas",
   },
   admin: {
     id: "user-admin-01",

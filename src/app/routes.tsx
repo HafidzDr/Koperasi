@@ -12,6 +12,7 @@ import { AdminDashboardView } from "@/features/admin/AdminDashboardView";
 import { MemberVerificationView } from "@/features/admin/MemberVerificationView";
 import { PlatformSettingsView } from "@/features/admin/PlatformSettingsView";
 import { ModulePlaceholderView } from "@/components/common/ModulePlaceholderView";
+import { RouteGuard } from "@/components/common/RouteGuard";
 
 export const router = createBrowserRouter([
   // 1. PUBLIC WEBSITE ENVIRONMENT
@@ -74,7 +75,11 @@ export const router = createBrowserRouter([
   // 2. MEMBER PORTAL ENVIRONMENT
   {
     path: "/portal",
-    element: <MemberLayout />,
+    element: (
+      <RouteGuard>
+        <MemberLayout />
+      </RouteGuard>
+    ),
     children: [
       { index: true, element: <MemberDashboardView /> },
       {
@@ -176,7 +181,11 @@ export const router = createBrowserRouter([
   // 3. ADMINISTRATION SYSTEM ENVIRONMENT
   {
     path: "/admin",
-    element: <AdminLayout />,
+    element: (
+      <RouteGuard>
+        <AdminLayout />
+      </RouteGuard>
+    ),
     children: [
       { index: true, element: <AdminDashboardView /> },
       { path: "anggota/verifikasi", element: <MemberVerificationView /> },
