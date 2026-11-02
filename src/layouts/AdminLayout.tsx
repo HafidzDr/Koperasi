@@ -8,7 +8,11 @@ import { useConfigStore } from "@/stores/configStore";
 import { Avatar } from "@/components/ui/Avatar";
 import { Badge } from "@/components/ui/Badge";
 import { Drawer } from "@/components/ui/Drawer";
-import { canAccessRoute, isPublicContext, hasPermission } from "@/lib/rbac";
+import {
+  canAccessRoute,
+  isPublicContext,
+  getPermittedAdminNavSections,
+} from "@/lib/rbac";
 import {
   LayoutDashboard,
   UserCheck,
@@ -25,6 +29,20 @@ import {
   ExternalLink,
   Eye,
 } from "lucide-react";
+
+const ICON_MAP = {
+  LayoutDashboard,
+  UserCheck,
+  Users,
+  Wallet,
+  CreditCard,
+  Landmark,
+  ShoppingBag,
+  Vote,
+  FileSpreadsheet,
+  History,
+  Settings,
+};
 
 export const AdminLayout: React.FC = () => {
   const { currentUser } = useAuthStore();
@@ -49,101 +67,18 @@ export const AdminLayout: React.FC = () => {
     );
   }
 
-  // Grouped menu matching Information Architecture & Domain permissions
-  const rawNavSections = [
-    {
-      title: "Ringkasan Operasional",
-      items: [
-        { label: "Dashboard Utama", href: "/admin", icon: LayoutDashboard },
-      ],
-    },
-    {
-      title: "Keanggotaan & Verifikasi",
-      items: [
-        ...(hasPermission(currentUser.role, "membership:verify") ||
-        hasPermission(currentUser.role, "membership:approve") ||
-        currentUser.role === "auditor" ||
-        currentUser.role === "admin"
-          ? [
-              {
-                label: "Verifikasi Berkas Calon",
-                href: "/admin/anggota/verifikasi",
-                icon: UserCheck,
-                badge: "4",
-              },
-            ]
-          : []),
-        ...(hasPermission(currentUser.role, "membership:view")
-          ? [{ label: "Direktori Anggota", href: "/admin/anggota", icon: Users }]
-          : []),
-      ],
-    },
-    {
-      title: "Operasional Finansial",
-      items: [
-        ...(config.activeModules.savings && hasPermission(currentUser.role, "savings:view")
-          ? [{ label: "Manajemen Simpanan", href: "/admin/simpanan", icon: Wallet }]
-          : []),
-        ...(config.activeModules.loans && hasPermission(currentUser.role, "loans:view")
-          ? [
-              {
-                label: "Pinjaman & Persetujuan",
-                href: "/admin/pinjaman",
-                icon: CreditCard,
-                badge: "2",
-              },
-            ]
-          : []),
-        ...(hasPermission(currentUser.role, "cash:view")
-          ? [{ label: "Buku Kas & Rekonsiliasi", href: "/admin/keuangan", icon: Landmark }]
-          : []),
-      ],
-    },
-    {
-      title: "Tata Kelola & Bisnis",
-      items: [
-        ...(config.activeModules.business_units &&
-        (currentUser.role === "manager" ||
-          currentUser.role === "staff" ||
-          currentUser.role === "finance_officer" ||
-          currentUser.role === "treasurer" ||
-          currentUser.role === "auditor")
-          ? [{ label: "Portofolio Unit Usaha", href: "/admin/unit-usaha", icon: ShoppingBag }]
-          : []),
-        ...(config.activeModules.meetings &&
-        (currentUser.role === "manager" ||
-          currentUser.role === "staff" ||
-          currentUser.role === "auditor")
-          ? [{ label: "Rapat Anggota (RAT)", href: "/admin/rapat", icon: Vote }]
-          : []),
-      ],
-    },
-    {
-      title: "Laporan & Pengawasan",
-      items: [
-        ...(config.activeModules.reports && hasPermission(currentUser.role, "reports:view")
-          ? [{ label: "Laporan Keuangan", href: "/admin/laporan", icon: FileSpreadsheet }]
-          : []),
-        ...(config.activeModules.audit_trail && hasPermission(currentUser.role, "audit:view")
-          ? [{ label: "Audit Trail Operasional", href: "/admin/audit", icon: History }]
-          : []),
-      ],
-    },
-    {
-      title: "Sistem & Konfigurasi",
-      items: [
-        ...(hasPermission(currentUser.role, "platform_config:view")
-          ? [{ label: "Pengaturan Platform", href: "/admin/pengaturan", icon: Settings }]
-          : []),
-      ],
-    },
-  ];
+  // Centralized single source of truth for permitted navigation sections
+  const navSections = getPermittedAdminNavSections(
+    currentUser.role,
+    config.activeModules
+  );
 
-  // Filter sections that have at least 1 permitted item
-  const navSections = rawNavSections.filter((section) => section.items.length > 0);
-
-  // Sub-path access check
-  const accessCheck = canAccessRoute(currentUser.role, location.pathname);
+  // Sub-path access check with activeModules evaluation
+  const accessCheck = canAccessRoute(
+    currentUser.role,
+    location.pathname,
+    config.activeModules
+  );
 
   return (
     <div className="min-h-screen flex flex-col bg-ink-50 text-ink-800">
@@ -189,7 +124,7 @@ export const AdminLayout: React.FC = () => {
                   {section.title}
                 </div>
                 {section.items.map((item) => {
-                  const Icon = item.icon;
+                  const Icon = ICON_MAP[item.iconName];
                   const isActive =
                     item.href === "/admin"
                       ? location.pathname === "/admin"
@@ -286,6 +221,7 @@ export const AdminLayout: React.FC = () => {
           <main className="flex-1 p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto w-full">
             {!accessCheck.allowed ? (
               <AccessDeniedView
+                isModuleInactive={accessCheck.isModuleInactive}
                 reason={accessCheck.reason}
                 currentPath={location.pathname}
               />
@@ -309,25 +245,31 @@ export const AdminLayout: React.FC = () => {
               <span className="text-[10px] font-bold text-ink-500 uppercase px-2">
                 {sec.title}
               </span>
-              {sec.items.map((it) => (
-                <Link
-                  key={it.href}
-                  to={it.href}
-                  onClick={() => setMobileDrawerOpen(false)}
-                  className={`flex items-center justify-between px-2.5 py-2 rounded text-xs ${
-                    location.pathname === it.href
-                      ? "bg-forest-800 text-white font-semibold"
-                      : "text-ink-700 hover:bg-ink-100"
-                  }`}
-                >
-                  <span>{it.label}</span>
-                  {it.badge && (
-                    <span className="px-1.5 py-0.2 text-[10px] bg-forest-100 text-forest-900 rounded font-bold">
-                      {it.badge}
-                    </span>
-                  )}
-                </Link>
-              ))}
+              {sec.items.map((it) => {
+                const Icon = ICON_MAP[it.iconName];
+                return (
+                  <Link
+                    key={it.href}
+                    to={it.href}
+                    onClick={() => setMobileDrawerOpen(false)}
+                    className={`flex items-center justify-between px-2.5 py-2 rounded text-xs ${
+                      location.pathname === it.href
+                        ? "bg-forest-800 text-white font-semibold"
+                        : "text-ink-700 hover:bg-ink-100"
+                    }`}
+                  >
+                    <div className="flex items-center gap-2">
+                      <Icon className="w-3.5 h-3.5" />
+                      <span>{it.label}</span>
+                    </div>
+                    {it.badge && (
+                      <span className="px-1.5 py-0.2 text-[10px] bg-forest-100 text-forest-900 rounded font-bold">
+                        {it.badge}
+                      </span>
+                    )}
+                  </Link>
+                );
+              })}
             </div>
           ))}
         </div>

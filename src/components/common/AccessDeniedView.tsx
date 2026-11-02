@@ -7,12 +7,18 @@ import { Badge } from "@/components/ui/Badge";
 import { ShieldAlert, ArrowLeft, RefreshCw } from "lucide-react";
 
 interface AccessDeniedViewProps {
+  title?: string;
+  badgeText?: string;
+  isModuleInactive?: boolean;
   reason?: string;
   requiredRole?: string;
   currentPath?: string;
 }
 
 export const AccessDeniedView: React.FC<AccessDeniedViewProps> = ({
+  title,
+  badgeText,
+  isModuleInactive = false,
   reason,
   requiredRole,
   currentPath,
@@ -25,6 +31,16 @@ export const AccessDeniedView: React.FC<AccessDeniedViewProps> = ({
     return "/admin";
   };
 
+  const displayTitle = isModuleInactive
+    ? "Modul Tidak Aktif"
+    : title || "Akses Dibatasi (Access Denied)";
+  const displayBadge = isModuleInactive
+    ? "Modul Nonaktif"
+    : badgeText || "Prinsip SoD";
+  const displayDesc = isModuleInactive
+    ? "Modul bisnis ini sedang dinonaktifkan dalam konfigurasi platform koperasi KMB."
+    : "Sistem Pengendalian Internal & Hak Akses Berbasis Peran";
+
   return (
     <div className="min-h-[70vh] flex items-center justify-center p-4">
       <Card className="max-w-lg w-full border-warning-base/40 shadow-subtle text-left">
@@ -36,14 +52,14 @@ export const AccessDeniedView: React.FC<AccessDeniedViewProps> = ({
             <div>
               <div className="flex items-center gap-2">
                 <CardTitle className="text-base text-ink-900">
-                  Akses Dibatasi (Access Denied)
+                  {displayTitle}
                 </CardTitle>
                 <Badge variant="warning" size="sm">
-                  Prinsip SoD
+                  {displayBadge}
                 </Badge>
               </div>
               <CardDescription className="text-xs">
-                Sistem Pengendalian Internal & Hak Akses Berbasis Peran
+                {displayDesc}
               </CardDescription>
             </div>
           </div>
@@ -101,3 +117,4 @@ export const AccessDeniedView: React.FC<AccessDeniedViewProps> = ({
     </div>
   );
 };
+

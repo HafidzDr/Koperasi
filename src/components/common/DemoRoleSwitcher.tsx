@@ -3,8 +3,8 @@ import { useAuthStore } from "@/stores/authStore";
 import { useConfigStore } from "@/stores/configStore";
 import { useToastStore } from "@/stores/toastStore";
 import { demoRoleCatalog } from "@/mocks/seedData";
-import { Role } from "@/types";
-import { AUTHENTICATED_ROLES, PUBLIC_CONTEXTS } from "@/lib/rbac";
+import { Role, BusinessModuleKey } from "@/types";
+import { AUTHENTICATED_ROLES, PUBLIC_CONTEXTS, canPerformAction } from "@/lib/rbac";
 import { useNavigate } from "react-router-dom";
 import {
   Users,
@@ -28,6 +28,10 @@ export const DemoRoleSwitcher: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isModuleModalOpen, setIsModuleModalOpen] = useState(false);
 
+  // Authority check based on IA Section 5.4
+  const canUpdatePlatformConfig = canPerformAction(currentRole, "platform_config", "update");
+  const canResetDemo = canPerformAction(currentRole, "demo_tools", "reset_demo");
+
   const authenticatedRoles = demoRoleCatalog.filter((r) =>
     AUTHENTICATED_ROLES.includes(r.id)
   );
@@ -47,7 +51,20 @@ export const DemoRoleSwitcher: React.FC = () => {
     navigate(defaultPath);
   };
 
+  /**
+   * Protected handler for Demo Reset.
+   * Strictly verifies demo_tools:reset_demo permission before execution.
+   */
   const handleResetDemo = () => {
+    if (!canPerformAction(currentRole, "demo_tools", "reset_demo")) {
+      addToast({
+        type: "danger",
+        title: "Akses Ditolak (SoD)",
+        message: `Peran "${currentUser.roleName}" tidak memiliki hak akses untuk mereset demonstrasi. Tindakan ini eksklusif untuk Super Administrator.`,
+      });
+      return;
+    }
+
     resetConfig();
     useAuthStore.getState().resetToDefault();
     addToast({
@@ -57,6 +74,28 @@ export const DemoRoleSwitcher: React.FC = () => {
     });
     setIsModalOpen(false);
     navigate("/");
+  };
+
+  /**
+   * Protected handler for toggling modular business modules.
+   * Strictly verifies platform_config:update permission before execution.
+   */
+  const handleToggleModule = (key: BusinessModuleKey) => {
+    if (!canPerformAction(currentRole, "platform_config", "update")) {
+      addToast({
+        type: "danger",
+        title: "Akses Ditolak (SoD)",
+        message: `Peran "${currentUser.roleName}" tidak memiliki hak akses (platform_config:update) untuk mengubah konfigurasi modul platform. Tindakan dibatalkan.`,
+      });
+      return;
+    }
+
+    toggleModule(key);
+    addToast({
+      type: "info",
+      title: "Konfigurasi Modul Diperbarui",
+      message: `Status modul "${key}" berhasil diubah.`,
+    });
   };
 
   return (
@@ -76,14 +115,17 @@ export const DemoRoleSwitcher: React.FC = () => {
         </div>
 
         <div className="flex items-center gap-2">
-          <button
-            onClick={() => setIsModuleModalOpen(true)}
-            className="flex items-center gap-1.5 px-2 py-1 rounded bg-forest-800/80 hover:bg-forest-800 text-forest-100 hover:text-white transition-colors"
-            title="Kelola Aktivasi Modul Bisnis"
-          >
-            <Layers className="w-3.5 h-3.5" />
-            <span className="hidden md:inline">Modul Bisnis</span>
-          </button>
+          {/* Module config button: only visible & actionable for roles with platform_config:update */}
+          {canUpdatePlatformConfig && (
+            <button
+              onClick={() => setIsModuleModalOpen(true)}
+              className="flex items-center gap-1.5 px-2 py-1 rounded bg-forest-800/80 hover:bg-forest-800 text-forest-100 hover:text-white transition-colors"
+              title="Kelola Aktivasi Modul Bisnis (Administrator Teknis)"
+            >
+              <Layers className="w-3.5 h-3.5" />
+              <span className="hidden md:inline">Modul Bisnis</span>
+            </button>
+          )}
 
           <button
             onClick={() => setIsModalOpen(true)}
@@ -105,15 +147,21 @@ export const DemoRoleSwitcher: React.FC = () => {
         maxWidth="xl"
         footer={
           <div className="w-full flex items-center justify-between">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleResetDemo}
-              leftIcon={<RotateCcw className="w-3.5 h-3.5 text-danger-700" />}
-              className="text-danger-700 border-danger-base/40 hover:bg-danger-100"
-            >
-              Reset Data Demo
-            </Button>
+            {canResetDemo ? (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleResetDemo}
+                leftIcon={<RotateCcw className="w-3.5 h-3.5 text-danger-700" />}
+                className="text-danger-700 border-danger-base/40 hover:bg-danger-100"
+              >
+                Reset Data Demo (Super Admin)
+              </Button>
+            ) : (
+              <span className="text-[11px] text-ink-500 italic">
+                *Reset Demo dibatasi untuk Super Administrator
+              </span>
+            )}
             <Button variant="secondary" size="sm" onClick={() => setIsModalOpen(false)}>
               Tutup
             </Button>
@@ -221,7 +269,7 @@ export const DemoRoleSwitcher: React.FC = () => {
         </div>
       </Modal>
 
-      {/* Business Module Toggle Modal */}
+      {/* Business Module Toggle Modal (Protected with permission checks) */}
       <Modal
         isOpen={isModuleModalOpen}
         onClose={() => setIsModuleModalOpen(false)}
@@ -235,6 +283,12 @@ export const DemoRoleSwitcher: React.FC = () => {
         }
       >
         <div className="space-y-3 text-left">
+          {!canUpdatePlatformConfig && (
+            <div className="p-3 bg-danger-100/50 border border-danger-base/30 rounded-md text-xs text-danger-800">
+              Peran Anda saat ini tidak memiliki kewenangan <code>platform_config:update</code>. Pengubahan status modul dinonaktifkan.
+            </div>
+          )}
+
           <div className="p-3 bg-forest-50 rounded-md border border-forest-100 text-xs text-forest-900">
             Platform Core (7 fondasi) selalu aktif di latar belakang. Modul di bawah merupakan modul bisnis opsional.
           </div>
@@ -261,7 +315,8 @@ export const DemoRoleSwitcher: React.FC = () => {
                   <Button
                     variant={isEnabled ? "primary" : "secondary"}
                     size="sm"
-                    onClick={() => toggleModule(mod.key as keyof typeof config.activeModules)}
+                    disabled={!canUpdatePlatformConfig}
+                    onClick={() => handleToggleModule(mod.key as BusinessModuleKey)}
                   >
                     {isEnabled ? "Aktif" : "Nonaktif"}
                   </Button>

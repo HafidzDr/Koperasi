@@ -8,7 +8,7 @@ import { useConfigStore } from "@/stores/configStore";
 import { Avatar } from "@/components/ui/Avatar";
 import { Badge } from "@/components/ui/Badge";
 import { Drawer } from "@/components/ui/Drawer";
-import { isPublicContext } from "@/lib/rbac";
+import { isPublicContext, canAccessRoute } from "@/lib/rbac";
 import {
   LayoutDashboard,
   Wallet,
@@ -182,7 +182,23 @@ export const MemberLayout: React.FC = () => {
 
           {/* Main Viewport */}
           <main className="flex-1 p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto w-full">
-            <Outlet />
+            {(() => {
+              const accessCheck = canAccessRoute(
+                currentUser.role,
+                location.pathname,
+                config.activeModules
+              );
+              if (!accessCheck.allowed) {
+                return (
+                  <AccessDeniedView
+                    isModuleInactive={accessCheck.isModuleInactive}
+                    reason={accessCheck.reason}
+                    currentPath={location.pathname}
+                  />
+                );
+              }
+              return <Outlet />;
+            })()}
           </main>
         </div>
       </div>

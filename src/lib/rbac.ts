@@ -1,4 +1,4 @@
-import { Role } from "@/types";
+import { Role, BusinessModuleKey } from "@/types";
 
 export type Domain =
   | "membership"
@@ -213,143 +213,453 @@ export function canPerformAction(role: Role, domain: Domain, action: Action): bo
   return hasPermission(role, `${domain}:${action}`);
 }
 
+// ============================================================================
+// CENTRALIZED MENU VISIBILITY ENGINE (P1)
+// Shared single source of truth between UI (AdminLayout) and Automated Tests
+// ============================================================================
+
+export interface AdminNavItem {
+  label: string;
+  href: string;
+  iconName:
+    | "LayoutDashboard"
+    | "UserCheck"
+    | "Users"
+    | "Wallet"
+    | "CreditCard"
+    | "Landmark"
+    | "ShoppingBag"
+    | "Vote"
+    | "FileSpreadsheet"
+    | "History"
+    | "Settings";
+  badge?: string;
+}
+
+export interface AdminNavSection {
+  title: string;
+  items: AdminNavItem[];
+}
+
 /**
- * Route access evaluator.
- * Checks whether the specified role is permitted to directly access a given pathname.
+ * Builds permitted navigation sections for a given role and active module state.
+ * Centralized to guarantee that AdminLayout and unit tests use identical logic.
+ */
+export function getPermittedAdminNavSections(
+  role: Role,
+  activeModules: Record<BusinessModuleKey, boolean>
+): AdminNavSection[] {
+  // If not an authenticated admin role, zero sections
+  if (isPublicContext(role) || role === "member") {
+    return [];
+  }
+
+  const rawSections: AdminNavSection[] = [
+    {
+      title: "Ringkasan Operasional",
+      items: [
+        { label: "Dashboard Utama", href: "/admin", iconName: "LayoutDashboard" },
+      ],
+    },
+    {
+      title: "Keanggotaan & Verifikasi",
+      items: [
+        // Verifikasi berkas calon: Staf (verifikasi), Manager (persetujuan), Auditor (inspeksi)
+        ...(hasPermission(role, "membership:verify") ||
+        hasPermission(role, "membership:approve") ||
+        role === "auditor"
+          ? [
+              {
+                label: "Verifikasi Berkas Calon",
+                href: "/admin/anggota/verifikasi",
+                iconName: "UserCheck" as const,
+                badge: "4",
+              },
+            ]
+          : []),
+        // Direktori anggota: Semua peran dengan membership:view
+        ...(hasPermission(role, "membership:view")
+          ? [
+              {
+                label: "Direktori Anggota",
+                href: "/admin/anggota",
+                iconName: "Users" as const,
+              },
+            ]
+          : []),
+      ],
+    },
+    {
+      title: "Operasional Finansial",
+      items: [
+        // Simpanan: Aktif, role memiliki savings:view, dan BUKAN admin teknis (SoD Catatan Kaki 2)
+        ...(activeModules.savings &&
+        hasPermission(role, "savings:view") &&
+        role !== "admin" &&
+        role !== "super_admin"
+          ? [
+              {
+                label: "Manajemen Simpanan",
+                href: "/admin/simpanan",
+                iconName: "Wallet" as const,
+              },
+            ]
+          : []),
+        // Pinjaman: Aktif, role memiliki loans:view, dan BUKAN admin teknis (SoD Catatan Kaki 2)
+        ...(activeModules.loans &&
+        hasPermission(role, "loans:view") &&
+        role !== "admin" &&
+        role !== "super_admin"
+          ? [
+              {
+                label: "Pinjaman & Persetujuan",
+                href: "/admin/pinjaman",
+                iconName: "CreditCard" as const,
+                badge: "2",
+              },
+            ]
+          : []),
+        // Buku Kas & Rekonsiliasi: Memiliki cash:view dan BUKAN admin teknis atau staf lapangan
+        ...(hasPermission(role, "cash:view") &&
+        role !== "admin" &&
+        role !== "super_admin" &&
+        role !== "staff"
+          ? [
+              {
+                label: "Buku Kas & Rekonsiliasi",
+                href: "/admin/keuangan",
+                iconName: "Landmark" as const,
+              },
+            ]
+          : []),
+      ],
+    },
+    {
+      title: "Tata Kelola & Bisnis",
+      items: [
+        ...(activeModules.business_units &&
+        (role === "manager" ||
+          role === "staff" ||
+          role === "finance_officer" ||
+          role === "treasurer" ||
+          role === "auditor")
+          ? [
+              {
+                label: "Portofolio Unit Usaha",
+                href: "/admin/unit-usaha",
+                iconName: "ShoppingBag" as const,
+              },
+            ]
+          : []),
+        ...(activeModules.meetings &&
+        (role === "manager" || role === "staff" || role === "auditor")
+          ? [
+              {
+                label: "Rapat Anggota (RAT)",
+                href: "/admin/rapat",
+                iconName: "Vote" as const,
+              },
+            ]
+          : []),
+      ],
+    },
+    {
+      title: "Laporan & Pengawasan",
+      items: [
+        // Laporan keuangan: Modul reports aktif dan has reports:view (Staff tidak punya hak view laporan di 5.4)
+        ...(activeModules.reports && hasPermission(role, "reports:view")
+          ? [
+              {
+                label: "Laporan Keuangan",
+                href: "/admin/laporan",
+                iconName: "FileSpreadsheet" as const,
+              },
+            ]
+          : []),
+        // Audit trail: Modul audit_trail aktif dan has audit:view (Auditor, Manager, Admin, Super Admin)
+        ...(activeModules.audit_trail && hasPermission(role, "audit:view")
+          ? [
+              {
+                label: "Audit Trail Operasional",
+                href: "/admin/audit",
+                iconName: "History" as const,
+              },
+            ]
+          : []),
+      ],
+    },
+    {
+      title: "Sistem & Konfigurasi",
+      items: [
+        // Pengaturan platform: Memiliki platform_config:view (Admin, Super Admin, Treasurer, Manager)
+        ...(hasPermission(role, "platform_config:view")
+          ? [
+              {
+                label: "Pengaturan Platform",
+                href: "/admin/pengaturan",
+                iconName: "Settings" as const,
+              },
+            ]
+          : []),
+      ],
+    },
+  ];
+
+  // Return only sections containing at least one permitted item
+  return rawSections.filter((section) => section.items.length > 0);
+}
+
+/**
+ * Returns a flat array of permitted admin hrefs for quick testing.
+ */
+export function getPermittedAdminHrefs(
+  role: Role,
+  activeModules: Record<BusinessModuleKey, boolean>
+): string[] {
+  const sections = getPermittedAdminNavSections(role, activeModules);
+  return sections.flatMap((sec) => sec.items.map((it) => it.href));
+}
+
+// ============================================================================
+// ROUTE PROTECTION & DENY-BY-DEFAULT ENGINE (P0)
+// ============================================================================
+
+export interface RouteAccessResult {
+  allowed: boolean;
+  reason?: string;
+  isModuleInactive?: boolean;
+  moduleKey?: BusinessModuleKey;
+}
+
+// Explicit canonical registry of all valid known routes in routes.tsx
+export const KNOWN_PUBLIC_ROUTES = [
+  "/",
+  "/tentang",
+  "/daftar",
+  "/cara-bergabung",
+  "/transparansi",
+  "/layanan/simpanan",
+  "/layanan/pinjaman",
+] as const;
+
+export const KNOWN_MEMBER_ROUTES = [
+  "/portal",
+  "/portal/simpanan",
+  "/portal/pinjaman",
+  "/portal/pembayaran",
+  "/portal/shu",
+  "/portal/unit-usaha",
+  "/portal/rapat",
+  "/portal/profil",
+  "/portal/bantuan",
+] as const;
+
+export const KNOWN_ADMIN_ROUTES = [
+  "/admin",
+  "/admin/anggota",
+  "/admin/anggota/verifikasi",
+  "/admin/simpanan",
+  "/admin/pinjaman",
+  "/admin/keuangan",
+  "/admin/unit-usaha",
+  "/admin/rapat",
+  "/admin/laporan",
+  "/admin/audit",
+  "/admin/pengaturan",
+] as const;
+
+/**
+ * Evaluates route access with strict DENY BY DEFAULT policy.
+ * Any route not explicitly recognized or authorized produces allowed: false.
  */
 export function canAccessRoute(
   role: Role,
-  pathname: string
-): { allowed: boolean; reason?: string } {
+  pathname: string,
+  activeModules?: Record<BusinessModuleKey, boolean>
+): RouteAccessResult {
   const cleanPath = pathname.split("?")[0].replace(/\/+$/, "") || "/";
 
-  // 1. Public Website routes are open to everyone
+  // --------------------------------------------------------------------------
+  // 1. PUBLIC ENVIRONMENT
+  // --------------------------------------------------------------------------
   if (
     cleanPath === "/" ||
     cleanPath === "/tentang" ||
     cleanPath === "/daftar" ||
     cleanPath === "/cara-bergabung" ||
     cleanPath === "/transparansi" ||
-    cleanPath.startsWith("/layanan")
+    cleanPath === "/layanan/simpanan" ||
+    cleanPath === "/layanan/pinjaman"
   ) {
+    if (activeModules) {
+      if (cleanPath === "/layanan/simpanan" && !activeModules.savings) {
+        return {
+          allowed: false,
+          isModuleInactive: true,
+          moduleKey: "savings",
+          reason: "Layanan Simpanan saat ini sedang dinonaktifkan dalam konfigurasi koperasi.",
+        };
+      }
+      if (cleanPath === "/layanan/pinjaman" && !activeModules.loans) {
+        return {
+          allowed: false,
+          isModuleInactive: true,
+          moduleKey: "loans",
+          reason: "Layanan Pinjaman saat ini sedang dinonaktifkan dalam konfigurasi koperasi.",
+        };
+      }
+    }
     return { allowed: true };
   }
 
-  // 2. Member Portal (/portal and subpaths)
+  // --------------------------------------------------------------------------
+  // 2. MEMBER PORTAL ENVIRONMENT (/portal and subpaths)
+  // --------------------------------------------------------------------------
   if (cleanPath === "/portal" || cleanPath.startsWith("/portal/")) {
-    if (role === "member") {
-      return { allowed: true };
-    }
-    if (isPublicContext(role)) {
+    // Only 'member' role is allowed into member portal
+    if (role !== "member") {
       return {
         allowed: false,
-        reason:
-          "Member Portal memerlukan akun Anggota terautentikasi. Anda sedang dalam konteks Publik.",
+        reason: isPublicContext(role)
+          ? "Member Portal memerlukan autentikasi Anggota aktif. Anda sedang dalam konteks Publik."
+          : `Peran Anda (${role}) adalah akun internal administrasi/manajemen koperasi, bukan akun Anggota (Member).`,
       };
     }
-    return {
-      allowed: false,
-      reason: `Peran Anda (${role}) adalah akun internal administrasi/manajemen. Portal Anggota khusus untuk akun berstatus Anggota Aktif (Member).`,
-    };
+
+    // DENY BY DEFAULT on unknown /portal subroutes
+    if (!(KNOWN_MEMBER_ROUTES as readonly string[]).includes(cleanPath)) {
+      return {
+        allowed: false,
+        reason: `Rute portal anggota "${cleanPath}" tidak dikenal atau tidak terdaftar dalam sistem (Deny by Default).`,
+      };
+    }
+
+    // Check module dependencies for member subroutes
+    if (activeModules) {
+      if (cleanPath === "/portal/simpanan" && !activeModules.savings) {
+        return {
+          allowed: false,
+          isModuleInactive: true,
+          moduleKey: "savings",
+          reason: "Modul Simpanan saat ini dinonaktifkan oleh administrator koperasi.",
+        };
+      }
+      if (cleanPath === "/portal/pinjaman" && !activeModules.loans) {
+        return {
+          allowed: false,
+          isModuleInactive: true,
+          moduleKey: "loans",
+          reason: "Modul Pinjaman saat ini dinonaktifkan oleh administrator koperasi.",
+        };
+      }
+      if (cleanPath === "/portal/shu" && !activeModules.shu) {
+        return {
+          allowed: false,
+          isModuleInactive: true,
+          moduleKey: "shu",
+          reason: "Modul SHU saat ini dinonaktifkan dalam konfigurasi koperasi.",
+        };
+      }
+      if (cleanPath === "/portal/unit-usaha" && !activeModules.business_units) {
+        return {
+          allowed: false,
+          isModuleInactive: true,
+          moduleKey: "business_units",
+          reason: "Modul Unit Usaha saat ini dinonaktifkan dalam konfigurasi koperasi.",
+        };
+      }
+      if (cleanPath === "/portal/rapat" && !activeModules.meetings) {
+        return {
+          allowed: false,
+          isModuleInactive: true,
+          moduleKey: "meetings",
+          reason: "Modul Rapat Anggota (RAT) saat ini dinonaktifkan dalam konfigurasi koperasi.",
+        };
+      }
+    }
+
+    return { allowed: true };
   }
 
-  // 3. Administration System (/admin and subpaths)
+  // --------------------------------------------------------------------------
+  // 3. ADMINISTRATION SYSTEM ENVIRONMENT (/admin and subpaths)
+  // --------------------------------------------------------------------------
   if (cleanPath === "/admin" || cleanPath.startsWith("/admin/")) {
-    // Public visitors and applicants CANNOT enter admin
+    // Public visitors and applicants are strictly forbidden
     if (isPublicContext(role)) {
       return {
         allowed: false,
         reason:
-          "Area Administrasi memerlukan autentikasi staf, pejabat keuangan, manajemen, atau administrator. Konteks publik tidak memiliki izin.",
+          "Area Administrasi memerlukan autentikasi akun internal koperasi. Konteks publik tidak memiliki hak akses.",
       };
     }
 
-    // Members CANNOT enter admin
+    // Members cannot enter administration system (Separation of Member & Governance)
     if (role === "member") {
       return {
         allowed: false,
         reason:
-          "Anggota Koperasi (Member) tidak memiliki izin mengakses sistem administrasi internal demi menjaga kerahasiaan data dan tata kelola.",
+          "Anggota Koperasi (Member) tidak memiliki hak akses ke Administration System demi menjaga kerahasiaan data dan tata kelola internal.",
       };
     }
 
-    // Role-specific granular subpaths within /admin
+    // DENY BY DEFAULT on unknown /admin subroutes
+    if (!(KNOWN_ADMIN_ROUTES as readonly string[]).includes(cleanPath)) {
+      return {
+        allowed: false,
+        reason: `Rute administrasi "${cleanPath}" tidak terdaftar atau tidak dikenal dalam sistem (Deny by Default).`,
+      };
+    }
+
+    // 3.1 /admin (Dashboard Utama)
     if (cleanPath === "/admin") {
       return { allowed: true };
     }
 
-    // Verifikasi Keanggotaan: Staff (verify/rec) and Manager (approve) and Auditor (read-only view)
-    if (cleanPath.startsWith("/admin/anggota/verifikasi")) {
-      if (["staff", "manager", "auditor", "admin"].includes(role)) {
+    // 3.2 /admin/anggota/verifikasi
+    if (cleanPath === "/admin/anggota/verifikasi") {
+      if (
+        hasPermission(role, "membership:verify") ||
+        hasPermission(role, "membership:approve") ||
+        role === "auditor"
+      ) {
         return { allowed: true };
       }
       return {
         allowed: false,
         reason:
-          "Verifikasi dan persetujuan calon anggota hanya dapat diakses oleh Staf Operasional (verifikasi) dan Manajer/Pengurus (persetujuan final).",
+          "Verifikasi pendaftaran calon anggota khusus untuk Staf (verifikasi), Pengurus (persetujuan final), dan Auditor (inspeksi). Peran Anda tidak memiliki otoritas ini.",
       };
     }
 
-    // Direktori Anggota
-    if (cleanPath.startsWith("/admin/anggota")) {
+    // 3.3 /admin/anggota (Direktori Anggota)
+    if (cleanPath === "/admin/anggota") {
       if (hasPermission(role, "membership:view")) {
         return { allowed: true };
       }
       return {
         allowed: false,
-        reason: "Anda tidak memiliki izin melihat data direktori anggota.",
+        reason: "Anda tidak memiliki izin melihat direktori anggota (membership:view).",
       };
     }
 
-    // Buku Kas & Keuangan: Finance Officer, Treasurer, Manager, Auditor
-    if (cleanPath.startsWith("/admin/keuangan")) {
-      if (hasPermission(role, "cash:view")) {
-        return { allowed: true };
+    // 3.4 /admin/simpanan (Modul Simpanan)
+    if (cleanPath === "/admin/simpanan") {
+      if (activeModules && !activeModules.savings) {
+        return {
+          allowed: false,
+          isModuleInactive: true,
+          moduleKey: "savings",
+          reason: "Modul Simpanan saat ini sedang dinonaktifkan dalam konfigurasi koperasi.",
+        };
       }
-      return {
-        allowed: false,
-        reason:
-          "Manajemen kas dan rekonsiliasi keuangan dibatasi untuk Petugas Keuangan, Bendahara, Pengurus, atau Auditor. Administrator teknis dan Staf operasional tidak memiliki akses.",
-      };
-    }
-
-    // Laporan Keuangan
-    if (cleanPath.startsWith("/admin/laporan")) {
-      if (hasPermission(role, "reports:view")) {
-        return { allowed: true };
+      if (role === "admin" || role === "super_admin") {
+        return {
+          allowed: false,
+          reason:
+            "Sesuai SoD (IA 5.4 Catatan Kaki 2): Administrator Sistem dan Super Admin tidak memiliki kewenangan transaksi operasional simpanan.",
+        };
       }
-      return {
-        allowed: false,
-        reason: "Peran Anda tidak memiliki izin mengakses laporan keuangan institusional.",
-      };
-    }
-
-    // Audit Log
-    if (cleanPath.startsWith("/admin/audit")) {
-      if (hasPermission(role, "audit:view")) {
-        return { allowed: true };
-      }
-      return {
-        allowed: false,
-        reason:
-          "Jejak audit (audit trail) hanya dapat diakses oleh Auditor/Pengawas, Manajer/Pengurus, dan Administrator Sistem.",
-      };
-    }
-
-    // Pengaturan Platform
-    if (cleanPath.startsWith("/admin/pengaturan")) {
-      if (hasPermission(role, "platform_config:view")) {
-        return { allowed: true };
-      }
-      return {
-        allowed: false,
-        reason:
-          "Konfigurasi platform teknis dan arsitektur modular hanya dapat diakses oleh Administrator Sistem, Super Administrator, Bendahara, atau Manajer.",
-      };
-    }
-
-    // Manajemen Simpanan & Pinjaman Admin
-    if (cleanPath.startsWith("/admin/simpanan")) {
       if (hasPermission(role, "savings:view")) {
         return { allowed: true };
       }
@@ -359,7 +669,23 @@ export function canAccessRoute(
       };
     }
 
-    if (cleanPath.startsWith("/admin/pinjaman")) {
+    // 3.5 /admin/pinjaman (Modul Pinjaman)
+    if (cleanPath === "/admin/pinjaman") {
+      if (activeModules && !activeModules.loans) {
+        return {
+          allowed: false,
+          isModuleInactive: true,
+          moduleKey: "loans",
+          reason: "Modul Pinjaman saat ini sedang dinonaktifkan dalam konfigurasi koperasi.",
+        };
+      }
+      if (role === "admin" || role === "super_admin") {
+        return {
+          allowed: false,
+          reason:
+            "Sesuai SoD (IA 5.4 Catatan Kaki 2): Administrator Sistem dan Super Admin tidak memiliki kewenangan persetujuan atau operasional pinjaman.",
+        };
+      }
       if (hasPermission(role, "loans:view")) {
         return { allowed: true };
       }
@@ -369,9 +695,130 @@ export function canAccessRoute(
       };
     }
 
-    // Default admin subpaths
-    return { allowed: true };
+    // 3.6 /admin/keuangan (Buku Kas & Rekonsiliasi)
+    if (cleanPath === "/admin/keuangan") {
+      if (role === "staff") {
+        return {
+          allowed: false,
+          reason:
+            "Staf operasional lapangan tidak memiliki akses ke buku kas dan rekonsiliasi keuangan (Domain Cash).",
+        };
+      }
+      if (role === "admin" || role === "super_admin") {
+        return {
+          allowed: false,
+          reason:
+            "Sesuai SoD (IA 5.4 Catatan Kaki 2): Administrator Sistem tidak memiliki kewenangan transaksi kas maupun rekonsiliasi.",
+        };
+      }
+      if (hasPermission(role, "cash:view")) {
+        return { allowed: true };
+      }
+      return {
+        allowed: false,
+        reason: "Anda tidak memiliki izin melihat buku kas dan rekonsiliasi keuangan (cash:view).",
+      };
+    }
+
+    // 3.7 /admin/unit-usaha
+    if (cleanPath === "/admin/unit-usaha") {
+      if (activeModules && !activeModules.business_units) {
+        return {
+          allowed: false,
+          isModuleInactive: true,
+          moduleKey: "business_units",
+          reason: "Modul Unit Usaha saat ini dinonaktifkan dalam konfigurasi koperasi.",
+        };
+      }
+      if (role === "admin" || role === "super_admin") {
+        return {
+          allowed: false,
+          reason: "Pengelolaan portofolio unit usaha merupakan domain operasional bisnis koperasi.",
+        };
+      }
+      return { allowed: true };
+    }
+
+    // 3.8 /admin/rapat
+    if (cleanPath === "/admin/rapat") {
+      if (activeModules && !activeModules.meetings) {
+        return {
+          allowed: false,
+          isModuleInactive: true,
+          moduleKey: "meetings",
+          reason: "Modul Rapat Anggota (RAT) saat ini dinonaktifkan dalam konfigurasi koperasi.",
+        };
+      }
+      if (role === "manager" || role === "staff" || role === "auditor") {
+        return { allowed: true };
+      }
+      return {
+        allowed: false,
+        reason: "Penyelenggaraan Rapat Anggota khusus untuk Pengurus, Staf pelaksana, dan Pengawas.",
+      };
+    }
+
+    // 3.9 /admin/laporan
+    if (cleanPath === "/admin/laporan") {
+      if (activeModules && !activeModules.reports) {
+        return {
+          allowed: false,
+          isModuleInactive: true,
+          moduleKey: "reports",
+          reason: "Modul Laporan Keuangan saat ini dinonaktifkan dalam konfigurasi koperasi.",
+        };
+      }
+      if (!hasPermission(role, "reports:view")) {
+        return {
+          allowed: false,
+          reason: "Peran Anda tidak memiliki izin mengakses laporan keuangan institusional (reports:view).",
+        };
+      }
+      return { allowed: true };
+    }
+
+    // 3.10 /admin/audit
+    if (cleanPath === "/admin/audit") {
+      if (activeModules && !activeModules.audit_trail) {
+        return {
+          allowed: false,
+          isModuleInactive: true,
+          moduleKey: "audit_trail",
+          reason: "Modul Audit Trail saat ini dinonaktifkan dalam konfigurasi koperasi.",
+        };
+      }
+      if (!hasPermission(role, "audit:view")) {
+        return {
+          allowed: false,
+          reason: "Jejak audit hanya dapat diakses oleh Auditor, Pengurus, dan Administrator Sistem.",
+        };
+      }
+      return { allowed: true };
+    }
+
+    // 3.11 /admin/pengaturan
+    if (cleanPath === "/admin/pengaturan") {
+      if (!hasPermission(role, "platform_config:view")) {
+        return {
+          allowed: false,
+          reason: "Anda tidak memiliki izin mengakses konfigurasi platform teknis.",
+        };
+      }
+      return { allowed: true };
+    }
+
+    // Fallback within admin: DENY BY DEFAULT
+    return {
+      allowed: false,
+      reason: `Rute administrasi "${cleanPath}" ditolak secara default (Deny by Default).`,
+    };
   }
 
-  return { allowed: true };
+  // --------------------------------------------------------------------------
+  // 4. UNKNOWN TOP-LEVEL ROUTE: STRICT DENY BY DEFAULT
+  // --------------------------------------------------------------------------
+  return {
+    allowed: false,
+    reason: `Rute "${cleanPath}" tidak terdaftar dalam sistem platform digital KMB (Deny by Default).`,
+  };
 }

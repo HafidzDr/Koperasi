@@ -1,117 +1,195 @@
 import { describe, it, expect } from "vitest";
-import { hasPermission } from "../lib/rbac";
+import {
+  getPermittedAdminHrefs,
+  getPermittedAdminNavSections,
+  AUTHENTICATED_ROLES,
+  PUBLIC_CONTEXTS,
+} from "../lib/rbac";
 import { defaultCooperativeConfig } from "../mocks/seedData";
-import { Role } from "../types";
+import { BusinessModuleKey } from "../types";
 
-describe("PHASE 2.1 Role-Based Menu Visibility & Action Isolation", () => {
-  const getPermittedAdminMenus = (role: Role) => {
-    const config = defaultCooperativeConfig;
-    const items: string[] = ["/admin"];
-
-    // Keanggotaan & Verifikasi
-    if (
-      hasPermission(role, "membership:verify") ||
-      hasPermission(role, "membership:approve") ||
-      role === "auditor" ||
-      role === "admin"
-    ) {
-      items.push("/admin/anggota/verifikasi");
-    }
-    if (hasPermission(role, "membership:view")) {
-      items.push("/admin/anggota");
-    }
-
-    // Operasional Finansial
-    if (config.activeModules.savings && hasPermission(role, "savings:view")) {
-      items.push("/admin/simpanan");
-    }
-    if (config.activeModules.loans && hasPermission(role, "loans:view")) {
-      items.push("/admin/pinjaman");
-    }
-    if (hasPermission(role, "cash:view")) {
-      items.push("/admin/keuangan");
-    }
-
-    // Laporan & Pengawasan
-    if (config.activeModules.reports && hasPermission(role, "reports:view")) {
-      items.push("/admin/laporan");
-    }
-    if (config.activeModules.audit_trail && hasPermission(role, "audit:view")) {
-      items.push("/admin/audit");
-    }
-
-    // Sistem & Konfigurasi
-    if (hasPermission(role, "platform_config:view")) {
-      items.push("/admin/pengaturan");
-    }
-
-    return items;
+describe("PHASE 2.2 Centralized Menu Visibility Engine Tests", () => {
+  const defaultModules = defaultCooperativeConfig.activeModules;
+  const allModulesActive: Record<BusinessModuleKey, boolean> = {
+    savings: true,
+    loans: true,
+    installments: true,
+    business_units: true,
+    meetings: true,
+    shu: true,
+    notifications: true,
+    reports: true,
+    audit_trail: true,
   };
 
-  it("Staff menus: must NOT include /admin/keuangan, /admin/laporan, or /admin/pengaturan", () => {
-    const staffMenus = getPermittedAdminMenus("staff");
-    expect(staffMenus).toContain("/admin");
-    expect(staffMenus).toContain("/admin/anggota/verifikasi");
-    expect(staffMenus).toContain("/admin/anggota");
-    expect(staffMenus).toContain("/admin/simpanan");
-    expect(staffMenus).toContain("/admin/pinjaman");
+  it("Public contexts and Member role must have ZERO admin navigation sections", () => {
+    for (const ctx of PUBLIC_CONTEXTS) {
+      const sections = getPermittedAdminNavSections(ctx, allModulesActive);
+      expect(sections).toHaveLength(0);
+      expect(getPermittedAdminHrefs(ctx, allModulesActive)).toHaveLength(0);
+    }
 
-    // Strict SoD exclusions for Staff
-    expect(staffMenus).not.toContain("/admin/keuangan");
-    expect(staffMenus).not.toContain("/admin/laporan");
-    expect(staffMenus).not.toContain("/admin/pengaturan");
-    expect(staffMenus).not.toContain("/admin/audit");
+    const memberSections = getPermittedAdminNavSections("member", allModulesActive);
+    expect(memberSections).toHaveLength(0);
+    expect(getPermittedAdminHrefs("member", allModulesActive)).toHaveLength(0);
   });
 
-  it("Finance Officer menus: must include financial paths, but NOT member verification or platform config", () => {
-    const foMenus = getPermittedAdminMenus("finance_officer");
-    expect(foMenus).toContain("/admin");
-    expect(foMenus).toContain("/admin/simpanan");
-    expect(foMenus).toContain("/admin/pinjaman");
-    expect(foMenus).toContain("/admin/keuangan");
-    expect(foMenus).toContain("/admin/laporan");
+  it("Staff menus: must contain operational member & verification items, but exclude financial management & platform settings", () => {
+    const staffHrefs = getPermittedAdminHrefs("staff", allModulesActive);
 
-    // Excluded from membership verification queue and platform config
-    expect(foMenus).not.toContain("/admin/anggota/verifikasi");
-    expect(foMenus).not.toContain("/admin/pengaturan");
-    expect(foMenus).not.toContain("/admin/audit");
+    expect(staffHrefs).toContain("/admin");
+    expect(staffHrefs).toContain("/admin/anggota/verifikasi");
+    expect(staffHrefs).toContain("/admin/anggota");
+    expect(staffHrefs).toContain("/admin/simpanan");
+    expect(staffHrefs).toContain("/admin/pinjaman");
+    expect(staffHrefs).toContain("/admin/unit-usaha");
+    expect(staffHrefs).toContain("/admin/rapat");
+
+    // Strict exclusions for Staff
+    expect(staffHrefs).not.toContain("/admin/keuangan");
+    expect(staffHrefs).not.toContain("/admin/laporan");
+    expect(staffHrefs).not.toContain("/admin/audit");
+    expect(staffHrefs).not.toContain("/admin/pengaturan");
   });
 
-  it("Auditor menus: must include audit trail and reports, but NOT platform config", () => {
-    const auditorMenus = getPermittedAdminMenus("auditor");
-    expect(auditorMenus).toContain("/admin");
-    expect(auditorMenus).toContain("/admin/audit");
-    expect(auditorMenus).toContain("/admin/laporan");
-    expect(auditorMenus).toContain("/admin/keuangan");
-    expect(auditorMenus).toContain("/admin/simpanan");
+  it("Finance Officer menus: must contain financial operations & reports, but exclude membership verification & platform settings", () => {
+    const foHrefs = getPermittedAdminHrefs("finance_officer", allModulesActive);
+
+    expect(foHrefs).toContain("/admin");
+    expect(foHrefs).toContain("/admin/simpanan");
+    expect(foHrefs).toContain("/admin/pinjaman");
+    expect(foHrefs).toContain("/admin/keuangan");
+    expect(foHrefs).toContain("/admin/laporan");
+    expect(foHrefs).toContain("/admin/unit-usaha");
+    expect(foHrefs).toContain("/admin/anggota");
+
+    // Strict exclusions for Finance Officer
+    expect(foHrefs).not.toContain("/admin/anggota/verifikasi");
+    expect(foHrefs).not.toContain("/admin/pengaturan");
+    expect(foHrefs).not.toContain("/admin/audit");
+    expect(foHrefs).not.toContain("/admin/rapat");
+  });
+
+  it("Treasurer menus: must contain cash/finance, liquidity reports, and platform settings (view), but exclude membership verification & audit trail", () => {
+    const treasurerHrefs = getPermittedAdminHrefs("treasurer", allModulesActive);
+
+    expect(treasurerHrefs).toContain("/admin");
+    expect(treasurerHrefs).toContain("/admin/keuangan");
+    expect(treasurerHrefs).toContain("/admin/simpanan");
+    expect(treasurerHrefs).toContain("/admin/pinjaman");
+    expect(treasurerHrefs).toContain("/admin/laporan");
+    expect(treasurerHrefs).toContain("/admin/pengaturan");
+
+    // Strict exclusions for Treasurer
+    expect(treasurerHrefs).not.toContain("/admin/anggota/verifikasi");
+    expect(treasurerHrefs).not.toContain("/admin/audit");
+    expect(treasurerHrefs).not.toContain("/admin/rapat");
+  });
+
+  it("Manager menus: must have broad governance access (verification final approval, cash book approval, executive reports, audit, platform)", () => {
+    const managerHrefs = getPermittedAdminHrefs("manager", allModulesActive);
+
+    expect(managerHrefs).toContain("/admin");
+    expect(managerHrefs).toContain("/admin/anggota/verifikasi");
+    expect(managerHrefs).toContain("/admin/anggota");
+    expect(managerHrefs).toContain("/admin/simpanan");
+    expect(managerHrefs).toContain("/admin/pinjaman");
+    expect(managerHrefs).toContain("/admin/keuangan");
+    expect(managerHrefs).toContain("/admin/unit-usaha");
+    expect(managerHrefs).toContain("/admin/rapat");
+    expect(managerHrefs).toContain("/admin/laporan");
+    expect(managerHrefs).toContain("/admin/audit");
+    expect(managerHrefs).toContain("/admin/pengaturan");
+  });
+
+  it("Auditor menus: must have read-only inspection menus (audit, laporan, keuangan, verifikasi, simpanan), but NOT platform settings", () => {
+    const auditorHrefs = getPermittedAdminHrefs("auditor", allModulesActive);
+
+    expect(auditorHrefs).toContain("/admin");
+    expect(auditorHrefs).toContain("/admin/audit");
+    expect(auditorHrefs).toContain("/admin/laporan");
+    expect(auditorHrefs).toContain("/admin/keuangan");
+    expect(auditorHrefs).toContain("/admin/simpanan");
+    expect(auditorHrefs).toContain("/admin/pinjaman");
+    expect(auditorHrefs).toContain("/admin/anggota");
+    expect(auditorHrefs).toContain("/admin/anggota/verifikasi");
 
     // Auditor cannot access platform settings
-    expect(auditorMenus).not.toContain("/admin/pengaturan");
+    expect(auditorHrefs).not.toContain("/admin/pengaturan");
   });
 
-  it("Administrator menus: must include platform config and audit, but NOT financial operations", () => {
-    const adminMenus = getPermittedAdminMenus("admin");
-    expect(adminMenus).toContain("/admin");
-    expect(adminMenus).toContain("/admin/pengaturan");
-    expect(adminMenus).toContain("/admin/audit");
-    expect(adminMenus).toContain("/admin/anggota");
+  it("Administrator menus: must contain platform settings, audit trail, and member directory, but ZERO financial transaction menus", () => {
+    const adminHrefs = getPermittedAdminHrefs("admin", allModulesActive);
 
-    // Admin has NO financial operations (no /admin/keuangan, no /admin/simpanan, no /admin/pinjaman)
-    expect(adminMenus).not.toContain("/admin/keuangan");
-    expect(adminMenus).not.toContain("/admin/simpanan");
-    expect(adminMenus).not.toContain("/admin/pinjaman");
+    expect(adminHrefs).toContain("/admin");
+    expect(adminHrefs).toContain("/admin/pengaturan");
+    expect(adminHrefs).toContain("/admin/audit");
+    expect(adminHrefs).toContain("/admin/laporan");
+    expect(adminHrefs).toContain("/admin/anggota");
+
+    // Strict SoD: Admin has ZERO operational financial menus
+    expect(adminHrefs).not.toContain("/admin/keuangan");
+    expect(adminHrefs).not.toContain("/admin/simpanan");
+    expect(adminHrefs).not.toContain("/admin/pinjaman");
+    expect(adminHrefs).not.toContain("/admin/anggota/verifikasi");
   });
 
-  it("Super Administrator menus: focused on platform config, audit, and system oversight", () => {
-    const superAdminMenus = getPermittedAdminMenus("super_admin");
-    expect(superAdminMenus).toContain("/admin");
-    expect(superAdminMenus).toContain("/admin/pengaturan");
-    expect(superAdminMenus).toContain("/admin/audit");
+  it("Super Administrator menus: focused strictly on system platform, audit, and technical oversight, with ZERO operational financial menus", () => {
+    const superAdminHrefs = getPermittedAdminHrefs("super_admin", allModulesActive);
 
-    // Super Admin has NO operational financial or member verification menus
-    expect(superAdminMenus).not.toContain("/admin/keuangan");
-    expect(superAdminMenus).not.toContain("/admin/simpanan");
-    expect(superAdminMenus).not.toContain("/admin/pinjaman");
-    expect(superAdminMenus).not.toContain("/admin/anggota/verifikasi");
+    expect(superAdminHrefs).toContain("/admin");
+    expect(superAdminHrefs).toContain("/admin/pengaturan");
+    expect(superAdminHrefs).toContain("/admin/audit");
+    expect(superAdminHrefs).toContain("/admin/laporan");
+
+    // Zero operational financial or member verification menus
+    expect(superAdminHrefs).not.toContain("/admin/keuangan");
+    expect(superAdminHrefs).not.toContain("/admin/simpanan");
+    expect(superAdminHrefs).not.toContain("/admin/pinjaman");
+    expect(superAdminHrefs).not.toContain("/admin/anggota/verifikasi");
+  });
+
+  it("All 8 authenticated roles produce valid non-empty navigation sections for Admin Portal (excluding Member)", () => {
+    const adminRoles = AUTHENTICATED_ROLES.filter((r) => r !== "member");
+    for (const role of adminRoles) {
+      const sections = getPermittedAdminNavSections(role, allModulesActive);
+      expect(sections.length).toBeGreaterThan(0);
+      for (const sec of sections) {
+        expect(sec.items.length).toBeGreaterThan(0);
+        for (const item of sec.items) {
+          expect(item.href).toMatch(/^\/admin/);
+        }
+      }
+    }
+  });
+
+  it("Default seed state: inactive modules (business_units & meetings) do NOT appear in the menu", () => {
+    expect(defaultModules.business_units).toBe(false);
+    expect(defaultModules.meetings).toBe(false);
+
+    const managerDefaultHrefs = getPermittedAdminHrefs("manager", defaultModules);
+    expect(managerDefaultHrefs).not.toContain("/admin/unit-usaha");
+    expect(managerDefaultHrefs).not.toContain("/admin/rapat");
+  });
+
+  it("Dynamic module deactivation: menus for deactivated modules immediately disappear", () => {
+    const customModules: Record<BusinessModuleKey, boolean> = {
+      ...allModulesActive,
+      savings: false,
+      loans: false,
+      reports: false,
+    };
+
+    // Manager normally sees all three, but now should see none of the three deactivated ones
+    const managerHrefs = getPermittedAdminHrefs("manager", customModules);
+    expect(managerHrefs).not.toContain("/admin/simpanan");
+    expect(managerHrefs).not.toContain("/admin/pinjaman");
+    expect(managerHrefs).not.toContain("/admin/laporan");
+
+    // Other active modules still appear
+    expect(managerHrefs).toContain("/admin");
+    expect(managerHrefs).toContain("/admin/keuangan");
+    expect(managerHrefs).toContain("/admin/audit");
+    expect(managerHrefs).toContain("/admin/pengaturan");
   });
 });
