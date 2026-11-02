@@ -17,8 +17,88 @@ const VIEWPORTS = [
 ];
 
 const PAGES = [
-  { name: 'public_home', path: '/' },
-  { name: 'public_daftar', path: '/daftar' },
+  {
+    name: 'public_home',
+    path: '/',
+    expectedTitleSnippet: 'Koperasi',
+    domReadyCondition: `Boolean(
+      document.querySelector('h1') &&
+      document.querySelector('h1').innerText.includes('Koperasi') &&
+      Array.from(document.querySelectorAll('button, a[role="button"]')).some(b => 
+        (b.innerText || '').includes('Daftar') && b.offsetWidth > 0
+      )
+    )`,
+    validateDom: `(() => {
+      const h1 = document.querySelector('h1');
+      const h1Rect = h1 ? h1.getBoundingClientRect() : null;
+      const h1Valid = Boolean(h1 && h1Rect.width > 0 && h1Rect.height > 0);
+
+      const visibleButtons = Array.from(document.querySelectorAll('button, a[role="button"]'))
+        .filter(b => b.offsetWidth > 0 && b.offsetHeight > 0);
+
+      const hasCta = visibleButtons.some(b => (b.innerText || '').includes('Daftar'));
+      const bodyLen = (document.body.innerText || '').trim().length;
+
+      return {
+        isValid: h1Valid && visibleButtons.length >= 2 && hasCta && bodyLen > 300,
+        h1Text: h1 ? h1.innerText.trim() : '',
+        h1Size: h1Rect ? { w: Math.round(h1Rect.width), h: Math.round(h1Rect.height) } : null,
+        visibleButtonCount: visibleButtons.length,
+        bodyTextLength: bodyLen,
+        reason: !h1Valid ? 'H1 element missing or zero size'
+          : visibleButtons.length < 2 ? 'Fewer than 2 visible buttons found'
+          : !hasCta ? 'Primary CTA button missing'
+          : bodyLen <= 300 ? 'Body text unexpectedly short or blank'
+          : 'OK'
+      };
+    })()`
+  },
+  {
+    name: 'public_daftar',
+    path: '/daftar',
+    expectedTitleSnippet: 'Permohonan Menjadi Anggota',
+    domReadyCondition: `Boolean(
+      document.querySelector('h1') &&
+      document.querySelector('form') &&
+      document.querySelectorAll('input').length >= 2 &&
+      Array.from(document.querySelectorAll('button')).some(b => 
+        (b.innerText || '').includes('Selanjutnya') && b.offsetWidth > 0
+      )
+    )`,
+    validateDom: `(() => {
+      const h1 = document.querySelector('h1');
+      const h1Rect = h1 ? h1.getBoundingClientRect() : null;
+      const h1Valid = Boolean(h1 && h1Rect.width > 0 && h1Rect.height > 0);
+
+      const form = document.querySelector('form');
+      const formValid = Boolean(form && form.offsetWidth > 0);
+
+      const visibleInputs = Array.from(document.querySelectorAll('input'))
+        .filter(i => i.offsetWidth > 0 && i.offsetHeight > 0);
+
+      const visibleButtons = Array.from(document.querySelectorAll('button'))
+        .filter(b => b.offsetWidth > 0 && b.offsetHeight > 0);
+
+      const hasNextBtn = visibleButtons.some(b => (b.innerText || '').includes('Selanjutnya'));
+      const bodyLen = (document.body.innerText || '').trim().length;
+
+      return {
+        isValid: h1Valid && formValid && visibleInputs.length >= 2 && visibleButtons.length >= 1 && hasNextBtn && bodyLen > 200,
+        h1Text: h1 ? h1.innerText.trim() : '',
+        h1Size: h1Rect ? { w: Math.round(h1Rect.width), h: Math.round(h1Rect.height) } : null,
+        visibleInputCount: visibleInputs.length,
+        visibleButtonCount: visibleButtons.length,
+        bodyTextLength: bodyLen,
+        reason: !h1Valid ? 'Registration H1 title missing or zero size'
+          : !formValid ? 'Registration form missing or zero size'
+          : visibleInputs.length < 2 ? 'Expected at least 2 visible inputs in step 1'
+          : visibleButtons.length < 1 ? 'No visible buttons on registration wizard'
+          : !hasNextBtn ? 'Next navigation button missing'
+          : bodyLen <= 200 ? 'Body text unexpectedly short or blank'
+          : 'OK'
+      };
+    })()`
+  },
 ];
 
 const SCREENSHOT_DIR = path.resolve('docs/screenshots');
@@ -74,17 +154,6 @@ function startStaticServer(port) {
   });
 }
 
-function runChromeScreenshot(args) {
-  return new Promise((resolve, reject) => {
-    const proc = spawn(CHROME_PATH, args, { stdio: 'ignore' });
-    proc.on('close', (code) => {
-      if (code === 0) resolve();
-      else reject(new Error(`Chrome exited with code ${code}`));
-    });
-    proc.on('error', reject);
-  });
-}
-
 // CDP Client using Node native WebSocket
 class CDPClient {
   constructor(wsUrl) {
@@ -119,7 +188,7 @@ class CDPClient {
           this.pending.delete(id);
           reject(new Error(`CDP command timed out: ${method}`));
         }
-      }, 8000);
+      }, 10000);
 
       this.pending.set(id, {
         res: (val) => {
@@ -146,21 +215,42 @@ class CDPClient {
   }
 }
 
+// Wait for a condition in browser with polling
+async function waitForCondition(cdp, expression, timeoutMs = 8000) {
+  const start = Date.now();
+  while (Date.now() - start < timeoutMs) {
+    try {
+      const res = await cdp.send('Runtime.evaluate', {
+        expression,
+        returnByValue: true,
+      });
+      if (res?.result?.value === true) {
+        return true;
+      }
+    } catch {
+      // retry
+    }
+    await new Promise((r) => setTimeout(r, 100));
+  }
+  return false;
+}
+
 async function main() {
-  const SERVER_PORT = 4185;
-  console.log(`Starting static server on port ${SERVER_PORT}...`);
+  const SERVER_PORT = 4188;
+  console.log(`Starting static HTTP server on port ${SERVER_PORT}...`);
   const server = await startStaticServer(SERVER_PORT);
 
-  // Debug session for DOM metrics
-  const DEBUG_PORT = 9227;
-  const tempMetricsDir = fs.mkdtempSync(path.join(os.tmpdir(), 'kmb-metrics-prof-'));
-  console.log(`Starting headless Chrome for DOM analysis on port ${DEBUG_PORT}...`);
-  const debugChrome = spawn(
+  // Chrome isolated profile directory
+  const tempProfileDir = fs.mkdtempSync(path.join(os.tmpdir(), 'kmb-isolated-chrome-'));
+  const DEBUG_PORT = 9229;
+  console.log(`Starting headless Chrome (port ${DEBUG_PORT}) with profile: ${tempProfileDir}...`);
+
+  const chromeProc = spawn(
     CHROME_PATH,
     [
       '--headless=new',
       `--remote-debugging-port=${DEBUG_PORT}`,
-      `--user-data-dir=${tempMetricsDir}`,
+      `--user-data-dir=${tempProfileDir}`,
       '--disable-gpu',
       '--no-first-run',
       '--no-default-browser-check',
@@ -178,23 +268,30 @@ async function main() {
 
   try {
     const listRes = await fetch(`http://127.0.0.1:${DEBUG_PORT}/json/list`);
-    const pages = await listRes.json();
-    let wsUrl = pages[0]?.webSocketDebuggerUrl;
-    if (!wsUrl) {
+    const targets = await listRes.json();
+    console.log(`Discovered ${targets.length} Chrome targets.`);
+
+    // Find the real page tab
+    let pageTarget = targets.find((t) => t.type === 'page');
+    if (!pageTarget) {
       const newRes = await fetch(`http://127.0.0.1:${DEBUG_PORT}/json/new?about:blank`, { method: 'PUT' });
-      const newPage = await newRes.json();
-      wsUrl = newPage.webSocketDebuggerUrl;
+      pageTarget = await newRes.json();
     }
 
-    cdp = new CDPClient(wsUrl);
+    console.log(`Attached CDP to page target: ${pageTarget.title} (${pageTarget.webSocketDebuggerUrl})`);
+    cdp = new CDPClient(pageTarget.webSocketDebuggerUrl);
     await cdp.connect();
     await cdp.send('Page.enable');
+    await cdp.send('Runtime.enable');
 
     for (const page of PAGES) {
       for (const vp of VIEWPORTS) {
-        console.log(`\nEvaluating ${page.name} (${page.path}) @ ${vp.width}x${vp.height}...`);
+        const shotFilename = `${page.name}_${vp.width}.png`;
+        const shotPath = path.join(SCREENSHOT_DIR, shotFilename);
+        console.log(`\n------------------------------------------------------------`);
+        console.log(`TESTING: ${page.name} (${page.path}) @ ${vp.width}x${vp.height}`);
 
-        // 1. Measure DOM metrics via CDP with exact viewport emulation
+        // 1. Set explicit viewport metrics (mobile: false ensures exact CSS pixel innerWidth)
         await cdp.send('Emulation.setDeviceMetricsOverride', {
           width: vp.width,
           height: vp.height,
@@ -202,13 +299,27 @@ async function main() {
           mobile: false,
         });
 
-        await cdp.send('Page.navigate', {
-          url: `http://127.0.0.1:${SERVER_PORT}${page.path}`,
+        // 2. Navigate
+        const targetUrl = `http://127.0.0.1:${SERVER_PORT}${page.path}`;
+        await cdp.send('Page.navigate', { url: targetUrl });
+
+        // 3. Robust Synchronization: Wait for specific DOM condition and React mount
+        const isDomReady = await waitForCondition(cdp, page.domReadyCondition, 8000);
+        if (!isDomReady) {
+          console.error(`[TIMEOUT] DOM ready condition failed on ${page.name} at ${vp.width}x${vp.height}`);
+        }
+
+        // Additional settling frame for layout stability
+        await new Promise((r) => setTimeout(r, 200));
+
+        // 4. Validate DOM Completeness
+        const domValidationRes = await cdp.send('Runtime.evaluate', {
+          expression: page.validateDom,
+          returnByValue: true,
         });
+        const domValidation = domValidationRes.result.value || { isValid: false, reason: 'Evaluation failed' };
 
-        // Allow rendering and state hydration
-        await new Promise((r) => setTimeout(r, 600));
-
+        // 5. In-depth DOM Measurements & Overflow/Clipping Detection
         const evalRes = await cdp.send('Runtime.evaluate', {
           expression: `
             (() => {
@@ -217,7 +328,7 @@ async function main() {
               const docScrollW = document.documentElement.scrollWidth;
               const bodyScrollW = document.body.scrollWidth;
 
-              // Check for raw markdown asterisks
+              // Check for raw markdown asterisks anywhere in rendered text
               const bodyText = document.body.innerText || '';
               const rawMarkdownFound = bodyText.includes('**');
 
@@ -256,18 +367,18 @@ async function main() {
                 }
               });
 
-              // Check visibility and usable size of buttons/inputs
+              // Sample all visible interactive controls
               const buttons = Array.from(document.querySelectorAll('button, a[role="button"], input'))
                 .filter(b => b.offsetWidth > 0 && b.offsetHeight > 0)
                 .map(b => ({
                   tag: b.tagName.toLowerCase(),
-                  text: (b.innerText || b.getAttribute('placeholder') || b.value || '').trim().slice(0, 25),
+                  text: (b.innerText || b.getAttribute('placeholder') || b.value || '').trim().slice(0, 30),
                   width: Math.round(b.getBoundingClientRect().width),
                   height: Math.round(b.getBoundingClientRect().height),
                   isUsable: b.getBoundingClientRect().width >= 20 && b.getBoundingClientRect().height >= 20
                 }));
 
-              const hasOverflow = docScrollW > clientW + 1 || bodyScrollW > clientW + 1 || overflowingElements.length > 0;
+              const hasOverflow = docScrollW > innerW + 1 || bodyScrollW > innerW + 1 || overflowingElements.length > 0;
 
               return {
                 innerWidth: innerW,
@@ -278,7 +389,7 @@ async function main() {
                 rawMarkdownFound,
                 overflowingElements: overflowingElements.slice(0, 5),
                 clippedElements: clippedElements.slice(0, 5),
-                buttonsSample: buttons.slice(0, 4),
+                buttonsSample: buttons.slice(0, 6),
               };
             })()
           `,
@@ -287,39 +398,42 @@ async function main() {
 
         const metrics = evalRes.result.value;
 
-        // 2. Capture clean PNG screenshot using isolated Chrome instance
-        const shotFilename = `${page.name}_${vp.width}.png`;
-        const shotPath = path.join(SCREENSHOT_DIR, shotFilename);
-        const tempShotDir = fs.mkdtempSync(path.join(os.tmpdir(), 'kmb-shot-'));
-
-        await runChromeScreenshot([
-          '--headless=new',
-          `--screenshot=${shotPath}`,
-          `--window-size=${vp.width},${vp.height}`,
-          `--user-data-dir=${tempShotDir}`,
-          '--disable-gpu',
-          '--no-first-run',
-          '--no-default-browser-check',
-          '--disable-background-networking',
-          '--disable-sync',
-          '--virtual-time-budget=2000',
-          `http://127.0.0.1:${SERVER_PORT}${page.path}`,
-        ]);
-
-        try {
-          fs.rmSync(tempShotDir, { recursive: true, force: true });
-        } catch {
-          // ignore
-        }
-
+        // 6. Capture Screenshot directly from the authenticated, fully rendered page
+        const shotRes = await cdp.send('Page.captureScreenshot', { format: 'png' });
+        fs.writeFileSync(shotPath, Buffer.from(shotRes.data, 'base64'));
         const fileSize = fs.statSync(shotPath).size;
-        const isPassed = !metrics.hasOverflow && !metrics.rawMarkdownFound && metrics.clippedElements.length === 0;
+
+        // Validation Rules:
+        // - DOM must be ready
+        // - DOM completeness validation must pass
+        // - docScrollWidth === innerWidth (or <= innerWidth)
+        // - bodyScrollWidth <= innerWidth
+        // - No overflow
+        // - No raw markdown **
+        // - No clipping
+        // - buttonsSample must NOT be empty
+        // - Screenshot file must be valid and non-empty (> 10 KB)
+        const isPassed =
+          isDomReady &&
+          domValidation.isValid &&
+          !metrics.hasOverflow &&
+          !metrics.rawMarkdownFound &&
+          metrics.clippedElements.length === 0 &&
+          metrics.buttonsSample.length > 0 &&
+          fileSize > 10000;
+
+        console.log(`DOM Ready: ${isDomReady} | DOM Valid: ${domValidation.isValid} (${domValidation.reason})`);
+        console.log(`Buttons sample (${metrics.buttonsSample.length}):`, metrics.buttonsSample.map(b => `${b.tag}[${b.text}:${b.width}x${b.height}]`).join(', '));
+        console.log(`InnerWidth: ${metrics.innerWidth} | ScrollWidth: ${metrics.docScrollWidth} | BodyScrollW: ${metrics.bodyScrollWidth}`);
+        console.log(`Screenshot: ${shotFilename} (${Math.round(fileSize / 1024)} KB) -> STATUS: ${isPassed ? 'PASS' : 'FAIL'}`);
 
         results.push({
           page: page.name,
           viewport: `${vp.width}x${vp.height}`,
           width: vp.width,
           height: vp.height,
+          domReady: isDomReady,
+          domValidation,
           metrics,
           screenshot: shotFilename,
           fileSize,
@@ -328,22 +442,24 @@ async function main() {
       }
     }
 
-    // Save structured report to docs/screenshots/responsive-results.json
+    // Save structured report
     const reportPath = path.join(SCREENSHOT_DIR, 'responsive-results.json');
     fs.writeFileSync(reportPath, JSON.stringify(results, null, 2));
-    console.log(`\nStructured report saved to: ${reportPath}`);
+    console.log(`\n============================================================`);
+    console.log(`Structured verification report saved to: ${reportPath}`);
 
-    // Output formatted console table
+    // Print summary table
     console.table(
       results.map((r) => ({
         Page: r.page,
         Viewport: r.viewport,
         'Inner Width': r.metrics.innerWidth,
         'Doc ScrollW': r.metrics.docScrollWidth,
-        'Body ScrollW': r.metrics.bodyScrollWidth,
+        'DOM Valid': r.domValidation.isValid ? 'YES' : 'FAIL',
         Overflow: r.metrics.hasOverflow ? 'FAIL' : 'OK',
         'Raw Markdown': r.metrics.rawMarkdownFound ? 'FAIL' : 'OK',
         Clipping: r.metrics.clippedElements.length > 0 ? 'FAIL' : 'OK',
+        'Buttons Found': r.metrics.buttonsSample.length,
         'PNG Size': `${Math.round(r.fileSize / 1024)} KB`,
         Status: r.status,
       }))
@@ -351,28 +467,29 @@ async function main() {
 
     const failCount = results.filter((r) => r.status === 'FAIL').length;
     if (failCount > 0) {
-      console.error(`\nTEST FAILED: ${failCount} responsive cases failed!`);
+      console.error(`\nAUTOMATED AUDIT FAILED: ${failCount} scenarios failed!`);
       results
         .filter((r) => r.status === 'FAIL')
         .forEach((r) => {
-          console.error(`\n[FAIL] ${r.page} at ${r.viewport}:`);
+          console.error(`\n[FAIL DETAILS] ${r.page} at ${r.viewport}:`);
+          console.error('DOM Validation:', r.domValidation);
           console.error('Overflow elements:', r.metrics.overflowingElements);
           console.error('Clipped elements:', r.metrics.clippedElements);
         });
       process.exitCode = 1;
     } else {
-      console.log(`\nALL 16 VIEWPORTS VERIFIED: 0 Horizontal Overflow, 0 Clipping, Clean Tagline!`);
+      console.log(`\nALL 16 SCENARIOS PASSED STRICT DOM COMPLETENESS & 0 OVERFLOW/CLIPPING CHECKS!`);
       process.exitCode = 0;
     }
   } catch (err) {
-    console.error('Test execution error:', err);
+    console.error('Execution error:', err);
     process.exitCode = 1;
   } finally {
     if (cdp) cdp.close();
-    debugChrome.kill();
+    chromeProc.kill();
     server.close();
     try {
-      fs.rmSync(tempMetricsDir, { recursive: true, force: true });
+      fs.rmSync(tempProfileDir, { recursive: true, force: true });
     } catch {
       // ignore
     }

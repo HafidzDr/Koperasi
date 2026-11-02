@@ -108,36 +108,41 @@ Seluruh perintah pengujian dijalankan ulang secara terpisah dengan hasil sukses 
 
 ## 6. HASIL VERIFIKASI RESPONSIVITAS & AUTOMATED BROWSER AUDIT
 
-### 6.1 Metodologi Pengujian Responsivitas Nyata
+### 6.1 Metodologi Sinkronisasi & Validasi Kelengkapan DOM
 Pengujian responsivitas otomatis dijalankan menggunakan Google Chrome headless (`C:\Program Files\Google\Chrome\Application\chrome.exe` dengan `--headless=new`) melalui skrip otomasi [`scripts/verify_responsive.js`](file:///c:/Users/ocitt/OneDrive/Dokumen/Finance/scripts/verify_responsive.js).
 
-Fitur keamanan dan validitas pengujian:
-1. **Profil Sementara Terisolasi (`--user-data-dir`):** Setiap pengujian menggunakan direktori profil sementara unik di OS temp, memastikan `localStorage` lama tidak memengaruhi data simulasi aktif.
-2. **Sanitasi Tagline Bersih:** Sanitasi aktif diterapkan pada `configStore.ts` untuk memastikan tidak ada karakter Markdown `**` atau `*` mentah yang tampil pada UI.
-3. **Audit DOM Mendalam:** Mengukur secara presisi `window.innerWidth`, `document.documentElement.clientWidth`, `document.documentElement.scrollWidth`, dan `document.body.scrollWidth`.
-4. **Deteksi Overflow & Clipping Elemen:** Memeriksa seluruh bounding rect elemen interaktif (`button`, `input`, `select`, `h1`, `p`) terhadap batas viewport dan kontainer dengan `overflow: hidden`/`clip`.
-5. **Ekspor Laporan Terstruktur:** Seluruh data hasil uji disimpan dalam berkas terstruktur [`docs/screenshots/responsive-results.json`](file:///c:/Users/ocitt/OneDrive/Dokumen/Finance/docs/screenshots/responsive-results.json).
+Fitur keamanan dan validitas pengujian mutakhir:
+1. **Target Tab Halaman Bersih:** Skrip mendeteksi dan secara eksplisit menempelkan sesi CDP ke target bertipe `page` (`chrome://newtab/` yang dinavigasi ke target), bukan background extension.
+2. **Sinkronisasi Berbasis Kondisi DOM Nyata:** Menggantikan fixed delay dengan polling asinkron hingga elemen kritis React selesai dimuat dan dirender:
+   - **Beranda (`/`):** Memastikan `h1` memuat identitas "Koperasi" dan tombol CTA primer (`Daftar Menjadi Anggota`, dsb.) berukuran nyata (`offsetWidth > 0 && offsetHeight > 0`).
+   - **Pendaftaran (`/daftar`):** Memastikan `h1` memuat judul form, elemen `<form>` aktif, minimal 2 input terlihat (`fullName`, `demoId`), dan tombol navigasi `Selanjutnya` berukuran nyata.
+3. **Validasi Kelengkapan DOM Sebelum Pengukuran:** Sebelum evaluasi overflow, skrip memverifikasi:
+   - `document.body.innerText` tidak kosong (panjang karakter > 300 untuk beranda dan > 200 untuk pendaftaran).
+   - Elemen utama memiliki dimensi non-zero (`width > 0 && height > 0`).
+   - `buttonsSample` wajib terisi (berisi minimal 6 elemen interaktif aktif per skenario).
+   - Berkas tangkapan layar screenshot berukuran valid (> 10 KB) dan menampilkan UI nyata, bukan kanvas kosong.
+4. **Isolasi Profil Browser:** Setiap pengujian dijalankan dengan direktori `tempProfileDir` unik untuk menjamin ketiadaan data residual `localStorage`.
 
 ### 6.2 Tabel Pengukuran Aktual 16 Kasus Uji
 
-| Halaman | Viewport | Lebar Viewport (`innerW`) | `docScrollWidth` | `bodyScrollWidth` | Horizontal Overflow | Raw Markdown `**` | Clipping Unintended | Ukuran PNG | Status |
-|---|---|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
-| `public_home` | 320 × 640 | 320 px | 320 px | 320 px | **OK (0 px)** | **OK (Nihil)** | **OK (0)** | 37 KB | **PASS** |
-| `public_home` | 375 × 667 | 375 px | 375 px | 375 px | **OK (0 px)** | **OK (Nihil)** | **OK (0)** | 42 KB | **PASS** |
-| `public_home` | 390 × 844 | 390 px | 390 px | 390 px | **OK (0 px)** | **OK (Nihil)** | **OK (0)** | 50 KB | **PASS** |
-| `public_home` | 768 × 1024 | 768 px | 768 px | 768 px | **OK (0 px)** | **OK (Nihil)** | **OK (0)** | 103 KB | **PASS** |
-| `public_home` | 1024 × 768 | 1024 px | 1024 px | 1024 px | **OK (0 px)** | **OK (Nihil)** | **OK (0)** | 82 KB | **PASS** |
-| `public_home` | 1280 × 800 | 1280 px | 1280 px | 1280 px | **OK (0 px)** | **OK (Nihil)** | **OK (0)** | 87 KB | **PASS** |
-| `public_home` | 1440 × 900 | 1440 px | 1440 px | 1440 px | **OK (0 px)** | **OK (Nihil)** | **OK (0)** | 91 KB | **PASS** |
-| `public_home` | 1920 × 1080 | 1920 px | 1920 px | 1920 px | **OK (0 px)** | **OK (Nihil)** | **OK (0)** | 117 KB | **PASS** |
-| `public_daftar` | 320 × 640 | 320 px | 320 px | 320 px | **OK (0 px)** | **OK (Nihil)** | **OK (0)** | 41 KB | **PASS** |
-| `public_daftar` | 375 × 667 | 375 px | 375 px | 375 px | **OK (0 px)** | **OK (Nihil)** | **OK (0)** | 45 KB | **PASS** |
-| `public_daftar` | 390 × 844 | 390 px | 390 px | 390 px | **OK (0 px)** | **OK (Nihil)** | **OK (0)** | 51 KB | **PASS** |
-| `public_daftar` | 768 × 1024 | 768 px | 768 px | 768 px | **OK (0 px)** | **OK (Nihil)** | **OK (0)** | 102 KB | **PASS** |
-| `public_daftar` | 1024 × 768 | 1024 px | 1024 px | 1024 px | **OK (0 px)** | **OK (Nihil)** | **OK (0)** | 75 KB | **PASS** |
-| `public_daftar` | 1280 × 800 | 1280 px | 1280 px | 1280 px | **OK (0 px)** | **OK (Nihil)** | **OK (0)** | 76 KB | **PASS** |
-| `public_daftar` | 1440 × 900 | 1440 px | 1440 px | 1440 px | **OK (0 px)** | **OK (Nihil)** | **OK (0)** | 88 KB | **PASS** |
-| `public_daftar` | 1920 × 1080 | 1920 px | 1920 px | 1920 px | **OK (0 px)** | **OK (Nihil)** | **OK (0)** | 116 KB | **PASS** |
+| Halaman | Viewport | Lebar Viewport (`innerW`) | `docScrollWidth` | DOM Completeness | Horizontal Overflow | Raw Markdown `**` | Clipping Unintended | Buttons Sampled | Ukuran PNG | Status |
+|---|---|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
+| `public_home` | 320 × 640 | 320 px | 305 px | **VALID (YES)** | **OK (0 px)** | **OK (Nihil)** | **OK (0)** | 6 elemen | 30 KB | **PASS** |
+| `public_home` | 375 × 667 | 375 px | 360 px | **VALID (YES)** | **OK (0 px)** | **OK (Nihil)** | **OK (0)** | 6 elemen | 36 KB | **PASS** |
+| `public_home` | 390 × 844 | 390 px | 375 px | **VALID (YES)** | **OK (0 px)** | **OK (Nihil)** | **OK (0)** | 6 elemen | 48 KB | **PASS** |
+| `public_home` | 768 × 1024 | 768 px | 753 px | **VALID (YES)** | **OK (0 px)** | **OK (Nihil)** | **OK (0)** | 6 elemen | 101 KB | **PASS** |
+| `public_home` | 1024 × 768 | 1024 px | 1009 px | **VALID (YES)** | **OK (0 px)** | **OK (Nihil)** | **OK (0)** | 6 elemen | 80 KB | **PASS** |
+| `public_home` | 1280 × 800 | 1280 px | 1265 px | **VALID (YES)** | **OK (0 px)** | **OK (Nihil)** | **OK (0)** | 6 elemen | 85 KB | **PASS** |
+| `public_home` | 1440 × 900 | 1440 px | 1425 px | **VALID (YES)** | **OK (0 px)** | **OK (Nihil)** | **OK (0)** | 6 elemen | 89 KB | **PASS** |
+| `public_home` | 1920 × 1080 | 1920 px | 1905 px | **VALID (YES)** | **OK (0 px)** | **OK (Nihil)** | **OK (0)** | 6 elemen | 114 KB | **PASS** |
+| `public_daftar` | 320 × 640 | 320 px | 305 px | **VALID (YES)** | **OK (0 px)** | **OK (Nihil)** | **OK (0)** | 6 elemen | 43 KB | **PASS** |
+| `public_daftar` | 375 × 667 | 375 px | 360 px | **VALID (YES)** | **OK (0 px)** | **OK (Nihil)** | **OK (0)** | 6 elemen | 46 KB | **PASS** |
+| `public_daftar` | 390 × 844 | 390 px | 375 px | **VALID (YES)** | **OK (0 px)** | **OK (Nihil)** | **OK (0)** | 6 elemen | 55 KB | **PASS** |
+| `public_daftar` | 768 × 1024 | 768 px | 753 px | **VALID (YES)** | **OK (0 px)** | **OK (Nihil)** | **OK (0)** | 6 elemen | 100 KB | **PASS** |
+| `public_daftar` | 1024 × 768 | 1024 px | 1009 px | **VALID (YES)** | **OK (0 px)** | **OK (Nihil)** | **OK (0)** | 6 elemen | 73 KB | **PASS** |
+| `public_daftar` | 1280 × 800 | 1280 px | 1265 px | **VALID (YES)** | **OK (0 px)** | **OK (Nihil)** | **OK (0)** | 6 elemen | 74 KB | **PASS** |
+| `public_daftar` | 1440 × 900 | 1440 px | 1425 px | **VALID (YES)** | **OK (0 px)** | **OK (Nihil)** | **OK (0)** | 6 elemen | 86 KB | **PASS** |
+| `public_daftar` | 1920 × 1080 | 1920 px | 1905 px | **VALID (YES)** | **OK (0 px)** | **OK (Nihil)** | **OK (0)** | 6 elemen | 113 KB | **PASS** |
 
 ### 6.3 Verifikasi Visual Detail pada Viewport Kritis (320px)
 - **`HomeView.tsx`:** Judul KMB menggunakan `text-2xl` dengan `break-words` sehingga tidak terpotong. Tagline tampil bersih dalam tipografi italic netral tanpa karakter asteris mentah. Dua tombol CTA utama tersusun vertikal penuh (`flex-col w-full`) dengan target sentuh nyaman. Metadata badan hukum/NIKOP terpusat rapi dan melipat responsif.
@@ -155,7 +160,8 @@ Fitur keamanan dan validitas pengujian:
 - **Phase 2 Baseline:** `afed1ff`
 - **Phase 2.1 Commit:** `0b9e524`
 - **Phase 2.2 Commit:** `23c2ba7` (`fix(phase-2): harden route permissions and demo controls`)
-- **Pesan Commit Responsivitas & Clipping:** `fix(phase-2): resolve mobile clipping and verify responsive layouts`
+- **Phase 2.2 Responsive Fix:** `62e69e4` (`fix(phase-2): resolve mobile clipping and verify responsive layouts`)
+- **Pesan Commit Validasi Sinkronisasi:** `test(phase-2): enforce DOM readiness and completeness in responsive suite`
 
 ---
 

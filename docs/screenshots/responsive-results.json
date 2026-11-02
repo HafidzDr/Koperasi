@@ -4,19 +4,74 @@
     "viewport": "320x640",
     "width": 320,
     "height": 640,
+    "domReady": true,
+    "domValidation": {
+      "isValid": true,
+      "h1Text": "Koperasi Konsumen Makmur Bersama Nusantara",
+      "h1Size": {
+        "w": 273,
+        "h": 90
+      },
+      "visibleButtonCount": 6,
+      "bodyTextLength": 2843,
+      "reason": "OK"
+    },
     "metrics": {
       "innerWidth": 320,
-      "clientWidth": 320,
-      "docScrollWidth": 320,
-      "bodyScrollWidth": 320,
+      "clientWidth": 305,
+      "docScrollWidth": 305,
+      "bodyScrollWidth": 305,
       "hasOverflow": false,
       "rawMarkdownFound": false,
       "overflowingElements": [],
       "clippedElements": [],
-      "buttonsSample": []
+      "buttonsSample": [
+        {
+          "tag": "button",
+          "text": "Public_visitor",
+          "width": 116,
+          "height": 24,
+          "isUsable": true
+        },
+        {
+          "tag": "button",
+          "text": "",
+          "width": 40,
+          "height": 40,
+          "isUsable": true
+        },
+        {
+          "tag": "button",
+          "text": "Daftar Menjadi Anggota",
+          "width": 273,
+          "height": 48,
+          "isUsable": true
+        },
+        {
+          "tag": "button",
+          "text": "Buka Portal Anggota",
+          "width": 273,
+          "height": 48,
+          "isUsable": true
+        },
+        {
+          "tag": "button",
+          "text": "Lihat Seluruh Layanan",
+          "width": 145,
+          "height": 32,
+          "isUsable": true
+        },
+        {
+          "tag": "button",
+          "text": "Mulai Pendaftaran Online",
+          "width": 225,
+          "height": 48,
+          "isUsable": true
+        }
+      ]
     },
     "screenshot": "public_home_320.png",
-    "fileSize": 37087,
+    "fileSize": 30956,
     "status": "PASS"
   },
   {
@@ -24,19 +79,74 @@
     "viewport": "375x667",
     "width": 375,
     "height": 667,
+    "domReady": true,
+    "domValidation": {
+      "isValid": true,
+      "h1Text": "Koperasi Konsumen Makmur Bersama Nusantara",
+      "h1Size": {
+        "w": 328,
+        "h": 60
+      },
+      "visibleButtonCount": 6,
+      "bodyTextLength": 2843,
+      "reason": "OK"
+    },
     "metrics": {
       "innerWidth": 375,
-      "clientWidth": 375,
-      "docScrollWidth": 375,
-      "bodyScrollWidth": 375,
+      "clientWidth": 360,
+      "docScrollWidth": 360,
+      "bodyScrollWidth": 360,
       "hasOverflow": false,
       "rawMarkdownFound": false,
       "overflowingElements": [],
       "clippedElements": [],
-      "buttonsSample": []
+      "buttonsSample": [
+        {
+          "tag": "button",
+          "text": "Public_visitor",
+          "width": 116,
+          "height": 24,
+          "isUsable": true
+        },
+        {
+          "tag": "button",
+          "text": "",
+          "width": 40,
+          "height": 40,
+          "isUsable": true
+        },
+        {
+          "tag": "button",
+          "text": "Daftar Menjadi Anggota",
+          "width": 328,
+          "height": 48,
+          "isUsable": true
+        },
+        {
+          "tag": "button",
+          "text": "Buka Portal Anggota",
+          "width": 328,
+          "height": 48,
+          "isUsable": true
+        },
+        {
+          "tag": "button",
+          "text": "Lihat Seluruh Layanan",
+          "width": 145,
+          "height": 32,
+          "isUsable": true
+        },
+        {
+          "tag": "button",
+          "text": "Mulai Pendaftaran Online",
+          "width": 280,
+          "height": 48,
+          "isUsable": true
+        }
+      ]
     },
     "screenshot": "public_home_375.png",
-    "fileSize": 42433,
+    "fileSize": 36698,
     "status": "PASS"
   },
   {
@@ -44,19 +154,74 @@
     "viewport": "390x844",
     "width": 390,
     "height": 844,
+    "domReady": true,
+    "domValidation": {
+      "isValid": true,
+      "h1Text": "Koperasi Konsumen Makmur Bersama Nusantara",
+      "h1Size": {
+        "w": 343,
+        "h": 60
+      },
+      "visibleButtonCount": 6,
+      "bodyTextLength": 2843,
+      "reason": "OK"
+    },
     "metrics": {
       "innerWidth": 390,
-      "clientWidth": 390,
-      "docScrollWidth": 390,
-      "bodyScrollWidth": 390,
+      "clientWidth": 375,
+      "docScrollWidth": 375,
+      "bodyScrollWidth": 375,
       "hasOverflow": false,
       "rawMarkdownFound": false,
       "overflowingElements": [],
       "clippedElements": [],
-      "buttonsSample": []
+      "buttonsSample": [
+        {
+          "tag": "button",
+          "text": "Public_visitor",
+          "width": 119,
+          "height": 24,
+          "isUsable": true
+        },
+        {
+          "tag": "button",
+          "text": "",
+          "width": 40,
+          "height": 40,
+          "isUsable": true
+        },
+        {
+          "tag": "button",
+          "text": "Daftar Menjadi Anggota",
+          "width": 343,
+          "height": 48,
+          "isUsable": true
+        },
+        {
+          "tag": "button",
+          "text": "Buka Portal Anggota",
+          "width": 343,
+          "height": 48,
+          "isUsable": true
+        },
+        {
+          "tag": "button",
+          "text": "Lihat Seluruh Layanan",
+          "width": 153,
+          "height": 32,
+          "isUsable": true
+        },
+        {
+          "tag": "button",
+          "text": "Mulai Pendaftaran Online",
+          "width": 295,
+          "height": 48,
+          "isUsable": true
+        }
+      ]
     },
     "screenshot": "public_home_390.png",
-    "fileSize": 50024,
+    "fileSize": 49439,
     "status": "PASS"
   },
   {
@@ -64,16 +229,71 @@
     "viewport": "768x1024",
     "width": 768,
     "height": 1024,
+    "domReady": true,
+    "domValidation": {
+      "isValid": true,
+      "h1Text": "Koperasi Konsumen Makmur Bersama Nusantara",
+      "h1Size": {
+        "w": 705,
+        "h": 96
+      },
+      "visibleButtonCount": 7,
+      "bodyTextLength": 2977,
+      "reason": "OK"
+    },
     "metrics": {
       "innerWidth": 768,
-      "clientWidth": 768,
-      "docScrollWidth": 768,
-      "bodyScrollWidth": 768,
+      "clientWidth": 753,
+      "docScrollWidth": 753,
+      "bodyScrollWidth": 753,
       "hasOverflow": false,
       "rawMarkdownFound": false,
       "overflowingElements": [],
       "clippedElements": [],
-      "buttonsSample": []
+      "buttonsSample": [
+        {
+          "tag": "button",
+          "text": "Peran:\nPublic_visitor",
+          "width": 170,
+          "height": 24,
+          "isUsable": true
+        },
+        {
+          "tag": "button",
+          "text": "Masuk Portal",
+          "width": 64,
+          "height": 32,
+          "isUsable": true
+        },
+        {
+          "tag": "button",
+          "text": "Daftar Anggota",
+          "width": 95,
+          "height": 32,
+          "isUsable": true
+        },
+        {
+          "tag": "button",
+          "text": "Daftar Menjadi Anggota",
+          "width": 249,
+          "height": 48,
+          "isUsable": true
+        },
+        {
+          "tag": "button",
+          "text": "Buka Portal Anggota",
+          "width": 199,
+          "height": 48,
+          "isUsable": true
+        },
+        {
+          "tag": "button",
+          "text": "Lihat Seluruh Layanan",
+          "width": 153,
+          "height": 32,
+          "isUsable": true
+        }
+      ]
     },
     "screenshot": "public_home_768.png",
     "fileSize": 103315,
@@ -84,16 +304,71 @@
     "viewport": "1024x768",
     "width": 1024,
     "height": 768,
+    "domReady": true,
+    "domValidation": {
+      "isValid": true,
+      "h1Text": "Koperasi Konsumen Makmur Bersama Nusantara",
+      "h1Size": {
+        "w": 768,
+        "h": 96
+      },
+      "visibleButtonCount": 7,
+      "bodyTextLength": 2977,
+      "reason": "OK"
+    },
     "metrics": {
       "innerWidth": 1024,
-      "clientWidth": 1024,
-      "docScrollWidth": 1024,
-      "bodyScrollWidth": 1024,
+      "clientWidth": 1009,
+      "docScrollWidth": 1009,
+      "bodyScrollWidth": 1009,
       "hasOverflow": false,
       "rawMarkdownFound": false,
       "overflowingElements": [],
       "clippedElements": [],
-      "buttonsSample": []
+      "buttonsSample": [
+        {
+          "tag": "button",
+          "text": "Peran:\nPublic_visitor",
+          "width": 170,
+          "height": 24,
+          "isUsable": true
+        },
+        {
+          "tag": "button",
+          "text": "Masuk Portal",
+          "width": 79,
+          "height": 32,
+          "isUsable": true
+        },
+        {
+          "tag": "button",
+          "text": "Daftar Anggota",
+          "width": 104,
+          "height": 32,
+          "isUsable": true
+        },
+        {
+          "tag": "button",
+          "text": "Daftar Menjadi Anggota",
+          "width": 249,
+          "height": 48,
+          "isUsable": true
+        },
+        {
+          "tag": "button",
+          "text": "Buka Portal Anggota",
+          "width": 199,
+          "height": 48,
+          "isUsable": true
+        },
+        {
+          "tag": "button",
+          "text": "Lihat Seluruh Layanan",
+          "width": 153,
+          "height": 32,
+          "isUsable": true
+        }
+      ]
     },
     "screenshot": "public_home_1024.png",
     "fileSize": 82013,
@@ -104,16 +379,71 @@
     "viewport": "1280x800",
     "width": 1280,
     "height": 800,
+    "domReady": true,
+    "domValidation": {
+      "isValid": true,
+      "h1Text": "Koperasi Konsumen Makmur Bersama Nusantara",
+      "h1Size": {
+        "w": 768,
+        "h": 96
+      },
+      "visibleButtonCount": 7,
+      "bodyTextLength": 2977,
+      "reason": "OK"
+    },
     "metrics": {
       "innerWidth": 1280,
-      "clientWidth": 1280,
-      "docScrollWidth": 1280,
-      "bodyScrollWidth": 1280,
+      "clientWidth": 1265,
+      "docScrollWidth": 1265,
+      "bodyScrollWidth": 1265,
       "hasOverflow": false,
       "rawMarkdownFound": false,
       "overflowingElements": [],
       "clippedElements": [],
-      "buttonsSample": []
+      "buttonsSample": [
+        {
+          "tag": "button",
+          "text": "Peran:\nPublic_visitor",
+          "width": 170,
+          "height": 24,
+          "isUsable": true
+        },
+        {
+          "tag": "button",
+          "text": "Masuk Portal",
+          "width": 101,
+          "height": 32,
+          "isUsable": true
+        },
+        {
+          "tag": "button",
+          "text": "Daftar Anggota",
+          "width": 133,
+          "height": 32,
+          "isUsable": true
+        },
+        {
+          "tag": "button",
+          "text": "Daftar Menjadi Anggota",
+          "width": 249,
+          "height": 48,
+          "isUsable": true
+        },
+        {
+          "tag": "button",
+          "text": "Buka Portal Anggota",
+          "width": 199,
+          "height": 48,
+          "isUsable": true
+        },
+        {
+          "tag": "button",
+          "text": "Lihat Seluruh Layanan",
+          "width": 153,
+          "height": 32,
+          "isUsable": true
+        }
+      ]
     },
     "screenshot": "public_home_1280.png",
     "fileSize": 86949,
@@ -124,16 +454,71 @@
     "viewport": "1440x900",
     "width": 1440,
     "height": 900,
+    "domReady": true,
+    "domValidation": {
+      "isValid": true,
+      "h1Text": "Koperasi Konsumen Makmur Bersama Nusantara",
+      "h1Size": {
+        "w": 768,
+        "h": 96
+      },
+      "visibleButtonCount": 7,
+      "bodyTextLength": 2977,
+      "reason": "OK"
+    },
     "metrics": {
       "innerWidth": 1440,
-      "clientWidth": 1440,
-      "docScrollWidth": 1440,
-      "bodyScrollWidth": 1440,
+      "clientWidth": 1425,
+      "docScrollWidth": 1425,
+      "bodyScrollWidth": 1425,
       "hasOverflow": false,
       "rawMarkdownFound": false,
       "overflowingElements": [],
       "clippedElements": [],
-      "buttonsSample": []
+      "buttonsSample": [
+        {
+          "tag": "button",
+          "text": "Peran:\nPublic_visitor",
+          "width": 170,
+          "height": 24,
+          "isUsable": true
+        },
+        {
+          "tag": "button",
+          "text": "Masuk Portal",
+          "width": 101,
+          "height": 32,
+          "isUsable": true
+        },
+        {
+          "tag": "button",
+          "text": "Daftar Anggota",
+          "width": 133,
+          "height": 32,
+          "isUsable": true
+        },
+        {
+          "tag": "button",
+          "text": "Daftar Menjadi Anggota",
+          "width": 249,
+          "height": 48,
+          "isUsable": true
+        },
+        {
+          "tag": "button",
+          "text": "Buka Portal Anggota",
+          "width": 199,
+          "height": 48,
+          "isUsable": true
+        },
+        {
+          "tag": "button",
+          "text": "Lihat Seluruh Layanan",
+          "width": 153,
+          "height": 32,
+          "isUsable": true
+        }
+      ]
     },
     "screenshot": "public_home_1440.png",
     "fileSize": 91490,
@@ -144,16 +529,71 @@
     "viewport": "1920x1080",
     "width": 1920,
     "height": 1080,
+    "domReady": true,
+    "domValidation": {
+      "isValid": true,
+      "h1Text": "Koperasi Konsumen Makmur Bersama Nusantara",
+      "h1Size": {
+        "w": 768,
+        "h": 96
+      },
+      "visibleButtonCount": 7,
+      "bodyTextLength": 2977,
+      "reason": "OK"
+    },
     "metrics": {
       "innerWidth": 1920,
-      "clientWidth": 1920,
-      "docScrollWidth": 1920,
-      "bodyScrollWidth": 1920,
+      "clientWidth": 1905,
+      "docScrollWidth": 1905,
+      "bodyScrollWidth": 1905,
       "hasOverflow": false,
       "rawMarkdownFound": false,
       "overflowingElements": [],
       "clippedElements": [],
-      "buttonsSample": []
+      "buttonsSample": [
+        {
+          "tag": "button",
+          "text": "Peran:\nPublic_visitor",
+          "width": 170,
+          "height": 24,
+          "isUsable": true
+        },
+        {
+          "tag": "button",
+          "text": "Masuk Portal",
+          "width": 101,
+          "height": 32,
+          "isUsable": true
+        },
+        {
+          "tag": "button",
+          "text": "Daftar Anggota",
+          "width": 133,
+          "height": 32,
+          "isUsable": true
+        },
+        {
+          "tag": "button",
+          "text": "Daftar Menjadi Anggota",
+          "width": 249,
+          "height": 48,
+          "isUsable": true
+        },
+        {
+          "tag": "button",
+          "text": "Buka Portal Anggota",
+          "width": 199,
+          "height": 48,
+          "isUsable": true
+        },
+        {
+          "tag": "button",
+          "text": "Lihat Seluruh Layanan",
+          "width": 153,
+          "height": 32,
+          "isUsable": true
+        }
+      ]
     },
     "screenshot": "public_home_1920.png",
     "fileSize": 116531,
@@ -164,19 +604,75 @@
     "viewport": "320x640",
     "width": 320,
     "height": 640,
+    "domReady": true,
+    "domValidation": {
+      "isValid": true,
+      "h1Text": "Formulir Permohonan Menjadi Anggota",
+      "h1Size": {
+        "w": 273,
+        "h": 56
+      },
+      "visibleInputCount": 3,
+      "visibleButtonCount": 3,
+      "bodyTextLength": 1344,
+      "reason": "OK"
+    },
     "metrics": {
       "innerWidth": 320,
-      "clientWidth": 320,
-      "docScrollWidth": 320,
-      "bodyScrollWidth": 320,
+      "clientWidth": 305,
+      "docScrollWidth": 305,
+      "bodyScrollWidth": 305,
       "hasOverflow": false,
       "rawMarkdownFound": false,
       "overflowingElements": [],
       "clippedElements": [],
-      "buttonsSample": []
+      "buttonsSample": [
+        {
+          "tag": "button",
+          "text": "Public_visitor",
+          "width": 119,
+          "height": 24,
+          "isUsable": true
+        },
+        {
+          "tag": "button",
+          "text": "",
+          "width": 40,
+          "height": 40,
+          "isUsable": true
+        },
+        {
+          "tag": "input",
+          "text": "Contoh: Siti Rahmawati",
+          "width": 239,
+          "height": 40,
+          "isUsable": true
+        },
+        {
+          "tag": "input",
+          "text": "DEMO-ID-0005",
+          "width": 239,
+          "height": 40,
+          "isUsable": true
+        },
+        {
+          "tag": "input",
+          "text": "nama@email.com",
+          "width": 239,
+          "height": 40,
+          "isUsable": true
+        },
+        {
+          "tag": "button",
+          "text": "Selanjutnya",
+          "width": 239,
+          "height": 32,
+          "isUsable": true
+        }
+      ]
     },
     "screenshot": "public_daftar_320.png",
-    "fileSize": 40523,
+    "fileSize": 43706,
     "status": "PASS"
   },
   {
@@ -184,19 +680,75 @@
     "viewport": "375x667",
     "width": 375,
     "height": 667,
+    "domReady": true,
+    "domValidation": {
+      "isValid": true,
+      "h1Text": "Formulir Permohonan Menjadi Anggota",
+      "h1Size": {
+        "w": 328,
+        "h": 56
+      },
+      "visibleInputCount": 3,
+      "visibleButtonCount": 3,
+      "bodyTextLength": 1344,
+      "reason": "OK"
+    },
     "metrics": {
       "innerWidth": 375,
-      "clientWidth": 375,
-      "docScrollWidth": 375,
-      "bodyScrollWidth": 375,
+      "clientWidth": 360,
+      "docScrollWidth": 360,
+      "bodyScrollWidth": 360,
       "hasOverflow": false,
       "rawMarkdownFound": false,
       "overflowingElements": [],
       "clippedElements": [],
-      "buttonsSample": []
+      "buttonsSample": [
+        {
+          "tag": "button",
+          "text": "Public_visitor",
+          "width": 119,
+          "height": 24,
+          "isUsable": true
+        },
+        {
+          "tag": "button",
+          "text": "",
+          "width": 40,
+          "height": 40,
+          "isUsable": true
+        },
+        {
+          "tag": "input",
+          "text": "Contoh: Siti Rahmawati",
+          "width": 294,
+          "height": 40,
+          "isUsable": true
+        },
+        {
+          "tag": "input",
+          "text": "DEMO-ID-0005",
+          "width": 294,
+          "height": 40,
+          "isUsable": true
+        },
+        {
+          "tag": "input",
+          "text": "nama@email.com",
+          "width": 294,
+          "height": 40,
+          "isUsable": true
+        },
+        {
+          "tag": "button",
+          "text": "Selanjutnya",
+          "width": 294,
+          "height": 32,
+          "isUsable": true
+        }
+      ]
     },
     "screenshot": "public_daftar_375.png",
-    "fileSize": 45360,
+    "fileSize": 46940,
     "status": "PASS"
   },
   {
@@ -204,19 +756,75 @@
     "viewport": "390x844",
     "width": 390,
     "height": 844,
+    "domReady": true,
+    "domValidation": {
+      "isValid": true,
+      "h1Text": "Formulir Permohonan Menjadi Anggota",
+      "h1Size": {
+        "w": 343,
+        "h": 56
+      },
+      "visibleInputCount": 3,
+      "visibleButtonCount": 3,
+      "bodyTextLength": 1344,
+      "reason": "OK"
+    },
     "metrics": {
       "innerWidth": 390,
-      "clientWidth": 390,
-      "docScrollWidth": 390,
-      "bodyScrollWidth": 390,
+      "clientWidth": 375,
+      "docScrollWidth": 375,
+      "bodyScrollWidth": 375,
       "hasOverflow": false,
       "rawMarkdownFound": false,
       "overflowingElements": [],
       "clippedElements": [],
-      "buttonsSample": []
+      "buttonsSample": [
+        {
+          "tag": "button",
+          "text": "Public_visitor",
+          "width": 119,
+          "height": 24,
+          "isUsable": true
+        },
+        {
+          "tag": "button",
+          "text": "",
+          "width": 40,
+          "height": 40,
+          "isUsable": true
+        },
+        {
+          "tag": "input",
+          "text": "Contoh: Siti Rahmawati",
+          "width": 309,
+          "height": 40,
+          "isUsable": true
+        },
+        {
+          "tag": "input",
+          "text": "DEMO-ID-0005",
+          "width": 309,
+          "height": 40,
+          "isUsable": true
+        },
+        {
+          "tag": "input",
+          "text": "nama@email.com",
+          "width": 309,
+          "height": 40,
+          "isUsable": true
+        },
+        {
+          "tag": "button",
+          "text": "Selanjutnya",
+          "width": 309,
+          "height": 32,
+          "isUsable": true
+        }
+      ]
     },
     "screenshot": "public_daftar_390.png",
-    "fileSize": 50528,
+    "fileSize": 56199,
     "status": "PASS"
   },
   {
@@ -224,16 +832,72 @@
     "viewport": "768x1024",
     "width": 768,
     "height": 1024,
+    "domReady": true,
+    "domValidation": {
+      "isValid": true,
+      "h1Text": "Formulir Permohonan Menjadi Anggota",
+      "h1Size": {
+        "w": 640,
+        "h": 32
+      },
+      "visibleInputCount": 3,
+      "visibleButtonCount": 4,
+      "bodyTextLength": 1490,
+      "reason": "OK"
+    },
     "metrics": {
       "innerWidth": 768,
-      "clientWidth": 768,
-      "docScrollWidth": 768,
-      "bodyScrollWidth": 768,
+      "clientWidth": 753,
+      "docScrollWidth": 753,
+      "bodyScrollWidth": 753,
       "hasOverflow": false,
       "rawMarkdownFound": false,
       "overflowingElements": [],
       "clippedElements": [],
-      "buttonsSample": []
+      "buttonsSample": [
+        {
+          "tag": "button",
+          "text": "Peran:\nPublic_visitor",
+          "width": 170,
+          "height": 24,
+          "isUsable": true
+        },
+        {
+          "tag": "button",
+          "text": "Masuk Portal",
+          "width": 64,
+          "height": 32,
+          "isUsable": true
+        },
+        {
+          "tag": "button",
+          "text": "Daftar Anggota",
+          "width": 95,
+          "height": 32,
+          "isUsable": true
+        },
+        {
+          "tag": "input",
+          "text": "Contoh: Siti Rahmawati",
+          "width": 590,
+          "height": 40,
+          "isUsable": true
+        },
+        {
+          "tag": "input",
+          "text": "DEMO-ID-0005",
+          "width": 590,
+          "height": 40,
+          "isUsable": true
+        },
+        {
+          "tag": "input",
+          "text": "nama@email.com",
+          "width": 590,
+          "height": 40,
+          "isUsable": true
+        }
+      ]
     },
     "screenshot": "public_daftar_768.png",
     "fileSize": 102369,
@@ -244,16 +908,72 @@
     "viewport": "1024x768",
     "width": 1024,
     "height": 768,
+    "domReady": true,
+    "domValidation": {
+      "isValid": true,
+      "h1Text": "Formulir Permohonan Menjadi Anggota",
+      "h1Size": {
+        "w": 640,
+        "h": 32
+      },
+      "visibleInputCount": 3,
+      "visibleButtonCount": 4,
+      "bodyTextLength": 1490,
+      "reason": "OK"
+    },
     "metrics": {
       "innerWidth": 1024,
-      "clientWidth": 1024,
-      "docScrollWidth": 1024,
-      "bodyScrollWidth": 1024,
+      "clientWidth": 1009,
+      "docScrollWidth": 1009,
+      "bodyScrollWidth": 1009,
       "hasOverflow": false,
       "rawMarkdownFound": false,
       "overflowingElements": [],
       "clippedElements": [],
-      "buttonsSample": []
+      "buttonsSample": [
+        {
+          "tag": "button",
+          "text": "Peran:\nPublic_visitor",
+          "width": 170,
+          "height": 24,
+          "isUsable": true
+        },
+        {
+          "tag": "button",
+          "text": "Masuk Portal",
+          "width": 79,
+          "height": 32,
+          "isUsable": true
+        },
+        {
+          "tag": "button",
+          "text": "Daftar Anggota",
+          "width": 105,
+          "height": 32,
+          "isUsable": true
+        },
+        {
+          "tag": "input",
+          "text": "Contoh: Siti Rahmawati",
+          "width": 590,
+          "height": 40,
+          "isUsable": true
+        },
+        {
+          "tag": "input",
+          "text": "DEMO-ID-0005",
+          "width": 590,
+          "height": 40,
+          "isUsable": true
+        },
+        {
+          "tag": "input",
+          "text": "nama@email.com",
+          "width": 590,
+          "height": 40,
+          "isUsable": true
+        }
+      ]
     },
     "screenshot": "public_daftar_1024.png",
     "fileSize": 74649,
@@ -264,16 +984,72 @@
     "viewport": "1280x800",
     "width": 1280,
     "height": 800,
+    "domReady": true,
+    "domValidation": {
+      "isValid": true,
+      "h1Text": "Formulir Permohonan Menjadi Anggota",
+      "h1Size": {
+        "w": 640,
+        "h": 32
+      },
+      "visibleInputCount": 3,
+      "visibleButtonCount": 4,
+      "bodyTextLength": 1490,
+      "reason": "OK"
+    },
     "metrics": {
       "innerWidth": 1280,
-      "clientWidth": 1280,
-      "docScrollWidth": 1280,
-      "bodyScrollWidth": 1280,
+      "clientWidth": 1265,
+      "docScrollWidth": 1265,
+      "bodyScrollWidth": 1265,
       "hasOverflow": false,
       "rawMarkdownFound": false,
       "overflowingElements": [],
       "clippedElements": [],
-      "buttonsSample": []
+      "buttonsSample": [
+        {
+          "tag": "button",
+          "text": "Peran:\nPublic_visitor",
+          "width": 170,
+          "height": 24,
+          "isUsable": true
+        },
+        {
+          "tag": "button",
+          "text": "Masuk Portal",
+          "width": 101,
+          "height": 32,
+          "isUsable": true
+        },
+        {
+          "tag": "button",
+          "text": "Daftar Anggota",
+          "width": 133,
+          "height": 32,
+          "isUsable": true
+        },
+        {
+          "tag": "input",
+          "text": "Contoh: Siti Rahmawati",
+          "width": 590,
+          "height": 40,
+          "isUsable": true
+        },
+        {
+          "tag": "input",
+          "text": "DEMO-ID-0005",
+          "width": 590,
+          "height": 40,
+          "isUsable": true
+        },
+        {
+          "tag": "input",
+          "text": "nama@email.com",
+          "width": 590,
+          "height": 40,
+          "isUsable": true
+        }
+      ]
     },
     "screenshot": "public_daftar_1280.png",
     "fileSize": 76069,
@@ -284,16 +1060,72 @@
     "viewport": "1440x900",
     "width": 1440,
     "height": 900,
+    "domReady": true,
+    "domValidation": {
+      "isValid": true,
+      "h1Text": "Formulir Permohonan Menjadi Anggota",
+      "h1Size": {
+        "w": 640,
+        "h": 32
+      },
+      "visibleInputCount": 3,
+      "visibleButtonCount": 4,
+      "bodyTextLength": 1490,
+      "reason": "OK"
+    },
     "metrics": {
       "innerWidth": 1440,
-      "clientWidth": 1440,
-      "docScrollWidth": 1440,
-      "bodyScrollWidth": 1440,
+      "clientWidth": 1425,
+      "docScrollWidth": 1425,
+      "bodyScrollWidth": 1425,
       "hasOverflow": false,
       "rawMarkdownFound": false,
       "overflowingElements": [],
       "clippedElements": [],
-      "buttonsSample": []
+      "buttonsSample": [
+        {
+          "tag": "button",
+          "text": "Peran:\nPublic_visitor",
+          "width": 170,
+          "height": 24,
+          "isUsable": true
+        },
+        {
+          "tag": "button",
+          "text": "Masuk Portal",
+          "width": 101,
+          "height": 32,
+          "isUsable": true
+        },
+        {
+          "tag": "button",
+          "text": "Daftar Anggota",
+          "width": 133,
+          "height": 32,
+          "isUsable": true
+        },
+        {
+          "tag": "input",
+          "text": "Contoh: Siti Rahmawati",
+          "width": 590,
+          "height": 40,
+          "isUsable": true
+        },
+        {
+          "tag": "input",
+          "text": "DEMO-ID-0005",
+          "width": 590,
+          "height": 40,
+          "isUsable": true
+        },
+        {
+          "tag": "input",
+          "text": "nama@email.com",
+          "width": 590,
+          "height": 40,
+          "isUsable": true
+        }
+      ]
     },
     "screenshot": "public_daftar_1440.png",
     "fileSize": 88300,
@@ -304,16 +1136,72 @@
     "viewport": "1920x1080",
     "width": 1920,
     "height": 1080,
+    "domReady": true,
+    "domValidation": {
+      "isValid": true,
+      "h1Text": "Formulir Permohonan Menjadi Anggota",
+      "h1Size": {
+        "w": 640,
+        "h": 32
+      },
+      "visibleInputCount": 3,
+      "visibleButtonCount": 4,
+      "bodyTextLength": 1490,
+      "reason": "OK"
+    },
     "metrics": {
       "innerWidth": 1920,
-      "clientWidth": 1920,
-      "docScrollWidth": 1920,
-      "bodyScrollWidth": 1920,
+      "clientWidth": 1905,
+      "docScrollWidth": 1905,
+      "bodyScrollWidth": 1905,
       "hasOverflow": false,
       "rawMarkdownFound": false,
       "overflowingElements": [],
       "clippedElements": [],
-      "buttonsSample": []
+      "buttonsSample": [
+        {
+          "tag": "button",
+          "text": "Peran:\nPublic_visitor",
+          "width": 170,
+          "height": 24,
+          "isUsable": true
+        },
+        {
+          "tag": "button",
+          "text": "Masuk Portal",
+          "width": 101,
+          "height": 32,
+          "isUsable": true
+        },
+        {
+          "tag": "button",
+          "text": "Daftar Anggota",
+          "width": 133,
+          "height": 32,
+          "isUsable": true
+        },
+        {
+          "tag": "input",
+          "text": "Contoh: Siti Rahmawati",
+          "width": 590,
+          "height": 40,
+          "isUsable": true
+        },
+        {
+          "tag": "input",
+          "text": "DEMO-ID-0005",
+          "width": 590,
+          "height": 40,
+          "isUsable": true
+        },
+        {
+          "tag": "input",
+          "text": "nama@email.com",
+          "width": 590,
+          "height": 40,
+          "isUsable": true
+        }
+      ]
     },
     "screenshot": "public_daftar_1920.png",
     "fileSize": 115880,
