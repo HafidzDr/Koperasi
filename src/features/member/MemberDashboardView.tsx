@@ -73,7 +73,7 @@ export const MemberDashboardView: React.FC = () => {
             </Badge>
           </div>
           <p className="text-xs text-ink-600 mt-1">
-            Status Keanggotaan: <strong className="text-success-700">Aktif & Tertib</strong> — Terdaftar sejak Januari 2024
+            Status Keanggotaan: <strong className="text-success-700">Aktif & Tertib</strong> — Nomor Anggota: <strong className="text-forest-800 font-mono">KMB-2026-0001</strong> (<Link to="/portal/profil" className="text-forest-700 hover:underline font-medium">Lihat Kartu Digital</Link>)
           </p>
         </div>
 

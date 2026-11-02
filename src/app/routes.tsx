@@ -6,10 +6,13 @@ import { AdminLayout } from "@/layouts/AdminLayout";
 import { HomeView } from "@/features/public/HomeView";
 import { AboutView } from "@/features/public/AboutView";
 import { RegistrationWizardView } from "@/features/public/RegistrationWizardView";
+import { ApplicationTrackingView } from "@/features/membership/pages/ApplicationTrackingView";
 
 import { MemberDashboardView } from "@/features/member/MemberDashboardView";
+import { MemberProfilePortalView } from "@/features/membership/pages/MemberProfilePortalView";
 import { AdminDashboardView } from "@/features/admin/AdminDashboardView";
 import { MemberVerificationView } from "@/features/admin/MemberVerificationView";
+import { MemberListView } from "@/features/membership/pages/MemberListView";
 import { PlatformSettingsView } from "@/features/admin/PlatformSettingsView";
 import { ModulePlaceholderView } from "@/components/common/ModulePlaceholderView";
 import { RouteGuard } from "@/components/common/RouteGuard";
@@ -58,6 +61,7 @@ export const router = createBrowserRouter([
         ),
       },
       { path: "daftar", element: <RegistrationWizardView /> },
+      { path: "status-pengajuan", element: <ApplicationTrackingView /> },
       {
         path: "transparansi",
         element: (
@@ -155,14 +159,7 @@ export const router = createBrowserRouter([
       },
       {
         path: "profil",
-        element: (
-          <ModulePlaceholderView
-            title="Profil Anggota & Status Berkas"
-            description="Data keanggotaan terdaftar (DEMO-ID-0001), tanggal aktif, dan status verifikasi."
-            environment="Portal"
-            phasePlanned={4}
-          />
-        ),
+        element: <MemberProfilePortalView />,
       },
       {
         path: "bantuan",
@@ -189,17 +186,7 @@ export const router = createBrowserRouter([
     children: [
       { index: true, element: <AdminDashboardView /> },
       { path: "anggota/verifikasi", element: <MemberVerificationView /> },
-      {
-        path: "anggota",
-        element: (
-          <ModulePlaceholderView
-            title="Direktori Keanggotaan Lengkap"
-            description="Pencarian, pemfilteran status aktif/nonaktif, dan audit rekening per anggota."
-            environment="Admin"
-            phasePlanned={4}
-          />
-        ),
-      },
+      { path: "anggota", element: <MemberListView /> },
       {
         path: "simpanan",
         element: (

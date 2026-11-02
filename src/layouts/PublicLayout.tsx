@@ -18,6 +18,7 @@ export const PublicLayout: React.FC = () => {
     ...(config.activeModules.savings ? [{ label: "Simpanan", href: "/layanan/simpanan" }] : []),
     ...(config.activeModules.loans ? [{ label: "Pinjaman", href: "/layanan/pinjaman" }] : []),
     { label: "Cara Bergabung", href: "/cara-bergabung" },
+    { label: "Lacak Status", href: "/status-pengajuan" },
     { label: "Transparansi", href: "/transparansi" },
   ];
 
@@ -34,7 +35,7 @@ export const PublicLayout: React.FC = () => {
           </div>
 
           {/* Desktop Nav */}
-          <nav className="hidden md:flex items-center space-x-6 text-sm font-medium text-ink-700">
+          <nav className="hidden lg:flex items-center space-x-6 text-sm font-medium text-ink-700">
             {navLinks.map((link) => {
               const isActive = location.pathname === link.href;
               return (
@@ -70,7 +71,7 @@ export const PublicLayout: React.FC = () => {
           {/* Mobile Menu Trigger */}
           <button
             onClick={() => setMobileMenuOpen(true)}
-            className="md:hidden p-2 rounded-md text-ink-700 hover:text-ink-900 hover:bg-ink-100 shrink-0"
+            className="lg:hidden p-2 rounded-md text-ink-700 hover:text-ink-900 hover:bg-ink-100 shrink-0"
             aria-label="Buka menu navigasi"
           >
             <Menu className="w-6 h-6" />

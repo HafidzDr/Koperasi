@@ -1,9 +1,11 @@
 import React, { useState } from "react";
 import { useForm } from "react-hook-form";
+import { Link } from "react-router-dom";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { formatIDR } from "@/lib/utils";
 import { useToastStore } from "@/stores/toastStore";
+import { useMembershipStore } from "@/features/membership/stores/membershipStore";
 import { Card, CardContent, CardFooter } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
@@ -70,24 +72,38 @@ export const RegistrationWizardView: React.FC = () => {
     setCurrentStep((prev) => Math.max(1, prev - 1));
   };
 
-  const onSubmit = async (_data: RegistrationFormData) => {
-    // Simulate network delay 700ms
-    await new Promise((resolve) => setTimeout(resolve, 700));
+  const { submitApplication } = useMembershipStore();
 
-    const generatedCode = `REG-${Date.now().toString().slice(-6)}`;
-    setTrackingCode(generatedCode);
+  const onSubmit = async (data: RegistrationFormData) => {
+    // Simulate network delay 500ms
+    await new Promise((resolve) => setTimeout(resolve, 500));
+
+    const app = submitApplication({
+      fullName: data.fullName,
+      demoId: data.demoId,
+      email: data.email,
+      phone: "0812-3456-7890 (Simulasi)",
+      city: data.city,
+      address: `Jl. Demonstrasi, Wilayah ${data.city}`,
+      occupation: data.occupation,
+      simpananPokokConfirmed: data.simpananPokokConfirmed,
+      simpananWajibConfirmed: data.simpananWajibConfirmed,
+      adArtAgreed: data.adArtAgreed,
+    });
+
+    setTrackingCode(app.trackingCode);
     setIsSuccessSubmitted(true);
 
     addToast({
       type: "success",
       title: "Pendaftaran Berhasil Dikirim",
-      message: `Kode registrasi Anda: ${generatedCode}. Berkas masuk antrean verifikasi staf.`,
+      message: `Kode registrasi Anda: ${app.trackingCode}. Berkas masuk antrean verifikasi staf.`,
     });
   };
 
   if (isSuccessSubmitted) {
     return (
-      <div className="max-w-xl mx-auto px-4 py-12">
+      <div className="max-w-xl mx-auto px-4 py-12 text-left">
         <Card className="text-center p-8 border-forest-600 bg-white">
           <div className="w-14 h-14 bg-forest-100 text-forest-800 rounded-full flex items-center justify-center mx-auto mb-4">
             <CheckCircle2 className="w-8 h-8" />
@@ -99,7 +115,7 @@ export const RegistrationWizardView: React.FC = () => {
             Pendaftaran Berhasil Diterima
           </h2>
           <p className="text-xs text-ink-600 leading-relaxed max-w-md mx-auto mb-6">
-            Terima kasih telah mendaftar menjadi anggota Koperasi Konsumen Makmur Bersama Nusantara. Berkas Anda kini berstatus <strong>"Menunggu Verifikasi Staf"</strong>.
+            Terima kasih telah mendaftar menjadi anggota Koperasi Konsumen Makmur Bersama Nusantara. Berkas Anda kini berstatus <strong>&quot;Menunggu Verifikasi Staf&quot;</strong>.
           </p>
 
           <div className="p-4 bg-ink-50 border border-ink-200 rounded-lg text-left mb-6 space-y-2">
@@ -117,10 +133,15 @@ export const RegistrationWizardView: React.FC = () => {
             </div>
           </div>
 
-          <div className="flex justify-center gap-3">
+          <div className="flex flex-col sm:flex-row justify-center gap-3">
+            <Link to={`/status-pengajuan?code=${trackingCode}`}>
+              <Button variant="primary" size="md" className="w-full sm:w-auto">
+                Lacak Status Permohonan
+              </Button>
+            </Link>
             <Button
-              variant="primary"
-              size="sm"
+              variant="outline"
+              size="md"
               onClick={() => {
                 setIsSuccessSubmitted(false);
                 setCurrentStep(1);

@@ -436,6 +436,7 @@ export const KNOWN_PUBLIC_ROUTES = [
   "/",
   "/tentang",
   "/daftar",
+  "/status-pengajuan",
   "/cara-bergabung",
   "/transparansi",
   "/layanan/simpanan",
@@ -486,6 +487,7 @@ export function canAccessRoute(
     cleanPath === "/" ||
     cleanPath === "/tentang" ||
     cleanPath === "/daftar" ||
+    cleanPath === "/status-pengajuan" ||
     cleanPath === "/cara-bergabung" ||
     cleanPath === "/transparansi" ||
     cleanPath === "/layanan/simpanan" ||
