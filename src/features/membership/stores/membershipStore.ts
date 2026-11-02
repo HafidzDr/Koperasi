@@ -90,6 +90,10 @@ interface MembershipState {
   // Member Registry Queries
   getMemberByDemoId: (demoId: string) => Member | undefined;
   getMemberById: (id: string) => Member | undefined;
+  adjustMemberBalances: (
+    demoId: string,
+    delta: { pokok?: number; wajib?: number; sukarela?: number }
+  ) => void;
 
   // Reset to initial seed state
   resetToSeed: () => void;
@@ -1099,6 +1103,29 @@ export const useMembershipStore = create<MembershipState>((rawSet, get) => {
 
     getMemberById: (id: string) => {
       return get().members.find((m) => m.id === id);
+    },
+
+    adjustMemberBalances: (
+      demoId: string,
+      delta: { pokok?: number; wajib?: number; sukarela?: number }
+    ) => {
+      const normalizedDemoId = demoId.trim().toLowerCase();
+      const updatedMembers = get().members.map((m) => {
+        if (m.demoId.toLowerCase() === normalizedDemoId) {
+          const newPokok = Math.max(0, (m.saldoPokok || 0) + (delta.pokok || 0));
+          const newWajib = Math.max(0, (m.saldoWajib || 0) + (delta.wajib || 0));
+          const newSukarela = Math.max(0, (m.saldoSukarela || 0) + (delta.sukarela || 0));
+          return {
+            ...m,
+            saldoPokok: newPokok,
+            saldoWajib: newWajib,
+            saldoSukarela: newSukarela,
+          };
+        }
+        return m;
+      });
+      set({ members: updatedMembers });
+      saveToStorage(get().applications, updatedMembers, get().savingsConfig);
     },
 
     resetToSeed: () => {

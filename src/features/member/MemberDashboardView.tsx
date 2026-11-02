@@ -2,6 +2,7 @@ import React from "react";
 import { Link } from "react-router-dom";
 import { useConfigStore } from "@/stores/configStore";
 import { useAuthStore } from "@/stores/authStore";
+import { useSavingsStore } from "@/features/savings/stores/savingsStore";
 import { formatIDR, formatDate } from "@/lib/utils";
 import { mockMemberSavings, mockMemberLoans } from "@/mocks/seedData";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/Card";
@@ -28,8 +29,12 @@ import {
 export const MemberDashboardView: React.FC = () => {
   const { config } = useConfigStore();
   const { currentUser } = useAuthStore();
+  const { getMemberSavingsAccount } = useSavingsStore();
 
-  const totalSimpanan = mockMemberSavings.reduce((acc, curr) => acc + curr.saldo, 0);
+  const memberSavings = currentUser.memberId ? getMemberSavingsAccount(currentUser.memberId) : null;
+  const totalSimpanan = memberSavings
+    ? memberSavings.totalSaldo
+    : mockMemberSavings.reduce((acc, curr) => acc + curr.saldo, 0);
   const activeLoan = mockMemberLoans[0];
 
   const recentTransactions = [
@@ -79,7 +84,7 @@ export const MemberDashboardView: React.FC = () => {
 
         <div className="flex items-center gap-2">
           {config.activeModules.savings && (
-            <Link to="/portal/pembayaran">
+            <Link to="/portal/simpanan">
               <Button variant="primary" size="sm" leftIcon={<PlusCircle className="w-4 h-4" />}>
                 Setor Simpanan
               </Button>
@@ -219,22 +224,67 @@ export const MemberDashboardView: React.FC = () => {
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            {mockMemberSavings.map((item) => (
-              <Card key={item.rekeningId} className="p-4 bg-white">
-                <div className="flex items-center justify-between text-xs mb-1">
-                  <span className="text-ink-500 font-mono text-[11px]">{item.rekeningId}</span>
-                  <Badge variant={item.jenis === "Pokok" || item.jenis === "Wajib" ? "forest" : "neutral"} size="sm">
-                    {item.jenis}
-                  </Badge>
-                </div>
-                <div className="text-lg font-bold text-ink-900 tabular-nums mt-1">
-                  {formatIDR(item.saldo)}
-                </div>
-                <p className="text-[11px] text-ink-500 mt-1">
-                  {item.bungaPct > 0 ? `Bunga ${item.bungaPct}% p.a.` : "Simpanan Pokok/Wajib"}
-                </p>
-              </Card>
-            ))}
+            {memberSavings ? (
+              <>
+                <Card className="p-4 bg-white">
+                  <div className="flex items-center justify-between text-xs mb-1">
+                    <span className="text-ink-500 font-mono text-[11px]">SP-0001</span>
+                    <Badge variant="forest" size="sm">Pokok</Badge>
+                  </div>
+                  <div className="text-lg font-bold text-ink-900 tabular-nums mt-1">
+                    {formatIDR(memberSavings.saldoPokok)}
+                  </div>
+                  <p className="text-[11px] text-ink-500 mt-1">Simpanan Pokok Anggota</p>
+                </Card>
+                <Card className="p-4 bg-white">
+                  <div className="flex items-center justify-between text-xs mb-1">
+                    <span className="text-ink-500 font-mono text-[11px]">SW-0001</span>
+                    <Badge variant="info" size="sm">Wajib</Badge>
+                  </div>
+                  <div className="text-lg font-bold text-ink-900 tabular-nums mt-1">
+                    {formatIDR(memberSavings.saldoWajib)}
+                  </div>
+                  <p className="text-[11px] text-ink-500 mt-1">Simpanan Wajib Bulanan</p>
+                </Card>
+                <Card className="p-4 bg-white">
+                  <div className="flex items-center justify-between text-xs mb-1">
+                    <span className="text-ink-500 font-mono text-[11px]">SS-0001</span>
+                    <Badge variant="warning" size="sm">Sukarela</Badge>
+                  </div>
+                  <div className="text-lg font-bold text-ink-900 tabular-nums mt-1">
+                    {formatIDR(memberSavings.saldoSukarela)}
+                  </div>
+                  <p className="text-[11px] text-ink-500 mt-1">Tabungan Fleksibel Likuid</p>
+                </Card>
+                <Card className="p-4 bg-white">
+                  <div className="flex items-center justify-between text-xs mb-1">
+                    <span className="text-ink-500 font-mono text-[11px]">SB-0001</span>
+                    <Badge variant="neutral" size="sm">Berjangka</Badge>
+                  </div>
+                  <div className="text-lg font-bold text-ink-900 tabular-nums mt-1">
+                    {formatIDR(5000000)}
+                  </div>
+                  <p className="text-[11px] text-ink-500 mt-1">Bunga 5.5% p.a. (Simulasi)</p>
+                </Card>
+              </>
+            ) : (
+              mockMemberSavings.map((item) => (
+                <Card key={item.rekeningId} className="p-4 bg-white">
+                  <div className="flex items-center justify-between text-xs mb-1">
+                    <span className="text-ink-500 font-mono text-[11px]">{item.rekeningId}</span>
+                    <Badge variant={item.jenis === "Pokok" || item.jenis === "Wajib" ? "forest" : "neutral"} size="sm">
+                      {item.jenis}
+                    </Badge>
+                  </div>
+                  <div className="text-lg font-bold text-ink-900 tabular-nums mt-1">
+                    {formatIDR(item.saldo)}
+                  </div>
+                  <p className="text-[11px] text-ink-500 mt-1">
+                    {item.bungaPct > 0 ? `Bunga ${item.bungaPct}% p.a.` : "Simpanan Pokok/Wajib"}
+                  </p>
+                </Card>
+              ))
+            )}
           </div>
         </div>
       )}

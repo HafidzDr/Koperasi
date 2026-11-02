@@ -14,6 +14,9 @@ import { AdminDashboardView } from "@/features/admin/AdminDashboardView";
 import { MemberVerificationView } from "@/features/admin/MemberVerificationView";
 import { MemberListView } from "@/features/membership/pages/MemberListView";
 import { PlatformSettingsView } from "@/features/admin/PlatformSettingsView";
+import { PublicSavingsCatalogView } from "@/features/savings/pages/PublicSavingsCatalogView";
+import { MemberSavingsPortalView } from "@/features/savings/pages/MemberSavingsPortalView";
+import { AdminSavingsManagementView } from "@/features/savings/pages/AdminSavingsManagementView";
 import { ModulePlaceholderView } from "@/components/common/ModulePlaceholderView";
 import { RouteGuard } from "@/components/common/RouteGuard";
 
@@ -27,15 +30,7 @@ export const router = createBrowserRouter([
       { path: "tentang", element: <AboutView /> },
       {
         path: "layanan/simpanan",
-        element: (
-          <ModulePlaceholderView
-            moduleKey="savings"
-            title="Layanan Simpanan Anggota"
-            description="Katalog produk simpanan pokok, wajib, sukarela, dan berjangka."
-            environment="Public"
-            phasePlanned={5}
-          />
-        ),
+        element: <PublicSavingsCatalogView />,
       },
       {
         path: "layanan/pinjaman",
@@ -88,15 +83,7 @@ export const router = createBrowserRouter([
       { index: true, element: <MemberDashboardView /> },
       {
         path: "simpanan",
-        element: (
-          <ModulePlaceholderView
-            moduleKey="savings"
-            title="Buku Simpanan Saya"
-            description="Detail rekening simpanan pokok, wajib, sukarela, serta mutasi setoran dan penarikan."
-            environment="Portal"
-            phasePlanned={5}
-          />
-        ),
+        element: <MemberSavingsPortalView />,
       },
       {
         path: "pinjaman",
@@ -189,15 +176,7 @@ export const router = createBrowserRouter([
       { path: "anggota", element: <MemberListView /> },
       {
         path: "simpanan",
-        element: (
-          <ModulePlaceholderView
-            moduleKey="savings"
-            title="Manajemen Simpanan & Koreksi"
-            description="Pencatatan setoran simpanan manual, penarikan, dan penyesuaian berizin."
-            environment="Admin"
-            phasePlanned={5}
-          />
-        ),
+        element: <AdminSavingsManagementView />,
       },
       {
         path: "pinjaman",

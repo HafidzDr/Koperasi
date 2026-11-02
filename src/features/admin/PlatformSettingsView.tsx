@@ -11,6 +11,7 @@ import { BusinessModuleKey } from "@/types";
 import { canPerformAction } from "@/lib/rbac";
 import { formatIDR } from "@/lib/utils";
 import { useMembershipStore } from "@/features/membership/stores/membershipStore";
+import { useSavingsStore } from "@/features/savings/stores/savingsStore";
 import {
   RotateCcw,
   Layers,
@@ -198,6 +199,8 @@ export const PlatformSettingsView: React.FC = () => {
 
     resetConfig();
     resetToDefault();
+    useMembershipStore.getState().resetToSeed();
+    useSavingsStore.getState().resetToSeed();
     setIsResetDialogOpen(false);
     addToast({
       type: "success",
