@@ -21,7 +21,7 @@ import {
 } from "lucide-react";
 
 export const MemberListView: React.FC = () => {
-  const { members } = useMembershipStore();
+  const { members, savingsConfig } = useMembershipStore();
 
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
@@ -300,13 +300,18 @@ export const MemberListView: React.FC = () => {
 
             {/* Savings Overview in Member Registry */}
             <div className="space-y-2">
-              <div className="flex items-center justify-between">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
                 <h4 className="font-bold text-ink-900 uppercase tracking-wider text-[11px]">
                   Rekapitulasi Saldo Simpanan Aktual
                 </h4>
-                <span className="text-[10px] text-ink-500">
-                  Komitmen: Pokok {formatIDR(selectedMember.simpananPokokNominal || 100000)} • Wajib {formatIDR(selectedMember.simpananWajibBulanan || 50000)}/bln
-                </span>
+                <div className="flex items-center gap-1.5 flex-wrap">
+                  <Badge variant="warning" size="sm">
+                    {savingsConfig.badgeLabel}
+                  </Badge>
+                  <span className="text-[10px] text-ink-500">
+                    Komitmen Ilustrasi: Pokok {formatIDR(selectedMember.simpananPokokNominal || savingsConfig.simpananPokokNominal)} • Wajib {formatIDR(selectedMember.simpananWajibBulanan || savingsConfig.simpananWajibBulanan)}/bln
+                  </span>
+                </div>
               </div>
               <div className="grid grid-cols-3 gap-3">
                 <div className="p-3 bg-white border border-ink-200 rounded-lg">

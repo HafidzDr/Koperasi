@@ -13,7 +13,7 @@
         "h": 90
       },
       "visibleButtonCount": 6,
-      "bodyTextLength": 2843,
+      "bodyTextLength": 2865,
       "reason": "OK"
     },
     "metrics": {
@@ -88,7 +88,7 @@
         "h": 60
       },
       "visibleButtonCount": 6,
-      "bodyTextLength": 2843,
+      "bodyTextLength": 2865,
       "reason": "OK"
     },
     "metrics": {
@@ -163,7 +163,7 @@
         "h": 60
       },
       "visibleButtonCount": 6,
-      "bodyTextLength": 2843,
+      "bodyTextLength": 2865,
       "reason": "OK"
     },
     "metrics": {
@@ -238,7 +238,7 @@
         "h": 96
       },
       "visibleButtonCount": 8,
-      "bodyTextLength": 2906,
+      "bodyTextLength": 2928,
       "reason": "OK"
     },
     "metrics": {
@@ -313,7 +313,7 @@
         "h": 96
       },
       "visibleButtonCount": 7,
-      "bodyTextLength": 2990,
+      "bodyTextLength": 3012,
       "reason": "OK"
     },
     "metrics": {
@@ -388,7 +388,7 @@
         "h": 96
       },
       "visibleButtonCount": 7,
-      "bodyTextLength": 2990,
+      "bodyTextLength": 3012,
       "reason": "OK"
     },
     "metrics": {
@@ -463,7 +463,7 @@
         "h": 96
       },
       "visibleButtonCount": 7,
-      "bodyTextLength": 2990,
+      "bodyTextLength": 3012,
       "reason": "OK"
     },
     "metrics": {
@@ -538,7 +538,7 @@
         "h": 96
       },
       "visibleButtonCount": 7,
-      "bodyTextLength": 2990,
+      "bodyTextLength": 3012,
       "reason": "OK"
     },
     "metrics": {
@@ -612,9 +612,9 @@
         "w": 273,
         "h": 56
       },
-      "visibleInputCount": 3,
+      "visibleInputCount": 2,
       "visibleButtonCount": 3,
-      "bodyTextLength": 1344,
+      "bodyTextLength": 1438,
       "reason": "OK"
     },
     "metrics": {
@@ -650,13 +650,6 @@
         },
         {
           "tag": "input",
-          "text": "Contoh: DEMO-ID-0010",
-          "width": 239,
-          "height": 40,
-          "isUsable": true
-        },
-        {
-          "tag": "input",
           "text": "nama@email.com",
           "width": 239,
           "height": 40,
@@ -672,7 +665,7 @@
       ]
     },
     "screenshot": "public_daftar_320.png",
-    "fileSize": 43706,
+    "fileSize": 41050,
     "status": "PASS"
   },
   {
@@ -688,9 +681,9 @@
         "w": 328,
         "h": 56
       },
-      "visibleInputCount": 3,
+      "visibleInputCount": 2,
       "visibleButtonCount": 3,
-      "bodyTextLength": 1344,
+      "bodyTextLength": 1438,
       "reason": "OK"
     },
     "metrics": {
@@ -726,13 +719,6 @@
         },
         {
           "tag": "input",
-          "text": "Contoh: DEMO-ID-0010",
-          "width": 294,
-          "height": 40,
-          "isUsable": true
-        },
-        {
-          "tag": "input",
           "text": "nama@email.com",
           "width": 294,
           "height": 40,
@@ -748,7 +734,7 @@
       ]
     },
     "screenshot": "public_daftar_375.png",
-    "fileSize": 46845,
+    "fileSize": 46808,
     "status": "PASS"
   },
   {
@@ -764,9 +750,9 @@
         "w": 343,
         "h": 56
       },
-      "visibleInputCount": 3,
+      "visibleInputCount": 2,
       "visibleButtonCount": 3,
-      "bodyTextLength": 1344,
+      "bodyTextLength": 1438,
       "reason": "OK"
     },
     "metrics": {
@@ -802,13 +788,6 @@
         },
         {
           "tag": "input",
-          "text": "Contoh: DEMO-ID-0010",
-          "width": 309,
-          "height": 40,
-          "isUsable": true
-        },
-        {
-          "tag": "input",
           "text": "nama@email.com",
           "width": 309,
           "height": 40,
@@ -824,7 +803,7 @@
       ]
     },
     "screenshot": "public_daftar_390.png",
-    "fileSize": 56101,
+    "fileSize": 58797,
     "status": "PASS"
   },
   {
@@ -840,9 +819,9 @@
         "w": 640,
         "h": 32
       },
-      "visibleInputCount": 3,
+      "visibleInputCount": 2,
       "visibleButtonCount": 5,
-      "bodyTextLength": 1419,
+      "bodyTextLength": 1513,
       "reason": "OK"
     },
     "metrics": {
@@ -892,7 +871,7 @@
         },
         {
           "tag": "input",
-          "text": "Contoh: DEMO-ID-0010",
+          "text": "nama@email.com",
           "width": 590,
           "height": 40,
           "isUsable": true
@@ -900,7 +879,7 @@
       ]
     },
     "screenshot": "public_daftar_768.png",
-    "fileSize": 100567,
+    "fileSize": 101881,
     "status": "PASS"
   },
   {
@@ -916,9 +895,9 @@
         "w": 640,
         "h": 32
       },
-      "visibleInputCount": 3,
+      "visibleInputCount": 2,
       "visibleButtonCount": 4,
-      "bodyTextLength": 1503,
+      "bodyTextLength": 1597,
       "reason": "OK"
     },
     "metrics": {
@@ -961,22 +940,22 @@
         },
         {
           "tag": "input",
-          "text": "Contoh: DEMO-ID-0010",
+          "text": "nama@email.com",
           "width": 590,
           "height": 40,
           "isUsable": true
         },
         {
-          "tag": "input",
-          "text": "nama@email.com",
-          "width": 590,
-          "height": 40,
+          "tag": "button",
+          "text": "Selanjutnya",
+          "width": 93,
+          "height": 32,
           "isUsable": true
         }
       ]
     },
     "screenshot": "public_daftar_1024.png",
-    "fileSize": 75076,
+    "fileSize": 78801,
     "status": "PASS"
   },
   {
@@ -992,9 +971,9 @@
         "w": 640,
         "h": 32
       },
-      "visibleInputCount": 3,
+      "visibleInputCount": 2,
       "visibleButtonCount": 4,
-      "bodyTextLength": 1503,
+      "bodyTextLength": 1597,
       "reason": "OK"
     },
     "metrics": {
@@ -1037,22 +1016,22 @@
         },
         {
           "tag": "input",
-          "text": "Contoh: DEMO-ID-0010",
+          "text": "nama@email.com",
           "width": 590,
           "height": 40,
           "isUsable": true
         },
         {
-          "tag": "input",
-          "text": "nama@email.com",
-          "width": 590,
-          "height": 40,
+          "tag": "button",
+          "text": "Selanjutnya",
+          "width": 93,
+          "height": 32,
           "isUsable": true
         }
       ]
     },
     "screenshot": "public_daftar_1280.png",
-    "fileSize": 78260,
+    "fileSize": 82552,
     "status": "PASS"
   },
   {
@@ -1068,9 +1047,9 @@
         "w": 640,
         "h": 32
       },
-      "visibleInputCount": 3,
+      "visibleInputCount": 2,
       "visibleButtonCount": 4,
-      "bodyTextLength": 1503,
+      "bodyTextLength": 1597,
       "reason": "OK"
     },
     "metrics": {
@@ -1113,22 +1092,22 @@
         },
         {
           "tag": "input",
-          "text": "Contoh: DEMO-ID-0010",
+          "text": "nama@email.com",
           "width": 590,
           "height": 40,
           "isUsable": true
         },
         {
-          "tag": "input",
-          "text": "nama@email.com",
-          "width": 590,
-          "height": 40,
+          "tag": "button",
+          "text": "Selanjutnya",
+          "width": 93,
+          "height": 32,
           "isUsable": true
         }
       ]
     },
     "screenshot": "public_daftar_1440.png",
-    "fileSize": 90841,
+    "fileSize": 89867,
     "status": "PASS"
   },
   {
@@ -1144,9 +1123,9 @@
         "w": 640,
         "h": 32
       },
-      "visibleInputCount": 3,
+      "visibleInputCount": 2,
       "visibleButtonCount": 4,
-      "bodyTextLength": 1503,
+      "bodyTextLength": 1597,
       "reason": "OK"
     },
     "metrics": {
@@ -1189,22 +1168,22 @@
         },
         {
           "tag": "input",
-          "text": "Contoh: DEMO-ID-0010",
+          "text": "nama@email.com",
           "width": 590,
           "height": 40,
           "isUsable": true
         },
         {
-          "tag": "input",
-          "text": "nama@email.com",
-          "width": 590,
-          "height": 40,
+          "tag": "button",
+          "text": "Selanjutnya",
+          "width": 93,
+          "height": 32,
           "isUsable": true
         }
       ]
     },
     "screenshot": "public_daftar_1920.png",
-    "fileSize": 118547,
+    "fileSize": 122819,
     "status": "PASS"
   }
 ]

@@ -208,3 +208,76 @@ Seluruh pengujian dijalankan ulang secara terpisah:
 5. **Automated Responsive Verification (`node scripts/verify_responsive.js`):**
    - Headless Chrome CDP verification pada 8 breakpoint standar (320px, 375px, 390px, 768px, 1024px, 1280px, 1440px, 1920px) untuk route beranda dan pendaftaran.
    - Hasil: **16 dari 16 skenario PASS** (0px horizontal overflow, DOM valid, buttons found, no clipping).
+
+
+---
+
+## 7. Phase 3.2 — Final Business Rule Consistency
+
+Pada Phase 3.2, dilakukan penyelarasan akhir aturan bisnis keanggotaan berdasarkan temuan lanjutan audit independen sebelum modul Membership Management difinalisasi.
+
+### A. Riwayat Pengujian & Hasil Historis
+
+- **Phase 3 Awal (Baseline):** 35 pengujian unit lulus (Hasil historis).
+- **Phase 3.1 (Audit Remediation 1):** 43 pengujian unit & integrasi lulus (Hasil historis).
+- **Phase 3.2 (Final Consistency — Hasil Akhir Terbaru):** **53 pengujian lulus (100% PASS)** pada 4 file pengujian tanpa kegagalan.
+
+### B. Rincian Temuan & Solusi Phase 3.2
+
+| No | Temuan Audit | Kategori | File Terdampak | Tindakan Perbaikan Kode |
+|---|---|---|---|---|
+| 1 | **Besaran Simpanan Masih Statis & Disebut Ketentuan Resmi** | P1 | `src/features/membership/config/savingsConfig.ts`<br>`src/features/membership/stores/membershipStore.ts`<br>`src/features/public/RegistrationWizardView.tsx`<br>`src/features/membership/pages/MemberListView.tsx`<br>`src/features/public/HomeView.tsx` | Dibuat modul konfigurasi demonstrasi `savingsConfig.ts` yang memisahkan parameter simpanan dari business logic inti. Diberikan label resmi *"Nominal Ilustrasi — Dapat Diubah"* dengan *disclaimer* bahwa besaran belum merupakan keputusan final AD/ART. Perubahan konfigurasi secara konsisten tercermin pada formulir pendaftaran, ringkasan komitmen, dan buku induk. Saldo aktual anggota baru tetap `0` (tidak ada saldo fiktif). Modul Simpanan tidak diimplementasikan lebih awal. |
+| 2 | **ID Demonstrasi Masih Berupa Input Bebas / Dapat Diedit** | P1 | `src/features/public/RegistrationWizardView.tsx`<br>`src/features/membership/stores/membershipStore.ts`<br>`src/tests/membership.test.ts` | Field input teks diubah menjadi kartu informasi *read-only*. Store dijadikan satu-satunya otoritas penerbitan ID demonstrasi (`generateUniqueDemoId`). Upaya memasukkan ID bebas/kustom dari formulir atau parameter secara deterministik diabaikan oleh store. ID dipastikan unik terhadap seluruh `applications` dan `members`. Layar sukses menampilkan ID tersimpan, dan pendaftaran berikutnya otomatis memperoleh ID berbeda. Penanganan kapasitas penuh (>9999) menampilkan pesan yang jelas. |
+| 3 | **Kebutuhan Pengujian Komponen Profil Anggota** | P2 | `src/tests/memberProfilePortal.test.tsx` | Ditambahkan pengujian komponen menyeluruh untuk `MemberProfilePortalView` yang memverifikasi hasil render HTML komponen: (1) Anggota dengan `memberId` valid hanya melihat profil miliknya sendiri; (2) Anggota tanpa `memberId` merender `EmptyState`; (3) Anggota dengan `memberId` tidak dikenal merender `EmptyState`; (4) Data anggota pertama (`members[0]`) tidak pernah muncul sebagai fallback; (5) Pergantian akun demo secara reaktif mengubah profil yang dirender. |
+
+### C. Batasan Arsitektur (Frontend-Only)
+
+Sepanjang Phase 3.2, batasan arsitektur tetap dipatuhi secara ketat:
+- Tanpa backend server, REST API, GraphQL, atau database server.
+- Tanpa autentikasi nyata atau integrasi payment gateway.
+- Seluruh data dikelola murni pada client-side browser menggunakan Zustand dengan persistensi `localStorage`.
+- Modul Simpanan belum diimplementasikan pada tahap ini.
+
+### D. Hasil Quality Gates Phase 3.2 (Hasil Akhir)
+
+1. **TypeScript Strict Typecheck (`pnpm typecheck`):**
+   ```bash
+   $ tsc --noEmit
+   Exit code: 0 (Clean, 0 errors)
+   ```
+
+2. **ESLint Code Quality (`pnpm lint`):**
+   ```bash
+   $ eslint "src/**/*.{ts,tsx}" --max-warnings 0
+   Exit code: 0 (Clean, 0 warnings, 0 errors)
+   ```
+
+3. **Vitest Unit, Integration & Component Tests (`pnpm test`):**
+   ```
+    RUN  v5.0.5 C:/Users/ocitt/OneDrive/Dokumen/Finance
+
+    ✓ src/tests/menuVisibility.test.ts (11 tests) 7ms
+    ✓ src/tests/rbac.test.ts (14 tests) 10ms
+    ✓ src/tests/membership.test.ts (23 tests) 15ms
+    ✓ src/tests/memberProfilePortal.test.tsx (5 tests) 31ms
+
+    Test Files  4 passed (4)
+         Tests  53 passed (53)
+      Duration  1.80s
+   ```
+   *Total 53 dari 53 tes LULUS (100% PASS).*
+
+4. **Production Build (`pnpm build`):**
+   ```bash
+   $ tsc --noEmit && vite build
+   ✓ 2465 modules transformed.
+   dist/index.html                   0.89 kB │ gzip:   0.51 kB
+   dist/assets/index-BzBvXs4H.css   37.70 kB │ gzip:   6.91 kB
+   dist/assets/index-klGqW4e8.js   572.10 kB │ gzip: 158.93 kB
+   ✓ built in 3.99s
+   Exit code: 0
+   ```
+
+5. **Automated Responsive Verification (`node scripts/verify_responsive.js`):**
+   - Headless Chrome CDP verification pada 8 breakpoint standar (320px s.d. 1920px) untuk route `/` dan `/daftar`.
+   - Hasil: **16 dari 16 skenario PASS** (0px horizontal overflow, DOM valid, buttons found, no clipping).

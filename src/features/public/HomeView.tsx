@@ -2,6 +2,7 @@ import React from "react";
 import { Link } from "react-router-dom";
 import { useConfigStore } from "@/stores/configStore";
 import { formatIDR } from "@/lib/utils";
+import { DEFAULT_SAVINGS_CONFIG } from "@/features/membership/config/savingsConfig";
 import { Button } from "@/components/ui/Button";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
@@ -141,7 +142,7 @@ export const HomeView: React.FC = () => {
               </div>
               <CardTitle>Simpanan Anggota</CardTitle>
               <CardDescription>
-                Simpanan Pokok ({formatIDR(100000)}), Simpanan Wajib ({formatIDR(50000)}/bln), dan Simpanan Sukarela yang fleksibel ditarik kapan saja.
+                Simpanan Pokok (Ilustrasi: {formatIDR(DEFAULT_SAVINGS_CONFIG.simpananPokokNominal)}), Simpanan Wajib (Ilustrasi: {formatIDR(DEFAULT_SAVINGS_CONFIG.simpananWajibBulanan)}/bln), dan Simpanan Sukarela yang fleksibel ditarik kapan saja.
               </CardDescription>
             </CardHeader>
             <CardContent>

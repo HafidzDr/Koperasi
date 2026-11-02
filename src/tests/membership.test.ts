@@ -14,7 +14,6 @@ describe("PHASE 3 & 3.1 — Membership Management Lifecycle, SoD & Audit Remedia
     it("should create application with status 'submitted' and valid tracking code", () => {
       const newApp = useMembershipStore.getState().submitApplication({
         fullName: "Khadijah Al-Zahra",
-        demoId: "DEMO-ID-0099",
         email: "khadijah@email.invalid",
         phone: "0812-9988-7766 (Simulasi)",
         city: "Jakarta Timur",
@@ -29,7 +28,7 @@ describe("PHASE 3 & 3.1 — Membership Management Lifecycle, SoD & Audit Remedia
       expect(newApp.trackingCode).toMatch(/^REG-\d{6}$/);
       expect(newApp.status).toBe("submitted");
       expect(newApp.fullName).toBe("Khadijah Al-Zahra");
-      expect(newApp.demoId).toBe("DEMO-ID-0099");
+      expect(newApp.demoId).toBe("DEMO-ID-0010");
       expect(newApp.history).toHaveLength(1);
       expect(newApp.history[0].action).toBe("Permohonan Pendaftaran Terkirim");
       expect(newApp.history[0].actorRole).toBe("applicant");
@@ -42,8 +41,58 @@ describe("PHASE 3 & 3.1 — Membership Management Lifecycle, SoD & Audit Remedia
 
       const foundByDemoId = useMembershipStore
         .getState()
-        .getApplicationByDemoId("DEMO-ID-0099");
+        .getApplicationByDemoId(newApp.demoId);
       expect(foundByDemoId?.id).toBe(newApp.id);
+    });
+
+    it("should ignore user-supplied demoId and strictly assign store-generated unique ID (Phase 3.2 P1)", () => {
+      // User attempts to supply custom/arbitrary demoId
+      const tamperedApp = useMembershipStore.getState().submitApplication({
+        fullName: "Calon Upaya Tampering",
+        demoId: "CUSTOM-ID-ARBITRARY",
+        email: "tamper@email.invalid",
+        phone: "0811-9999-0000",
+        city: "Jakarta Barat",
+        address: "Jl. Daan Mogot",
+        occupation: "Pengembang Software",
+        simpananPokokConfirmed: true,
+        simpananWajibConfirmed: true,
+        adArtAgreed: true,
+      });
+
+      // Must be store-generated DEMO-ID-XXXX, NOT the user's arbitrary string
+      expect(tamperedApp.demoId).not.toBe("CUSTOM-ID-ARBITRARY");
+      expect(tamperedApp.demoId).toBe("DEMO-ID-0010");
+    });
+
+    it("should assign distinct sequential demo IDs for subsequent registrations without collision", () => {
+      const app1 = useMembershipStore.getState().submitApplication({
+        fullName: "Pendaftar Pertama",
+        email: "pertama@email.invalid",
+        phone: "0811-0001",
+        city: "Jakarta Selatan",
+        address: "Alamat 1",
+        occupation: "Wirausaha",
+        simpananPokokConfirmed: true,
+        simpananWajibConfirmed: true,
+        adArtAgreed: true,
+      });
+
+      const app2 = useMembershipStore.getState().submitApplication({
+        fullName: "Pendaftar Kedua",
+        email: "kedua@email.invalid",
+        phone: "0811-0002",
+        city: "Jakarta Selatan",
+        address: "Alamat 2",
+        occupation: "Wirausaha",
+        simpananPokokConfirmed: true,
+        simpananWajibConfirmed: true,
+        adArtAgreed: true,
+      });
+
+      expect(app1.demoId).toBe("DEMO-ID-0010");
+      expect(app2.demoId).toBe("DEMO-ID-0011");
+      expect(app1.demoId).not.toBe(app2.demoId);
     });
 
     it("should auto-generate a unique demoId if duplicate or invalid format is provided", () => {
@@ -394,6 +443,61 @@ describe("PHASE 3 & 3.1 — Membership Management Lifecycle, SoD & Audit Remedia
       // Verify strict segregation
       expect(user1Member?.id).not.toBe(user2Member?.id);
       expect(user1Member?.memberNumber).not.toBe(user2Member?.memberNumber);
+    });
+  });
+
+  describe("7. Configurable Savings Parameters (Phase 3.2 P1 Remediation)", () => {
+    it("should provide default illustration savings parameters clearly labeled", () => {
+      const config = useMembershipStore.getState().savingsConfig;
+      expect(config.simpananPokokNominal).toBe(100000);
+      expect(config.simpananWajibBulanan).toBe(50000);
+      expect(config.label).toBe("Nominal Ilustrasi — Dapat Diubah");
+      expect(config.disclaimer).toContain("bukan ketentuan final/resmi AD/ART");
+    });
+
+    it("should allow updating savings configuration and reflect in newly approved member commitments", () => {
+      const targetAppId = "APP-2026-0004"; // Agus Setiawan (recommended)
+
+      // Update configuration to different illustration values
+      useMembershipStore.getState().updateSavingsConfig({
+        simpananPokokNominal: 250000,
+        simpananWajibBulanan: 100000,
+      });
+
+      expect(useMembershipStore.getState().savingsConfig.simpananPokokNominal).toBe(250000);
+      expect(useMembershipStore.getState().savingsConfig.simpananWajibBulanan).toBe(100000);
+
+      // Manager approves application
+      useAuthStore.getState().setRole("manager");
+      const approveResult = useMembershipStore.getState().approveApplication(
+        targetAppId,
+        "Persetujuan dengan parameter konfigurasi ilustrasi baru."
+      );
+      expect(approveResult.success).toBe(true);
+
+      const app = useMembershipStore.getState().applications.find((a) => a.id === targetAppId);
+      const newMember = useMembershipStore.getState().getMemberByDemoId(app!.demoId);
+      expect(newMember).toBeDefined();
+
+      // Member commitment reflects the configured values
+      expect(newMember?.simpananPokokNominal).toBe(250000);
+      expect(newMember?.simpananWajibBulanan).toBe(100000);
+
+      // CRITICAL: Actual balances must STILL remain 0
+      expect(newMember?.saldoPokok).toBe(0);
+      expect(newMember?.saldoWajib).toBe(0);
+      expect(newMember?.saldoSukarela).toBe(0);
+    });
+
+    it("should reset savings configuration to default when resetToSeed is called", () => {
+      useMembershipStore.getState().updateSavingsConfig({
+        simpananPokokNominal: 999999,
+      });
+      expect(useMembershipStore.getState().savingsConfig.simpananPokokNominal).toBe(999999);
+
+      useMembershipStore.getState().resetToSeed();
+      expect(useMembershipStore.getState().savingsConfig.simpananPokokNominal).toBe(100000);
+      expect(useMembershipStore.getState().savingsConfig.simpananWajibBulanan).toBe(50000);
     });
   });
 });

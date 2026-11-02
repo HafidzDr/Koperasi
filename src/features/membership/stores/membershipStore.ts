@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import { Role } from "@/types";
 import { useAuthStore } from "@/stores/authStore";
+import { DEFAULT_SAVINGS_CONFIG, SavingsConfig } from "../config/savingsConfig";
 import {
   ApplicationStatus,
   Member,
@@ -8,6 +9,8 @@ import {
   VerificationChecklist,
   ApplicationActivityLog,
 } from "../types";
+
+export { DEFAULT_SAVINGS_CONFIG, type SavingsConfig } from "../config/savingsConfig";
 
 export interface CreateApplicationInput {
   fullName: string;
@@ -34,6 +37,11 @@ export interface UpdateRevisionInput {
 interface MembershipState {
   applications: MembershipApplication[];
   members: Member[];
+  savingsConfig: SavingsConfig;
+
+  // Actions - Savings Configuration (Demonstrasi / Ilustrasi)
+  updateSavingsConfig: (updates: Partial<SavingsConfig>) => void;
+  resetSavingsConfig: () => void;
 
   // Actions - Public / Applicant
   generateUniqueDemoId: () => string;
@@ -482,6 +490,18 @@ export const useMembershipStore = create<MembershipState>((rawSet, get) => {
   return {
     applications: initial.applications,
     members: initial.members,
+    savingsConfig: DEFAULT_SAVINGS_CONFIG,
+
+    // ----------------------------------------------------------------------
+    // SAVINGS CONFIGURATION ACTIONS (Demonstrasi / Ilustrasi)
+    // ----------------------------------------------------------------------
+    updateSavingsConfig: (updates: Partial<SavingsConfig>) => {
+      set({ savingsConfig: { ...get().savingsConfig, ...updates } });
+    },
+
+    resetSavingsConfig: () => {
+      set({ savingsConfig: DEFAULT_SAVINGS_CONFIG });
+    },
 
     // ----------------------------------------------------------------------
     // PUBLIC & APPLICANT ACTIONS
@@ -496,21 +516,9 @@ export const useMembershipStore = create<MembershipState>((rawSet, get) => {
       const trackingCode = `REG-${randNum}`;
       const newId = `APP-2026-${String(get().applications.length + 1).padStart(4, "0")}`;
 
-      // Ensure demoId is unique across existing applications and members
-      let assignedDemoId: string = input.demoId?.trim() || "";
-      const idRegex = /^DEMO-ID-\d{4}$/i;
-      const currentApps = get().applications;
-      const currentMembers = get().members;
-
-      const isCollisionOrInvalid =
-        !assignedDemoId ||
-        !idRegex.test(assignedDemoId) ||
-        currentApps.some((a) => a.demoId.toUpperCase() === assignedDemoId.toUpperCase()) ||
-        currentMembers.some((m) => m.demoId.toUpperCase() === assignedDemoId.toUpperCase());
-
-      if (isCollisionOrInvalid) {
-        assignedDemoId = generateUniqueDemoId(currentApps, currentMembers);
-      }
+      // Phase 3.2: Store is the single authority for generating Demo IDs.
+      // Arbitrary/freeform user input IDs are strictly ignored.
+      const assignedDemoId = generateUniqueDemoId(get().applications, get().members);
 
       const newApp: MembershipApplication = {
         id: newId,
@@ -931,8 +939,8 @@ export const useMembershipStore = create<MembershipState>((rawSet, get) => {
         joinDate: timestamp,
         approvedBy: `${activeActor.name} (Pengurus)`,
         applicationId: app.id,
-        simpananPokokNominal: 100000,
-        simpananWajibBulanan: 50000,
+        simpananPokokNominal: get().savingsConfig.simpananPokokNominal,
+        simpananWajibBulanan: get().savingsConfig.simpananWajibBulanan,
         saldoPokok: 0, // Finding P1: Persetujuan tidak mencatat saldo/pembayaran fiktif
         saldoWajib: 0, // Finding P1: Persetujuan tidak mencatat saldo/pembayaran fiktif
         saldoSukarela: 0,
@@ -1046,6 +1054,7 @@ export const useMembershipStore = create<MembershipState>((rawSet, get) => {
       set({
         applications: initialApplications,
         members: initialMembers,
+        savingsConfig: DEFAULT_SAVINGS_CONFIG,
       });
     },
   };
