@@ -87,16 +87,13 @@ export const MemberVerificationView: React.FC = () => {
     const updated = { ...tempChecklist, [key]: !tempChecklist[key] };
     setTempChecklist(updated);
     if (selectedApp) {
-      updateChecklist(selectedApp.id, { role: currentUser.role, name: currentUser.name }, updated, staffNotesInput);
+      updateChecklist(selectedApp.id, updated, staffNotesInput);
     }
   };
 
   const handleStartReview = () => {
     if (!selectedApp) return;
-    const res = startStaffReview(selectedApp.id, {
-      role: currentUser.role,
-      name: currentUser.name,
-    });
+    const res = startStaffReview(selectedApp.id);
     if (res.success) {
       addToast({
         type: "info",
@@ -115,7 +112,6 @@ export const MemberVerificationView: React.FC = () => {
     if (!selectedApp || !revisionReasonInput.trim()) return;
     const res = requestRevision(
       selectedApp.id,
-      { role: currentUser.role, name: currentUser.name },
       revisionReasonInput.trim()
     );
     if (res.success) {
@@ -135,7 +131,6 @@ export const MemberVerificationView: React.FC = () => {
     if (!selectedApp) return;
     const res = recommendApplication(
       selectedApp.id,
-      { role: currentUser.role, name: currentUser.name },
       staffNotesInput.trim()
     );
     if (res.success) {
@@ -155,7 +150,6 @@ export const MemberVerificationView: React.FC = () => {
     if (!selectedApp) return;
     const res = approveApplication(
       selectedApp.id,
-      { role: currentUser.role, name: currentUser.name },
       managerNotesInput.trim()
     );
     if (res.success) {
@@ -175,7 +169,6 @@ export const MemberVerificationView: React.FC = () => {
     if (!selectedApp || !rejectionReasonInput.trim()) return;
     const res = rejectApplication(
       selectedApp.id,
-      { role: currentUser.role, name: currentUser.name },
       rejectionReasonInput.trim()
     );
     if (res.success) {

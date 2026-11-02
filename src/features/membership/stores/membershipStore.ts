@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import { Role } from "@/types";
+import { useAuthStore } from "@/stores/authStore";
 import {
   ApplicationStatus,
   Member,
@@ -10,7 +11,7 @@ import {
 
 export interface CreateApplicationInput {
   fullName: string;
-  demoId: string;
+  demoId?: string;
   email: string;
   phone: string;
   city: string;
@@ -35,6 +36,7 @@ interface MembershipState {
   members: Member[];
 
   // Actions - Public / Applicant
+  generateUniqueDemoId: () => string;
   submitApplication: (input: CreateApplicationInput) => MembershipApplication;
   updateApplicantRevision: (
     trackingCode: string,
@@ -46,35 +48,35 @@ interface MembershipState {
   // Actions - Staff (Verifikasi & Rekomendasi)
   startStaffReview: (
     applicationId: string,
-    staffUser: { role: Role; name: string }
+    _callerOverride?: { role: Role; name: string }
   ) => { success: boolean; error?: string };
   updateChecklist: (
     applicationId: string,
-    staffUser: { role: Role; name: string },
-    checklist: Partial<VerificationChecklist>,
-    staffNotes?: string
+    staffUserOrChecklist: { role: Role; name: string } | Partial<VerificationChecklist>,
+    checklistOrNotes?: Partial<VerificationChecklist> | string,
+    maybeStaffNotes?: string
   ) => { success: boolean; error?: string };
   requestRevision: (
     applicationId: string,
-    staffUser: { role: Role; name: string },
-    revisionReason: string
+    staffUserOrReason: { role: Role; name: string } | string,
+    maybeRevisionReason?: string
   ) => { success: boolean; error?: string };
   recommendApplication: (
     applicationId: string,
-    staffUser: { role: Role; name: string },
-    notes: string
+    staffUserOrNotes?: { role: Role; name: string } | string,
+    maybeNotes?: string
   ) => { success: boolean; error?: string };
 
   // Actions - Manager (Persetujuan Final & Penolakan)
   approveApplication: (
     applicationId: string,
-    managerUser: { role: Role; name: string },
-    managerNotes?: string
+    managerUserOrNotes?: { role: Role; name: string } | string,
+    maybeManagerNotes?: string
   ) => { success: boolean; memberNumber?: string; error?: string };
   rejectApplication: (
     applicationId: string,
-    managerUser: { role: Role; name: string },
-    rejectionReason: string
+    managerUserOrReason: { role: Role; name: string } | string,
+    maybeRejectionReason?: string
   ) => { success: boolean; error?: string };
 
   // Member Registry Queries
@@ -421,6 +423,39 @@ function saveToStorage(applications: MembershipApplication[], members: Member[])
   }
 }
 
+export function generateUniqueDemoId(
+  existingApplications: { demoId?: string }[] = [],
+  existingMembers: { demoId?: string }[] = []
+): string {
+  const usedNumbers = new Set<number>();
+  const idRegex = /^DEMO-ID-(\d{4})$/i;
+
+  for (const item of [...existingApplications, ...existingMembers]) {
+    if (!item || !item.demoId) continue;
+    const match = item.demoId.match(idRegex);
+    if (match) {
+      usedNumbers.add(parseInt(match[1], 10));
+    }
+  }
+
+  let candidate = 1;
+  while (usedNumbers.has(candidate) && candidate <= 9999) {
+    candidate++;
+  }
+
+  if (candidate > 9999) {
+    throw new Error(
+      "Kapasitas ID Demonstrasi 4-digit (DEMO-ID-9999) telah penuh. Tidak dapat menghasilkan ID unik baru."
+    );
+  }
+
+  return `DEMO-ID-${String(candidate).padStart(4, "0")}`;
+}
+
+function getActiveActor() {
+  return useAuthStore.getState().currentUser;
+}
+
 function generateMemberNumber(existingMembers: Member[]): string {
   const currentYear = new Date().getFullYear();
   let maxSeq = 0;
@@ -448,489 +483,570 @@ export const useMembershipStore = create<MembershipState>((rawSet, get) => {
     applications: initial.applications,
     members: initial.members,
 
-      // ----------------------------------------------------------------------
-      // PUBLIC & APPLICANT ACTIONS
-      // ----------------------------------------------------------------------
-      submitApplication: (input: CreateApplicationInput) => {
-        const timestamp = new Date().toISOString();
-        const randNum = Math.floor(100000 + Math.random() * 900000);
-        const trackingCode = `REG-${randNum}`;
-        const newId = `APP-2026-${String(get().applications.length + 1).padStart(4, "0")}`;
+    // ----------------------------------------------------------------------
+    // PUBLIC & APPLICANT ACTIONS
+    // ----------------------------------------------------------------------
+    generateUniqueDemoId: () => {
+      return generateUniqueDemoId(get().applications, get().members);
+    },
 
-        const newApp: MembershipApplication = {
-          id: newId,
-          trackingCode,
-          demoId: input.demoId,
-          fullName: input.fullName,
-          email: input.email,
-          phone: input.phone || "0812-xxxx-xxxx (Simulasi)",
-          city: input.city,
-          address: input.address || `Wilayah ${input.city}`,
-          occupation: input.occupation,
-          simpananPokokConfirmed: input.simpananPokokConfirmed,
-          simpananWajibConfirmed: input.simpananWajibConfirmed,
-          adArtAgreed: input.adArtAgreed,
-          status: "submitted",
-          submissionDate: timestamp,
-          checklist: {
-            identityVerified: false,
-            biodataVerified: false,
-            commitmentVerified: false,
-            adArtVerified: false,
+    submitApplication: (input: CreateApplicationInput) => {
+      const timestamp = new Date().toISOString();
+      const randNum = Math.floor(100000 + Math.random() * 900000);
+      const trackingCode = `REG-${randNum}`;
+      const newId = `APP-2026-${String(get().applications.length + 1).padStart(4, "0")}`;
+
+      // Ensure demoId is unique across existing applications and members
+      let assignedDemoId: string = input.demoId?.trim() || "";
+      const idRegex = /^DEMO-ID-\d{4}$/i;
+      const currentApps = get().applications;
+      const currentMembers = get().members;
+
+      const isCollisionOrInvalid =
+        !assignedDemoId ||
+        !idRegex.test(assignedDemoId) ||
+        currentApps.some((a) => a.demoId.toUpperCase() === assignedDemoId.toUpperCase()) ||
+        currentMembers.some((m) => m.demoId.toUpperCase() === assignedDemoId.toUpperCase());
+
+      if (isCollisionOrInvalid) {
+        assignedDemoId = generateUniqueDemoId(currentApps, currentMembers);
+      }
+
+      const newApp: MembershipApplication = {
+        id: newId,
+        trackingCode,
+        demoId: assignedDemoId,
+        fullName: input.fullName,
+        email: input.email,
+        phone: input.phone || "0812-xxxx-xxxx (Simulasi)",
+        city: input.city,
+        address: input.address || `Wilayah ${input.city}`,
+        occupation: input.occupation,
+        simpananPokokConfirmed: input.simpananPokokConfirmed,
+        simpananWajibConfirmed: input.simpananWajibConfirmed,
+        adArtAgreed: input.adArtAgreed,
+        status: "submitted",
+        submissionDate: timestamp,
+        checklist: {
+          identityVerified: false,
+          biodataVerified: false,
+          commitmentVerified: false,
+          adArtVerified: false,
+        },
+        history: [
+          {
+            id: `LOG-${Date.now()}`,
+            timestamp,
+            actorRole: "applicant",
+            actorName: input.fullName,
+            fromStatus: "new",
+            toStatus: "submitted",
+            action: "Permohonan Pendaftaran Terkirim",
+            notes: "Pendaftaran daring berhasil dikirimkan.",
           },
-          history: [
-            {
-              id: `LOG-${Date.now()}`,
-              timestamp,
-              actorRole: "applicant",
-              actorName: input.fullName,
-              fromStatus: "new",
-              toStatus: "submitted",
-              action: "Permohonan Pendaftaran Terkirim",
-              notes: "Pendaftaran daring berhasil dikirimkan.",
-            },
-          ],
+        ],
+      };
+
+      const updatedApps = [newApp, ...get().applications];
+      set({ applications: updatedApps });
+
+      return newApp;
+    },
+
+    updateApplicantRevision: (trackingCode: string, updates: UpdateRevisionInput) => {
+      const app = get().applications.find((a) => a.trackingCode === trackingCode);
+      if (!app) {
+        return { success: false, error: "Berkas permohonan tidak ditemukan." };
+      }
+      if (app.status !== "revision_required") {
+        return {
+          success: false,
+          error: "Hanya permohonan dengan status 'Butuh Revisi' yang dapat diperbaiki.",
         };
+      }
 
-        set((state) => ({
-          applications: [newApp, ...state.applications],
-        }));
+      const timestamp = new Date().toISOString();
+      const logEntry: ApplicationActivityLog = {
+        id: `LOG-${Date.now()}`,
+        timestamp,
+        actorRole: "applicant",
+        actorName: app.fullName,
+        fromStatus: "revision_required",
+        toStatus: "submitted",
+        action: "Perbaikan Berkas Dikirimkan Ulang",
+        notes: "Pemohon telah memperbarui data yang diminta oleh staf verifikator.",
+      };
 
-        return newApp;
-      },
+      const updatedApps = get().applications.map((a) =>
+        a.id === app.id
+          ? {
+              ...a,
+              ...updates,
+              status: "submitted" as ApplicationStatus,
+              revisionReason: undefined,
+              history: [...a.history, logEntry],
+            }
+          : a
+      );
 
-      updateApplicantRevision: (trackingCode: string, updates: UpdateRevisionInput) => {
-        const app = get().applications.find((a) => a.trackingCode === trackingCode);
-        if (!app) {
-          return { success: false, error: "Berkas permohonan tidak ditemukan." };
-        }
-        if (app.status !== "revision_required") {
-          return {
-            success: false,
-            error: "Hanya permohonan dengan status 'Butuh Revisi' yang dapat diperbaiki.",
-          };
-        }
+      set({ applications: updatedApps });
+      return { success: true };
+    },
 
-        const timestamp = new Date().toISOString();
-        const logEntry: ApplicationActivityLog = {
-          id: `LOG-${Date.now()}`,
-          timestamp,
-          actorRole: "applicant",
-          actorName: app.fullName,
-          fromStatus: "revision_required",
-          toStatus: "submitted",
-          action: "Perbaikan Berkas Dikirimkan Ulang",
-          notes: "Pemohon telah memperbarui data yang diminta oleh staf verifikator.",
+    getApplicationByTrackingCode: (trackingCode: string) => {
+      return get().applications.find(
+        (a) => a.trackingCode.toLowerCase() === trackingCode.trim().toLowerCase()
+      );
+    },
+
+    getApplicationByDemoId: (demoId: string) => {
+      return get().applications.find(
+        (a) => a.demoId.toLowerCase() === demoId.trim().toLowerCase()
+      );
+    },
+
+    // ----------------------------------------------------------------------
+    // STAFF OPERATIONAL ACTIONS (Verifikasi & Rekomendasi)
+    // Separation of Duties: Identity is anchored to active authStore user
+    // ----------------------------------------------------------------------
+    startStaffReview: (
+      applicationId: string,
+      _callerOverride?: { role: Role; name: string }
+    ) => {
+      const activeActor = getActiveActor();
+      if (activeActor.role !== "staff") {
+        return {
+          success: false,
+          error: `Hanya Staf Operasional yang berwenang memulai verifikasi berkas (Peran aktif: "${activeActor.role}").`,
         };
+      }
 
-        set((state) => ({
-          applications: state.applications.map((a) =>
-            a.id === app.id
-              ? {
-                  ...a,
-                  ...updates,
-                  status: "submitted" as ApplicationStatus,
-                  revisionReason: undefined,
-                  history: [...a.history, logEntry],
-                }
-              : a
-          ),
-        }));
-
-        return { success: true };
-      },
-
-      getApplicationByTrackingCode: (trackingCode: string) => {
-        return get().applications.find(
-          (a) => a.trackingCode.toLowerCase() === trackingCode.trim().toLowerCase()
-        );
-      },
-
-      getApplicationByDemoId: (demoId: string) => {
-        return get().applications.find(
-          (a) => a.demoId.toLowerCase() === demoId.trim().toLowerCase()
-        );
-      },
-
-      // ----------------------------------------------------------------------
-      // STAFF OPERATIONAL ACTIONS (Verifikasi & Rekomendasi)
-      // ----------------------------------------------------------------------
-      startStaffReview: (
-        applicationId: string,
-        staffUser: { role: Role; name: string }
-      ) => {
-        if (staffUser.role !== "staff") {
-          return {
-            success: false,
-            error: "Hanya Staf Operasional yang berwenang memulai verifikasi berkas.",
-          };
-        }
-
-        const app = get().applications.find((a) => a.id === applicationId);
-        if (!app) {
-          return { success: false, error: "Permohonan tidak ditemukan." };
-        }
-        if (app.status !== "submitted") {
-          return {
-            success: false,
-            error: `Tidak dapat memulai verifikasi pada status "${app.status}".`,
-          };
-        }
-
-        const timestamp = new Date().toISOString();
-        const logEntry: ApplicationActivityLog = {
-          id: `LOG-${Date.now()}`,
-          timestamp,
-          actorRole: staffUser.role,
-          actorName: staffUser.name,
-          fromStatus: app.status,
-          toStatus: "under_review",
-          action: "Pemeriksaan Berkas Dimulai",
-          notes: `Staf ${staffUser.name} mulai memeriksa kelengkapan berkas.`,
+      const app = get().applications.find((a) => a.id === applicationId);
+      if (!app) {
+        return { success: false, error: "Permohonan tidak ditemukan." };
+      }
+      if (app.status !== "submitted") {
+        return {
+          success: false,
+          error: `Tidak dapat memulai verifikasi pada status "${app.status}".`,
         };
+      }
 
-        set((state) => ({
-          applications: state.applications.map((a) =>
-            a.id === applicationId
-              ? {
-                  ...a,
-                  status: "under_review" as ApplicationStatus,
-                  history: [...a.history, logEntry],
-                }
-              : a
-          ),
-        }));
+      const timestamp = new Date().toISOString();
+      const logEntry: ApplicationActivityLog = {
+        id: `LOG-${Date.now()}`,
+        timestamp,
+        actorRole: activeActor.role,
+        actorName: activeActor.name,
+        fromStatus: app.status,
+        toStatus: "under_review",
+        action: "Pemeriksaan Berkas Dimulai",
+        notes: `Staf ${activeActor.name} mulai memeriksa kelengkapan berkas.`,
+      };
 
-        return { success: true };
-      },
+      const updatedApps = get().applications.map((a) =>
+        a.id === applicationId
+          ? {
+              ...a,
+              status: "under_review" as ApplicationStatus,
+              history: [...a.history, logEntry],
+            }
+          : a
+      );
 
-      updateChecklist: (
-        applicationId: string,
-        staffUser: { role: Role; name: string },
-        checklist: Partial<VerificationChecklist>,
-        staffNotes?: string
-      ) => {
-        if (staffUser.role !== "staff") {
-          return {
-            success: false,
-            error: "Hanya Staf Operasional yang berwenang mengisi checklist verifikasi.",
-          };
-        }
+      set({ applications: updatedApps });
+      return { success: true };
+    },
 
-        const app = get().applications.find((a) => a.id === applicationId);
-        if (!app) {
-          return { success: false, error: "Permohonan tidak ditemukan." };
-        }
-
-        set((state) => ({
-          applications: state.applications.map((a) =>
-            a.id === applicationId
-              ? {
-                  ...a,
-                  checklist: { ...a.checklist, ...checklist },
-                  staffNotes: staffNotes !== undefined ? staffNotes : a.staffNotes,
-                }
-              : a
-          ),
-        }));
-
-        return { success: true };
-      },
-
-      requestRevision: (
-        applicationId: string,
-        staffUser: { role: Role; name: string },
-        revisionReason: string
-      ) => {
-        if (staffUser.role !== "staff") {
-          return {
-            success: false,
-            error: "Hanya Staf Operasional yang berwenang meminta revisi berkas.",
-          };
-        }
-        if (!revisionReason.trim()) {
-          return {
-            success: false,
-            error: "Alasan permintaan perbaikan wajib diisi agar pemohon mengetahui data yang perlu diperbaiki.",
-          };
-        }
-
-        const app = get().applications.find((a) => a.id === applicationId);
-        if (!app) {
-          return { success: false, error: "Permohonan tidak ditemukan." };
-        }
-        if (app.status !== "under_review" && app.status !== "submitted") {
-          return {
-            success: false,
-            error: `Permintaan revisi tidak dapat diajukan pada status "${app.status}".`,
-          };
-        }
-
-        const timestamp = new Date().toISOString();
-        const logEntry: ApplicationActivityLog = {
-          id: `LOG-${Date.now()}`,
-          timestamp,
-          actorRole: staffUser.role,
-          actorName: staffUser.name,
-          fromStatus: app.status,
-          toStatus: "revision_required",
-          action: "Permintaan Perbaikan Berkas Dikirim",
-          notes: revisionReason,
+    updateChecklist: (
+      applicationId: string,
+      staffUserOrChecklist: { role: Role; name: string } | Partial<VerificationChecklist>,
+      checklistOrNotes?: Partial<VerificationChecklist> | string,
+      maybeStaffNotes?: string
+    ) => {
+      const activeActor = getActiveActor();
+      if (activeActor.role !== "staff") {
+        return {
+          success: false,
+          error: `Hanya Staf Operasional yang berwenang memperbarui checklist verifikasi (Peran aktif: "${activeActor.role}").`,
         };
+      }
 
-        set((state) => ({
-          applications: state.applications.map((a) =>
-            a.id === applicationId
-              ? {
-                  ...a,
-                  status: "revision_required" as ApplicationStatus,
-                  revisionReason,
-                  history: [...a.history, logEntry],
-                }
-              : a
-          ),
-        }));
+      let checklist: Partial<VerificationChecklist>;
+      let staffNotes: string | undefined;
 
-        return { success: true };
-      },
+      if (typeof staffUserOrChecklist === "object" && "role" in staffUserOrChecklist) {
+        checklist = (checklistOrNotes as Partial<VerificationChecklist>) || {};
+        staffNotes = maybeStaffNotes;
+      } else {
+        checklist = (staffUserOrChecklist as Partial<VerificationChecklist>) || {};
+        staffNotes = typeof checklistOrNotes === "string" ? checklistOrNotes : undefined;
+      }
 
-      recommendApplication: (
-        applicationId: string,
-        staffUser: { role: Role; name: string },
-        notes: string
-      ) => {
-        if (staffUser.role !== "staff") {
-          return {
-            success: false,
-            error: "Hanya Staf Operasional yang berwenang menerbitkan rekomendasi ke Pengurus.",
-          };
-        }
+      const app = get().applications.find((a) => a.id === applicationId);
+      if (!app) {
+        return { success: false, error: "Permohonan tidak ditemukan." };
+      }
 
-        const app = get().applications.find((a) => a.id === applicationId);
-        if (!app) {
-          return { success: false, error: "Permohonan tidak ditemukan." };
-        }
-        if (app.status !== "under_review" && app.status !== "submitted") {
-          return {
-            success: false,
-            error: `Rekomendasi hanya dapat diterbitkan untuk permohonan yang sedang diverifikasi (saat ini "${app.status}").`,
-          };
-        }
+      const updatedChecklist = { ...app.checklist, ...checklist };
+      const finalStaffNotes = staffNotes !== undefined ? staffNotes : app.staffNotes;
 
-        // Validate all 4 checklist items must be verified
-        const { checklist } = app;
-        if (
-          !checklist.identityVerified ||
-          !checklist.biodataVerified ||
-          !checklist.commitmentVerified ||
-          !checklist.adArtVerified
-        ) {
-          return {
-            success: false,
-            error:
-              "Seluruh 4 butir checklist verifikasi (Identitas Demo, Kelengkapan Biodata, Komitmen Simpanan, Kesepakatan AD/ART) harus diverifikasi sebelum menerbitkan rekomendasi.",
-          };
-        }
+      const timestamp = new Date().toISOString();
+      const updatedKeys = Object.keys(checklist) as (keyof VerificationChecklist)[];
+      const checklistSummary = updatedKeys
+        .map((k) => `${k}: ${checklist[k] ? "valid" : "belum"}`)
+        .join(", ");
 
-        const timestamp = new Date().toISOString();
-        const logEntry: ApplicationActivityLog = {
-          id: `LOG-${Date.now()}`,
-          timestamp,
-          actorRole: staffUser.role,
-          actorName: staffUser.name,
-          fromStatus: app.status,
-          toStatus: "recommended",
-          action: "Rekomendasi Staf Diterbitkan ke Pengurus",
-          notes: notes || "Berkas telah lengkap dan diverifikasi valid.",
+      const logEntry: ApplicationActivityLog = {
+        id: `LOG-${Date.now()}`,
+        timestamp,
+        actorRole: activeActor.role,
+        actorName: activeActor.name,
+        fromStatus: app.status,
+        toStatus: app.status, // Catat perubahan tanpa membuat transisi status palsu
+        action: "Pembaruan Checklist Verifikasi",
+        notes: finalStaffNotes
+          ? `${checklistSummary || "Checklist diperbarui"}. Catatan: ${finalStaffNotes}`
+          : checklistSummary || "Pembaruan butir checklist kelengkapan.",
+      };
+
+      const updatedApps = get().applications.map((a) =>
+        a.id === applicationId
+          ? {
+              ...a,
+              checklist: updatedChecklist,
+              staffNotes: finalStaffNotes,
+              history: [...a.history, logEntry],
+            }
+          : a
+      );
+
+      set({ applications: updatedApps });
+      return { success: true };
+    },
+
+    requestRevision: (
+      applicationId: string,
+      staffUserOrReason: { role: Role; name: string } | string,
+      maybeRevisionReason?: string
+    ) => {
+      const activeActor = getActiveActor();
+      if (activeActor.role !== "staff") {
+        return {
+          success: false,
+          error: `Hanya Staf Operasional yang berwenang meminta revisi berkas (Peran aktif: "${activeActor.role}").`,
         };
+      }
 
-        set((state) => ({
-          applications: state.applications.map((a) =>
-            a.id === applicationId
-              ? {
-                  ...a,
-                  status: "recommended" as ApplicationStatus,
-                  staffNotes: notes || a.staffNotes,
-                  history: [...a.history, logEntry],
-                }
-              : a
-          ),
-        }));
+      let revisionReason = "";
+      if (typeof staffUserOrReason === "object" && "role" in staffUserOrReason) {
+        revisionReason = maybeRevisionReason || "";
+      } else {
+        revisionReason = typeof staffUserOrReason === "string" ? staffUserOrReason : "";
+      }
 
-        return { success: true };
-      },
-
-      // ----------------------------------------------------------------------
-      // GOVERNANCE & BOARD ACTIONS (Manager Persetujuan Final & Penolakan)
-      // Separation of Duties (SoD Footnote 2):
-      // Only 'manager' can approve or reject! Admin & Staf are explicitly denied.
-      // ----------------------------------------------------------------------
-      approveApplication: (
-        applicationId: string,
-        managerUser: { role: Role; name: string },
-        managerNotes?: string
-      ) => {
-        // Enforce strict Separation of Duties
-        if (managerUser.role !== "manager") {
-          return {
-            success: false,
-            error: `Kewenangan persetujuan final keanggotaan adalah hak mutlak Pengurus/Manajer (SoD BR-01.2). Peran "${managerUser.role}" tidak memiliki wewenang organisasi ini.`,
-          };
-        }
-
-        const app = get().applications.find((a) => a.id === applicationId);
-        if (!app) {
-          return { success: false, error: "Permohonan tidak ditemukan." };
-        }
-        if (app.status !== "recommended") {
-          return {
-            success: false,
-            error: `Hanya permohonan yang telah direkomendasikan oleh staf ("recommended") yang dapat disetujui Pengurus (status saat ini: "${app.status}").`,
-          };
-        }
-
-        // Automatic generation of unique Member Number immediately after Manager approval
-        const newMemberNumber = generateMemberNumber(get().members);
-        const newMemberId = `MBR-${String(get().members.length + 1).padStart(4, "0")}`;
-        const timestamp = new Date().toISOString();
-
-        const logEntry: ApplicationActivityLog = {
-          id: `LOG-${Date.now()}`,
-          timestamp,
-          actorRole: managerUser.role,
-          actorName: managerUser.name,
-          fromStatus: "recommended",
-          toStatus: "approved",
-          action: "Persetujuan Final Keanggotaan & Penerbitan Nomor Anggota",
-          notes: `Disetujui oleh ${managerUser.name}. Nomor Anggota resmi: ${newMemberNumber}.${
-            managerNotes ? ` Catatan: ${managerNotes}` : ""
-          }`,
+      if (!revisionReason.trim()) {
+        return {
+          success: false,
+          error: "Alasan permintaan perbaikan wajib diisi agar pemohon mengetahui data yang perlu diperbaiki.",
         };
+      }
 
-        const newMember: Member = {
-          id: newMemberId,
-          memberNumber: newMemberNumber,
-          demoId: app.demoId,
-          fullName: app.fullName,
-          email: app.email,
-          phone: app.phone,
-          city: app.city,
-          address: app.address,
-          occupation: app.occupation,
-          status: "active",
-          joinDate: timestamp,
-          approvedBy: `${managerUser.name} (Pengurus)`,
-          applicationId: app.id,
-          simpananPokokNominal: 100000,
-          simpananWajibBulanan: 50000,
-          saldoPokok: 100000,
-          saldoWajib: 50000,
-          saldoSukarela: 0,
+      const app = get().applications.find((a) => a.id === applicationId);
+      if (!app) {
+        return { success: false, error: "Permohonan tidak ditemukan." };
+      }
+      if (app.status !== "under_review" && app.status !== "submitted") {
+        return {
+          success: false,
+          error: `Permintaan revisi tidak dapat diajukan pada status "${app.status}".`,
         };
+      }
 
-        set((state) => ({
-          applications: state.applications.map((a) =>
-            a.id === applicationId
-              ? {
-                  ...a,
-                  status: "approved" as ApplicationStatus,
-                  approvedMemberNumber: newMemberNumber,
-                  assignedMemberId: newMemberId,
-                  managerNotes: managerNotes || a.managerNotes,
-                  history: [...a.history, logEntry],
-                }
-              : a
-          ),
-          members: [newMember, ...state.members],
-        }));
+      const timestamp = new Date().toISOString();
+      const logEntry: ApplicationActivityLog = {
+        id: `LOG-${Date.now()}`,
+        timestamp,
+        actorRole: activeActor.role,
+        actorName: activeActor.name,
+        fromStatus: app.status,
+        toStatus: "revision_required",
+        action: "Permintaan Perbaikan Berkas Dikirim",
+        notes: revisionReason,
+      };
 
-        return { success: true, memberNumber: newMemberNumber };
-      },
+      const updatedApps = get().applications.map((a) =>
+        a.id === applicationId
+          ? {
+              ...a,
+              status: "revision_required" as ApplicationStatus,
+              revisionReason,
+              history: [...a.history, logEntry],
+            }
+          : a
+      );
 
-      rejectApplication: (
-        applicationId: string,
-        managerUser: { role: Role; name: string },
-        rejectionReason: string
-      ) => {
-        // Enforce strict Separation of Duties
-        if (managerUser.role !== "manager") {
-          return {
-            success: false,
-            error: `Kewenangan penolakan final keanggotaan adalah hak mutlak Pengurus/Manajer (SoD BR-01.2). Peran "${managerUser.role}" tidak memiliki wewenang ini.`,
-          };
-        }
-        if (!rejectionReason.trim()) {
-          return {
-            success: false,
-            error: "Alasan penolakan permohonan keanggotaan wajib diisi.",
-          };
-        }
+      set({ applications: updatedApps });
+      return { success: true };
+    },
 
-        const app = get().applications.find((a) => a.id === applicationId);
-        if (!app) {
-          return { success: false, error: "Permohonan tidak ditemukan." };
-        }
-        if (app.status === "approved" || app.status === "rejected") {
-          return {
-            success: false,
-            error: `Permohonan sudah berada pada status final "${app.status}" dan tidak dapat ditolak ulang.`,
-          };
-        }
-
-        const timestamp = new Date().toISOString();
-        const logEntry: ApplicationActivityLog = {
-          id: `LOG-${Date.now()}`,
-          timestamp,
-          actorRole: managerUser.role,
-          actorName: managerUser.name,
-          fromStatus: app.status,
-          toStatus: "rejected",
-          action: "Penolakan Permohonan Keanggotaan",
-          notes: rejectionReason,
+    recommendApplication: (
+      applicationId: string,
+      staffUserOrNotes?: { role: Role; name: string } | string,
+      maybeNotes?: string
+    ) => {
+      const activeActor = getActiveActor();
+      if (activeActor.role !== "staff") {
+        return {
+          success: false,
+          error: `Hanya Staf Operasional yang berwenang menerbitkan rekomendasi ke Pengurus (Peran aktif: "${activeActor.role}").`,
         };
+      }
 
-        set((state) => ({
-          applications: state.applications.map((a) =>
-            a.id === applicationId
-              ? {
-                  ...a,
-                  status: "rejected" as ApplicationStatus,
-                  rejectionReason,
-                  history: [...a.history, logEntry],
-                }
-              : a
-          ),
-        }));
+      let notes = "";
+      if (typeof staffUserOrNotes === "object" && "role" in staffUserOrNotes) {
+        notes = maybeNotes || "";
+      } else {
+        notes = typeof staffUserOrNotes === "string" ? staffUserOrNotes : "";
+      }
 
-        return { success: true };
-      },
+      const app = get().applications.find((a) => a.id === applicationId);
+      if (!app) {
+        return { success: false, error: "Permohonan tidak ditemukan." };
+      }
+      if (app.status !== "under_review" && app.status !== "submitted") {
+        return {
+          success: false,
+          error: `Rekomendasi hanya dapat diterbitkan untuk permohonan yang sedang diverifikasi (saat ini "${app.status}").`,
+        };
+      }
 
-      // ----------------------------------------------------------------------
-      // MEMBER REGISTRY QUERIES
-      // ----------------------------------------------------------------------
-      getMemberByDemoId: (demoId: string) => {
-        return get().members.find(
-          (m) => m.demoId.toLowerCase() === demoId.trim().toLowerCase()
-        );
-      },
+      // Validate all 4 checklist items must be verified
+      const { checklist } = app;
+      if (
+        !checklist.identityVerified ||
+        !checklist.biodataVerified ||
+        !checklist.commitmentVerified ||
+        !checklist.adArtVerified
+      ) {
+        return {
+          success: false,
+          error:
+            "Seluruh 4 butir checklist verifikasi (Identitas Demo, Kelengkapan Biodata, Komitmen Simpanan, Kesepakatan AD/ART) harus diverifikasi sebelum menerbitkan rekomendasi.",
+        };
+      }
 
-      getMemberById: (id: string) => {
-        return get().members.find((m) => m.id === id);
-      },
+      const timestamp = new Date().toISOString();
+      const logEntry: ApplicationActivityLog = {
+        id: `LOG-${Date.now()}`,
+        timestamp,
+        actorRole: activeActor.role,
+        actorName: activeActor.name,
+        fromStatus: app.status,
+        toStatus: "recommended",
+        action: "Rekomendasi Staf Diterbitkan ke Pengurus",
+        notes: notes || "Berkas telah lengkap dan diverifikasi valid.",
+      };
 
-      resetToSeed: () => {
-        if (typeof window !== "undefined") {
-          try {
-            localStorage.removeItem(STORAGE_KEY);
-          } catch {
-            // ignore
-          }
+      const updatedApps = get().applications.map((a) =>
+        a.id === applicationId
+          ? {
+              ...a,
+              status: "recommended" as ApplicationStatus,
+              staffNotes: notes || a.staffNotes,
+              history: [...a.history, logEntry],
+            }
+          : a
+      );
+
+      set({ applications: updatedApps });
+      return { success: true };
+    },
+
+    // ----------------------------------------------------------------------
+    // GOVERNANCE & BOARD ACTIONS (Manager Persetujuan Final & Penolakan)
+    // Separation of Duties (SoD Footnote 2):
+    // Only 'manager' can approve or reject! Identity is read from authStore.
+    // ----------------------------------------------------------------------
+    approveApplication: (
+      applicationId: string,
+      managerUserOrNotes?: { role: Role; name: string } | string,
+      maybeManagerNotes?: string
+    ) => {
+      const activeActor = getActiveActor();
+      if (activeActor.role !== "manager") {
+        return {
+          success: false,
+          error: `Kewenangan persetujuan final keanggotaan adalah hak mutlak Pengurus/Manajer (SoD BR-01.2). Peran aktif saat ini "${activeActor.role}" tidak memiliki wewenang organisasi ini.`,
+        };
+      }
+
+      let managerNotes: string | undefined;
+      if (typeof managerUserOrNotes === "object" && "role" in managerUserOrNotes) {
+        managerNotes = maybeManagerNotes;
+      } else if (typeof managerUserOrNotes === "string") {
+        managerNotes = managerUserOrNotes;
+      }
+
+      const app = get().applications.find((a) => a.id === applicationId);
+      if (!app) {
+        return { success: false, error: "Permohonan tidak ditemukan." };
+      }
+      if (app.status !== "recommended") {
+        return {
+          success: false,
+          error: `Hanya permohonan yang telah direkomendasikan oleh staf ("recommended") yang dapat disetujui Pengurus (status saat ini: "${app.status}").`,
+        };
+      }
+
+      // Automatic generation of unique Member Number immediately after Manager approval
+      const newMemberNumber = generateMemberNumber(get().members);
+      const newMemberId = `MBR-${String(get().members.length + 1).padStart(4, "0")}`;
+      const timestamp = new Date().toISOString();
+
+      const logEntry: ApplicationActivityLog = {
+        id: `LOG-${Date.now()}`,
+        timestamp,
+        actorRole: activeActor.role,
+        actorName: activeActor.name,
+        fromStatus: "recommended",
+        toStatus: "approved",
+        action: "Persetujuan Final Keanggotaan & Penerbitan Nomor Anggota",
+        notes: `Disetujui oleh ${activeActor.name}. Nomor Anggota resmi: ${newMemberNumber}.${
+          managerNotes ? ` Catatan: ${managerNotes}` : ""
+        }`,
+      };
+
+      const newMember: Member = {
+        id: newMemberId,
+        memberNumber: newMemberNumber,
+        demoId: app.demoId,
+        fullName: app.fullName,
+        email: app.email,
+        phone: app.phone,
+        city: app.city,
+        address: app.address,
+        occupation: app.occupation,
+        status: "active",
+        joinDate: timestamp,
+        approvedBy: `${activeActor.name} (Pengurus)`,
+        applicationId: app.id,
+        simpananPokokNominal: 100000,
+        simpananWajibBulanan: 50000,
+        saldoPokok: 0, // Finding P1: Persetujuan tidak mencatat saldo/pembayaran fiktif
+        saldoWajib: 0, // Finding P1: Persetujuan tidak mencatat saldo/pembayaran fiktif
+        saldoSukarela: 0,
+      };
+
+      const updatedApps = get().applications.map((a) =>
+        a.id === applicationId
+          ? {
+              ...a,
+              status: "approved" as ApplicationStatus,
+              approvedMemberNumber: newMemberNumber,
+              assignedMemberId: newMemberId,
+              managerNotes: managerNotes || a.managerNotes,
+              history: [...a.history, logEntry],
+            }
+          : a
+      );
+
+      const updatedMembers = [newMember, ...get().members];
+      set({ applications: updatedApps, members: updatedMembers });
+
+      return { success: true, memberNumber: newMemberNumber };
+    },
+
+    rejectApplication: (
+      applicationId: string,
+      managerUserOrReason: { role: Role; name: string } | string,
+      maybeRejectionReason?: string
+    ) => {
+      const activeActor = getActiveActor();
+      if (activeActor.role !== "manager") {
+        return {
+          success: false,
+          error: `Kewenangan penolakan final keanggotaan adalah hak mutlak Pengurus/Manajer (SoD BR-01.2). Peran aktif saat ini "${activeActor.role}" tidak memiliki wewenang ini.`,
+        };
+      }
+
+      let rejectionReason = "";
+      if (typeof managerUserOrReason === "object" && "role" in managerUserOrReason) {
+        rejectionReason = maybeRejectionReason || "";
+      } else {
+        rejectionReason = typeof managerUserOrReason === "string" ? managerUserOrReason : "";
+      }
+
+      if (!rejectionReason.trim()) {
+        return {
+          success: false,
+          error: "Alasan penolakan permohonan keanggotaan wajib diisi.",
+        };
+      }
+
+      const app = get().applications.find((a) => a.id === applicationId);
+      if (!app) {
+        return { success: false, error: "Permohonan tidak ditemukan." };
+      }
+      if (app.status === "approved" || app.status === "rejected") {
+        return {
+          success: false,
+          error: `Permohonan sudah berada pada status final "${app.status}" dan tidak dapat ditolak ulang.`,
+        };
+      }
+
+      const timestamp = new Date().toISOString();
+      const logEntry: ApplicationActivityLog = {
+        id: `LOG-${Date.now()}`,
+        timestamp,
+        actorRole: activeActor.role,
+        actorName: activeActor.name,
+        fromStatus: app.status,
+        toStatus: "rejected",
+        action: "Penolakan Permohonan Keanggotaan",
+        notes: rejectionReason,
+      };
+
+      const updatedApps = get().applications.map((a) =>
+        a.id === applicationId
+          ? {
+              ...a,
+              status: "rejected" as ApplicationStatus,
+              rejectionReason,
+              history: [...a.history, logEntry],
+            }
+          : a
+      );
+
+      set({ applications: updatedApps });
+      return { success: true };
+    },
+
+    // ----------------------------------------------------------------------
+    // MEMBER REGISTRY QUERIES
+    // ----------------------------------------------------------------------
+    getMemberByDemoId: (demoId: string) => {
+      return get().members.find(
+        (m) => m.demoId.toLowerCase() === demoId.trim().toLowerCase()
+      );
+    },
+
+    getMemberById: (id: string) => {
+      return get().members.find((m) => m.id === id);
+    },
+
+    resetToSeed: () => {
+      if (typeof window !== "undefined") {
+        try {
+          localStorage.removeItem(STORAGE_KEY);
+        } catch {
+          // ignore
         }
-        set({
-          applications: initialApplications,
-          members: initialMembers,
-        });
-      },
-    };
-  }
-);
+      }
+      set({
+        applications: initialApplications,
+        members: initialMembers,
+      });
+    },
+  };
+});

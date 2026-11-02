@@ -300,24 +300,29 @@ export const MemberListView: React.FC = () => {
 
             {/* Savings Overview in Member Registry */}
             <div className="space-y-2">
-              <h4 className="font-bold text-ink-900 uppercase tracking-wider text-[11px]">
-                Rekapitulasi Simpanan Anggota
-              </h4>
+              <div className="flex items-center justify-between">
+                <h4 className="font-bold text-ink-900 uppercase tracking-wider text-[11px]">
+                  Rekapitulasi Saldo Simpanan Aktual
+                </h4>
+                <span className="text-[10px] text-ink-500">
+                  Komitmen: Pokok {formatIDR(selectedMember.simpananPokokNominal || 100000)} • Wajib {formatIDR(selectedMember.simpananWajibBulanan || 50000)}/bln
+                </span>
+              </div>
               <div className="grid grid-cols-3 gap-3">
                 <div className="p-3 bg-white border border-ink-200 rounded-lg">
-                  <span className="text-ink-500 block text-[10px]">Simpanan Pokok</span>
+                  <span className="text-ink-500 block text-[10px]">Saldo Simpanan Pokok</span>
                   <span className="font-bold text-ink-900 font-mono">
                     {formatIDR(selectedMember.saldoPokok || 0)}
                   </span>
                 </div>
                 <div className="p-3 bg-white border border-ink-200 rounded-lg">
-                  <span className="text-ink-500 block text-[10px]">Simpanan Wajib</span>
+                  <span className="text-ink-500 block text-[10px]">Saldo Simpanan Wajib</span>
                   <span className="font-bold text-ink-900 font-mono">
                     {formatIDR(selectedMember.saldoWajib || 0)}
                   </span>
                 </div>
                 <div className="p-3 bg-white border border-ink-200 rounded-lg">
-                  <span className="text-ink-500 block text-[10px]">Simpanan Sukarela</span>
+                  <span className="text-ink-500 block text-[10px]">Saldo Simpanan Sukarela</span>
                   <span className="font-bold text-forest-800 font-mono">
                     {formatIDR(selectedMember.saldoSukarela || 0)}
                   </span>

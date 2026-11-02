@@ -4,6 +4,7 @@ import { useMembershipStore } from "../stores/membershipStore";
 import { formatIDR } from "@/lib/utils";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
+import { EmptyState } from "@/components/ui/EmptyState";
 import {
   Building,
   CheckCircle2,
@@ -18,11 +19,27 @@ import {
 
 export const MemberProfilePortalView: React.FC = () => {
   const { currentUser } = useAuthStore();
-  const { members, getMemberByDemoId } = useMembershipStore();
+  const { getMemberByDemoId } = useMembershipStore();
 
   // Strictly scoped to the authenticated member (BR-01.1 & Seksi 5.4 Member Boundary V~)
-  const memberDemoId = currentUser.memberId || "DEMO-ID-0001";
-  const member = getMemberByDemoId(memberDemoId) || members[0];
+  // Absolute zero fallback to other members or hardcoded IDs
+  const memberDemoId = currentUser.memberId?.trim();
+  const member = memberDemoId ? getMemberByDemoId(memberDemoId) : undefined;
+
+  if (!memberDemoId || !member) {
+    return (
+      <div className="max-w-2xl mx-auto py-12 px-4 text-left">
+        <EmptyState
+          title="Profil Keanggotaan Tidak Ditemukan"
+          description={
+            !memberDemoId
+              ? "Akun Anda saat ini belum memiliki tautan identitas anggota (memberId). Silakan hubungi pengurus koperasi atau ajukan pendaftaran anggota baru."
+              : `Data anggota dengan ID "${memberDemoId}" tidak ditemukan dalam Buku Induk Anggota KMB. Permohonan Anda mungkin masih dalam proses verifikasi atau belum disetujui Pengurus.`
+          }
+        />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6 text-left max-w-4xl mx-auto">
@@ -194,7 +211,9 @@ export const MemberProfilePortalView: React.FC = () => {
                 Simpanan Pokok:
               </span>
               <p className="text-ink-700">
-                Lunas ({formatIDR(member.saldoPokok)}) — Disetor saat pertama menjadi anggota.
+                {member.saldoPokok > 0
+                  ? `Lunas (${formatIDR(member.saldoPokok)}) — Setoran awal tercatat.`
+                  : `Komitmen: ${formatIDR(member.simpananPokokNominal)} (Menunggu setoran perdana).`}
               </p>
             </div>
 
@@ -203,7 +222,7 @@ export const MemberProfilePortalView: React.FC = () => {
                 Simpanan Wajib Bulanan:
               </span>
               <p className="text-ink-700">
-                {formatIDR(member.simpananWajibBulanan)} / bulan (Saldo saat ini: {formatIDR(member.saldoWajib)}).
+                Kewajiban: {formatIDR(member.simpananWajibBulanan)} / bulan (Saldo aktual: {formatIDR(member.saldoWajib)}).
               </p>
             </div>
 

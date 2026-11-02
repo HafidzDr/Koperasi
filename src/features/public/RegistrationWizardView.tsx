@@ -30,21 +30,24 @@ type RegistrationFormData = z.infer<typeof registrationSchema>;
 
 export const RegistrationWizardView: React.FC = () => {
   const { addToast } = useToastStore();
+  const { generateUniqueDemoId, submitApplication } = useMembershipStore();
   const [currentStep, setCurrentStep] = useState<number>(1);
   const [isSimulatedDocUploaded, setIsSimulatedDocUploaded] = useState<boolean>(false);
   const [isSuccessSubmitted, setIsSuccessSubmitted] = useState<boolean>(false);
   const [trackingCode, setTrackingCode] = useState<string>("");
+  const [submittedDemoId, setSubmittedDemoId] = useState<string>("");
 
   const {
     register,
     handleSubmit,
     trigger,
+    reset,
     formState: { errors, isSubmitting },
   } = useForm<RegistrationFormData>({
     resolver: zodResolver(registrationSchema),
     defaultValues: {
       fullName: "",
-      demoId: "DEMO-ID-0005",
+      demoId: generateUniqueDemoId(),
       email: "",
       city: "Jakarta",
       occupation: "Wirausaha Kuliner UMKM",
@@ -72,8 +75,6 @@ export const RegistrationWizardView: React.FC = () => {
     setCurrentStep((prev) => Math.max(1, prev - 1));
   };
 
-  const { submitApplication } = useMembershipStore();
-
   const onSubmit = async (data: RegistrationFormData) => {
     // Simulate network delay 500ms
     await new Promise((resolve) => setTimeout(resolve, 500));
@@ -92,6 +93,7 @@ export const RegistrationWizardView: React.FC = () => {
     });
 
     setTrackingCode(app.trackingCode);
+    setSubmittedDemoId(app.demoId);
     setIsSuccessSubmitted(true);
 
     addToast({
@@ -124,8 +126,8 @@ export const RegistrationWizardView: React.FC = () => {
               <span className="font-mono font-bold text-forest-800">{trackingCode}</span>
             </div>
             <div className="flex justify-between text-xs">
-              <span className="text-ink-500">Format ID Anggota:</span>
-              <span className="font-mono text-ink-800">DEMO-ID-0005</span>
+              <span className="text-ink-500">ID Demonstrasi Diterbitkan:</span>
+              <span className="font-mono font-bold text-ink-800">{submittedDemoId}</span>
             </div>
             <div className="flex justify-between text-xs">
               <span className="text-ink-500">Tahap Berikutnya:</span>
@@ -145,6 +147,17 @@ export const RegistrationWizardView: React.FC = () => {
               onClick={() => {
                 setIsSuccessSubmitted(false);
                 setCurrentStep(1);
+                const nextId = generateUniqueDemoId();
+                reset({
+                  fullName: "",
+                  demoId: nextId,
+                  email: "",
+                  city: "Jakarta",
+                  occupation: "Wirausaha Kuliner UMKM",
+                  simpananPokokConfirmed: false,
+                  simpananWajibConfirmed: false,
+                  adArtAgreed: false,
+                });
               }}
             >
               Daftar Calon Lain
@@ -235,7 +248,7 @@ export const RegistrationWizardView: React.FC = () => {
 
                 <Input
                   label="ID Demonstrasi (Format Tunggal: DEMO-ID-XXXX)"
-                  placeholder="DEMO-ID-0005"
+                  placeholder="Contoh: DEMO-ID-0010"
                   isTabular
                   {...register("demoId")}
                   errorMessage={errors.demoId?.message}

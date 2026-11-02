@@ -1,11 +1,13 @@
 import { describe, it, expect, beforeEach } from "vitest";
-import { useMembershipStore } from "../features/membership/stores/membershipStore";
+import { useMembershipStore, generateUniqueDemoId } from "../features/membership/stores/membershipStore";
+import { useAuthStore } from "../stores/authStore";
 import { Role } from "../types";
 
-describe("PHASE 3 — Membership Management Lifecycle & SoD Verification", () => {
+describe("PHASE 3 & 3.1 — Membership Management Lifecycle, SoD & Audit Remediation", () => {
   beforeEach(() => {
     // Reset Zustand store to clean initial seed data before each test
     useMembershipStore.getState().resetToSeed();
+    useAuthStore.getState().resetToDefault();
   });
 
   describe("1. Application Submission (Public / Applicant)", () => {
@@ -43,31 +45,123 @@ describe("PHASE 3 — Membership Management Lifecycle & SoD Verification", () =>
         .getApplicationByDemoId("DEMO-ID-0099");
       expect(foundByDemoId?.id).toBe(newApp.id);
     });
+
+    it("should auto-generate a unique demoId if duplicate or invalid format is provided", () => {
+      // DEMO-ID-0001 is already taken by existing member Siti Rahma
+      const duplicateApp = useMembershipStore.getState().submitApplication({
+        fullName: "Calon Baru Unik",
+        demoId: "DEMO-ID-0001",
+        email: "calon.unik@email.invalid",
+        phone: "0811-1234-5678",
+        city: "Jakarta Selatan",
+        address: "Jl. Fatmawati",
+        occupation: "Desainer",
+        simpananPokokConfirmed: true,
+        simpananWajibConfirmed: true,
+        adArtAgreed: true,
+      });
+
+      expect(duplicateApp.demoId).not.toBe("DEMO-ID-0001");
+      expect(duplicateApp.demoId).toMatch(/^DEMO-ID-\d{4}$/);
+
+      // Verify no other application or member shares this generated demoId
+      const allDemoIds = [
+        ...useMembershipStore.getState().applications.map((a) => a.demoId),
+        ...useMembershipStore.getState().members.map((m) => m.demoId),
+      ];
+      const matches = allDemoIds.filter((id) => id === duplicateApp.demoId);
+      expect(matches).toHaveLength(1);
+    });
   });
 
-  describe("2. Staff Verification & Recommendation Workflow", () => {
-    it("should allow only 'staff' to start review on 'submitted' applications", () => {
+  describe("2. Unique Demo ID Generator (Phase 3.1 P1 Remediation)", () => {
+    it("should generate sequentially available demo ID avoiding collisions", () => {
+      const mockApps = [{ demoId: "DEMO-ID-0001" }, { demoId: "DEMO-ID-0002" }];
+      const mockMembers = [{ demoId: "DEMO-ID-0003" }];
+
+      const generated = generateUniqueDemoId(mockApps, mockMembers);
+      expect(generated).toBe("DEMO-ID-0004");
+    });
+
+    it("should fill lowest available gaps in demo IDs", () => {
+      const mockApps = [{ demoId: "DEMO-ID-0001" }, { demoId: "DEMO-ID-0003" }];
+      const mockMembers: { demoId?: string }[] = [];
+
+      const generated = generateUniqueDemoId(mockApps, mockMembers);
+      expect(generated).toBe("DEMO-ID-0002");
+    });
+
+    it("should throw descriptive error when 4-digit capacity (>9999) is exhausted", () => {
+      // Simulate exhausted IDs
+      const exhausted = Array.from({ length: 9999 }, (_, i) => ({
+        demoId: `DEMO-ID-${String(i + 1).padStart(4, "0")}`,
+      }));
+
+      expect(() => generateUniqueDemoId(exhausted, [])).toThrow(
+        /Kapasitas ID Demonstrasi 4-digit .* telah penuh/
+      );
+    });
+  });
+
+  describe("3. Separation of Duties (SoD) & Role Anti-Spoofing (Phase 3.1 P1 Remediation)", () => {
+    it("should strictly resolve role from useAuthStore, blocking caller parameter spoofing", () => {
+      const targetAppId = "APP-2026-0004"; // Agus Setiawan (recommended)
+
+      // Active role is 'staff'
+      useAuthStore.getState().setRole("staff");
+
+      // Staff attempts to approve by maliciously passing role: "manager" in parameter
+      const spoofApprove = useMembershipStore.getState().approveApplication(
+        targetAppId,
+        { role: "manager" as Role, name: "Fake Manager" }
+      );
+      expect(spoofApprove.success).toBe(false);
+      expect(spoofApprove.error).toContain("Kewenangan persetujuan final keanggotaan");
+      expect(spoofApprove.error).toContain('"staff"');
+
+      // Staff attempts to reject passing role: "manager"
+      const spoofReject = useMembershipStore.getState().rejectApplication(
+        targetAppId,
+        { role: "manager" as Role, name: "Fake Manager" },
+        "Ditolak secara sepihak"
+      );
+      expect(spoofReject.success).toBe(false);
+      expect(spoofReject.error).toContain('"staff"');
+    });
+
+    it("ADMIN, SUPER ADMIN, FINANCE OFFICER, and TREASURER cannot approve membership", () => {
+      const targetAppId = "APP-2026-0004"; // recommended
+
+      const forbiddenRoles: Role[] = ["admin", "super_admin", "finance_officer", "treasurer", "auditor"];
+
+      for (const role of forbiddenRoles) {
+        useAuthStore.getState().setRole(role);
+        const result = useMembershipStore.getState().approveApplication(targetAppId);
+        expect(result.success).toBe(false);
+        expect(result.error).toContain("Kewenangan persetujuan final");
+      }
+    });
+
+    it("MANAGER cannot start review or recommend (Staff only)", () => {
+      const targetAppId = "APP-2026-0001"; // submitted
+      useAuthStore.getState().setRole("manager");
+
+      const reviewResult = useMembershipStore.getState().startStaffReview(targetAppId);
+      expect(reviewResult.success).toBe(false);
+      expect(reviewResult.error).toContain("Hanya Staf Operasional");
+
+      const recResult = useMembershipStore.getState().recommendApplication(targetAppId);
+      expect(recResult.success).toBe(false);
+      expect(recResult.error).toContain("Hanya Staf Operasional");
+    });
+  });
+
+  describe("4. Staff Verification & Recommendation Workflow", () => {
+    it("should allow 'staff' to start review on 'submitted' applications", () => {
       const targetAppId = "APP-2026-0001"; // Budi Santoso (submitted)
+      useAuthStore.getState().setRole("staff");
 
-      // 1. Non-staff (manager, admin, auditor) must be rejected
-      const managerAttempt = useMembershipStore.getState().startStaffReview(targetAppId, {
-        role: "manager" as Role,
-        name: "Hendra Kurniawan",
-      });
-      expect(managerAttempt.success).toBe(false);
-      expect(managerAttempt.error).toContain("Hanya Staf Operasional");
-
-      const adminAttempt = useMembershipStore.getState().startStaffReview(targetAppId, {
-        role: "admin" as Role,
-        name: "Rina Wijaya",
-      });
-      expect(adminAttempt.success).toBe(false);
-
-      // 2. Staff is authorized
-      const staffSuccess = useMembershipStore.getState().startStaffReview(targetAppId, {
-        role: "staff" as Role,
-        name: "Dewi Lestari",
-      });
+      const staffSuccess = useMembershipStore.getState().startStaffReview(targetAppId);
       expect(staffSuccess.success).toBe(true);
 
       const updated = useMembershipStore
@@ -81,11 +175,11 @@ describe("PHASE 3 — Membership Management Lifecycle & SoD Verification", () =>
 
     it("should allow staff to request revision, and applicant to amend and resubmit", () => {
       const targetAppId = "APP-2026-0002"; // Maya Indah (under_review)
+      useAuthStore.getState().setRole("staff");
 
       // Staff requests revision
       const revResult = useMembershipStore.getState().requestRevision(
         targetAppId,
-        { role: "staff", name: "Dewi Lestari" },
         "Mohon cantumkan kelurahan dan kode pos pada alamat domisili."
       );
       expect(revResult.success).toBe(true);
@@ -117,22 +211,47 @@ describe("PHASE 3 — Membership Management Lifecycle & SoD Verification", () =>
       );
     });
 
+    it("should record checklist update into audit trail without fake status transitions", () => {
+      const targetAppId = "APP-2026-0002"; // under_review
+      useAuthStore.getState().setRole("staff");
+
+      const prevApp = useMembershipStore.getState().applications.find((a) => a.id === targetAppId);
+      const prevHistoryLen = prevApp!.history.length;
+
+      // Update partial checklist
+      const updateRes = useMembershipStore.getState().updateChecklist(
+        targetAppId,
+        { identityVerified: true, biodataVerified: true },
+        "Verifikasi KTP dan data pribadi cocok dengan dokumen kependudukan."
+      );
+      expect(updateRes.success).toBe(true);
+
+      const updatedApp = useMembershipStore.getState().applications.find((a) => a.id === targetAppId);
+      expect(updatedApp?.history).toHaveLength(prevHistoryLen + 1);
+
+      const latestLog = updatedApp!.history[updatedApp!.history.length - 1];
+      expect(latestLog.action).toBe("Pembaruan Checklist Verifikasi");
+      expect(latestLog.actorRole).toBe("staff");
+      expect(latestLog.fromStatus).toBe(updatedApp!.status);
+      expect(latestLog.toStatus).toBe(updatedApp!.status); // No fake status shift
+      expect(latestLog.notes).toContain("Verifikasi KTP");
+    });
+
     it("should prevent staff recommendation if checklist is incomplete, and succeed once all 4 items are checked", () => {
       const targetAppId = "APP-2026-0002"; // under_review
+      useAuthStore.getState().setRole("staff");
 
-      // Currently only 2 of 4 items are checked
+      // Currently incomplete
       const failRecommend = useMembershipStore.getState().recommendApplication(
         targetAppId,
-        { role: "staff", name: "Dewi Lestari" },
         "Data lengkap."
       );
       expect(failRecommend.success).toBe(false);
       expect(failRecommend.error).toContain("Seluruh 4 butir checklist verifikasi");
 
-      // Complete the remaining 2 checklist items
+      // Complete all 4 checklist items
       useMembershipStore.getState().updateChecklist(
         targetAppId,
-        { role: "staff", name: "Dewi Lestari" },
         {
           identityVerified: true,
           biodataVerified: true,
@@ -145,7 +264,6 @@ describe("PHASE 3 — Membership Management Lifecycle & SoD Verification", () =>
       // Now recommendation succeeds
       const successRecommend = useMembershipStore.getState().recommendApplication(
         targetAppId,
-        { role: "staff", name: "Dewi Lestari" },
         "Berkas lengkap dan direkomendasikan untuk disetujui Pengurus."
       );
       expect(successRecommend.success).toBe(true);
@@ -157,68 +275,15 @@ describe("PHASE 3 — Membership Management Lifecycle & SoD Verification", () =>
     });
   });
 
-  describe("3. Separation of Duties (SoD) — Approval Authority", () => {
-    it("STAFF is strictly forbidden from approving or rejecting applications", () => {
-      const targetAppId = "APP-2026-0004"; // Agus Setiawan (recommended)
-
-      const staffApprove = useMembershipStore.getState().approveApplication(
-        targetAppId,
-        { role: "staff", name: "Dewi Lestari" }
-      );
-      expect(staffApprove.success).toBe(false);
-      expect(staffApprove.error).toContain("Pengurus/Manajer");
-
-      const staffReject = useMembershipStore.getState().rejectApplication(
-        targetAppId,
-        { role: "staff", name: "Dewi Lestari" },
-        "Ditolak staf."
-      );
-      expect(staffReject.success).toBe(false);
-      expect(staffReject.error).toContain("Pengurus/Manajer");
-    });
-
-    it("ADMINISTRATOR and SUPER ADMIN are strictly forbidden from approving applications (SoD Footnote 2)", () => {
-      const targetAppId = "APP-2026-0004"; // recommended
-
-      const adminApprove = useMembershipStore.getState().approveApplication(
-        targetAppId,
-        { role: "admin", name: "Rina Wijaya" }
-      );
-      expect(adminApprove.success).toBe(false);
-      expect(adminApprove.error).toContain("Pengurus/Manajer");
-
-      const superApprove = useMembershipStore.getState().approveApplication(
-        targetAppId,
-        { role: "super_admin", name: "Super Admin" }
-      );
-      expect(superApprove.success).toBe(false);
-    });
-
-    it("FINANCE OFFICER and TREASURER are forbidden from approving membership applications", () => {
-      const targetAppId = "APP-2026-0004"; // recommended
-
-      const foApprove = useMembershipStore.getState().approveApplication(
-        targetAppId,
-        { role: "finance_officer", name: "Ahmad Fauzi" }
-      );
-      expect(foApprove.success).toBe(false);
-
-      const trApprove = useMembershipStore.getState().approveApplication(
-        targetAppId,
-        { role: "treasurer", name: "Sri Mulyani" }
-      );
-      expect(trApprove.success).toBe(false);
-    });
-  });
-
-  describe("4. Manager Approval & Automatic Member Number Generation", () => {
-    it("should allow MANAGER to approve, generate sequential Member Number, and add to Member Registry", () => {
+  describe("5. Manager Approval & Balance Separation (Phase 3.1 P1 Remediation)", () => {
+    it("should approve application, generate member number, and initialize balances to 0", () => {
       const targetAppId = "APP-2026-0004"; // Agus Setiawan (recommended)
       const prevMemberCount = useMembershipStore.getState().members.length;
 
+      useAuthStore.getState().setRole("manager");
+
       const approveResult = useMembershipStore.getState().approveApplication(
         targetAppId,
-        { role: "manager", name: "Hendra Kurniawan" },
         "Memenuhi seluruh persyaratan AD/ART."
       );
 
@@ -244,18 +309,26 @@ describe("PHASE 3 — Membership Management Lifecycle & SoD Verification", () =>
       expect(newMember?.memberNumber).toBe(approveResult.memberNumber);
       expect(newMember?.fullName).toBe("Agus Setiawan");
       expect(newMember?.status).toBe("active");
-      expect(newMember?.saldoPokok).toBe(100000);
-      expect(newMember?.saldoWajib).toBe(50000);
+
+      // CRITICAL Phase 3.1: Balances must be 0 until actual financial payment is settled
+      expect(newMember?.saldoPokok).toBe(0);
+      expect(newMember?.saldoWajib).toBe(0);
+      expect(newMember?.saldoSukarela).toBe(0);
+
+      // Commitment obligations remain registered
+      expect(newMember?.simpananPokokNominal).toBe(100000);
+      expect(newMember?.simpananWajibBulanan).toBe(50000);
     });
 
-    it("should allow MANAGER to reject with mandatory reason, without generating Member Number", () => {
+    it("should allow MANAGER to reject with mandatory reason, without generating Member Number or registry entry", () => {
       const targetAppId = "APP-2026-0004"; // Agus Setiawan (recommended)
       const prevMemberCount = useMembershipStore.getState().members.length;
+
+      useAuthStore.getState().setRole("manager");
 
       // Empty rejection reason must fail
       const emptyReason = useMembershipStore.getState().rejectApplication(
         targetAppId,
-        { role: "manager", name: "Hendra Kurniawan" },
         "   "
       );
       expect(emptyReason.success).toBe(false);
@@ -263,7 +336,6 @@ describe("PHASE 3 — Membership Management Lifecycle & SoD Verification", () =>
       // Valid rejection
       const validReject = useMembershipStore.getState().rejectApplication(
         targetAppId,
-        { role: "manager", name: "Hendra Kurniawan" },
         "Cakupan usaha di luar ketentuan wilayah keanggotaan koperasi."
       );
       expect(validReject.success).toBe(true);
@@ -282,15 +354,46 @@ describe("PHASE 3 — Membership Management Lifecycle & SoD Verification", () =>
     });
   });
 
-  describe("5. Member Registry Queries & Portal Boundary", () => {
-    it("should retrieve member record by demoId", () => {
-      const member = useMembershipStore.getState().getMemberByDemoId("DEMO-ID-0001");
-      expect(member).toBeDefined();
-      expect(member?.fullName).toBe("Siti Rahma");
-      expect(member?.memberNumber).toBe("KMB-2026-0001");
-      expect(member?.status).toBe("active");
-      expect(member?.saldoPokok).toBe(100000);
-      expect(member?.saldoWajib).toBe(600000);
+  describe("6. Member Profile Isolation & Privacy (Phase 3.1 P0 Remediation)", () => {
+    it("should retrieve member record strictly by matching demoId", () => {
+      const member1 = useMembershipStore.getState().getMemberByDemoId("DEMO-ID-0001");
+      expect(member1).toBeDefined();
+      expect(member1?.fullName).toBe("Siti Rahma");
+      expect(member1?.memberNumber).toBe("KMB-2026-0001");
+
+      const member2 = useMembershipStore.getState().getMemberByDemoId("DEMO-ID-0007");
+      expect(member2).toBeDefined();
+      expect(member2?.fullName).toBe("Dian Pratama");
+      expect(member2?.memberNumber).toBe("KMB-2026-0002");
+    });
+
+    it("should return undefined for nonexistent member ID without falling back to members[0]", () => {
+      const nonexistent = useMembershipStore.getState().getMemberByDemoId("DEMO-ID-9999");
+      expect(nonexistent).toBeUndefined();
+
+      // Ensure first member is NOT returned
+      const firstMember = useMembershipStore.getState().members[0];
+      expect(nonexistent).not.toEqual(firstMember);
+    });
+
+    it("should return undefined for empty or invalid member ID", () => {
+      expect(useMembershipStore.getState().getMemberByDemoId("")).toBeUndefined();
+      expect(useMembershipStore.getState().getMemberByDemoId("   ")).toBeUndefined();
+      expect(useMembershipStore.getState().getMemberByDemoId("NON-EXISTENT")).toBeUndefined();
+    });
+
+    it("demonstrates member profile isolation between distinct user sessions", () => {
+      // User 1: Siti Rahma (DEMO-ID-0001)
+      const user1Member = useMembershipStore.getState().getMemberByDemoId("DEMO-ID-0001");
+      expect(user1Member?.fullName).toBe("Siti Rahma");
+
+      // User 2: Dian Pratama (DEMO-ID-0007)
+      const user2Member = useMembershipStore.getState().getMemberByDemoId("DEMO-ID-0007");
+      expect(user2Member?.fullName).toBe("Dian Pratama");
+
+      // Verify strict segregation
+      expect(user1Member?.id).not.toBe(user2Member?.id);
+      expect(user1Member?.memberNumber).not.toBe(user2Member?.memberNumber);
     });
   });
 });

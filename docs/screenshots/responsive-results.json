@@ -650,7 +650,7 @@
         },
         {
           "tag": "input",
-          "text": "DEMO-ID-0005",
+          "text": "Contoh: DEMO-ID-0010",
           "width": 239,
           "height": 40,
           "isUsable": true
@@ -726,7 +726,7 @@
         },
         {
           "tag": "input",
-          "text": "DEMO-ID-0005",
+          "text": "Contoh: DEMO-ID-0010",
           "width": 294,
           "height": 40,
           "isUsable": true
@@ -748,7 +748,7 @@
       ]
     },
     "screenshot": "public_daftar_375.png",
-    "fileSize": 46940,
+    "fileSize": 46845,
     "status": "PASS"
   },
   {
@@ -802,7 +802,7 @@
         },
         {
           "tag": "input",
-          "text": "DEMO-ID-0005",
+          "text": "Contoh: DEMO-ID-0010",
           "width": 309,
           "height": 40,
           "isUsable": true
@@ -824,7 +824,7 @@
       ]
     },
     "screenshot": "public_daftar_390.png",
-    "fileSize": 56199,
+    "fileSize": 56101,
     "status": "PASS"
   },
   {
@@ -892,7 +892,7 @@
         },
         {
           "tag": "input",
-          "text": "DEMO-ID-0005",
+          "text": "Contoh: DEMO-ID-0010",
           "width": 590,
           "height": 40,
           "isUsable": true
@@ -900,7 +900,7 @@
       ]
     },
     "screenshot": "public_daftar_768.png",
-    "fileSize": 100664,
+    "fileSize": 100567,
     "status": "PASS"
   },
   {
@@ -961,7 +961,7 @@
         },
         {
           "tag": "input",
-          "text": "DEMO-ID-0005",
+          "text": "Contoh: DEMO-ID-0010",
           "width": 590,
           "height": 40,
           "isUsable": true
@@ -976,7 +976,7 @@
       ]
     },
     "screenshot": "public_daftar_1024.png",
-    "fileSize": 75181,
+    "fileSize": 75076,
     "status": "PASS"
   },
   {
@@ -1037,7 +1037,7 @@
         },
         {
           "tag": "input",
-          "text": "DEMO-ID-0005",
+          "text": "Contoh: DEMO-ID-0010",
           "width": 590,
           "height": 40,
           "isUsable": true
@@ -1052,7 +1052,7 @@
       ]
     },
     "screenshot": "public_daftar_1280.png",
-    "fileSize": 78368,
+    "fileSize": 78260,
     "status": "PASS"
   },
   {
@@ -1113,7 +1113,7 @@
         },
         {
           "tag": "input",
-          "text": "DEMO-ID-0005",
+          "text": "Contoh: DEMO-ID-0010",
           "width": 590,
           "height": 40,
           "isUsable": true
@@ -1128,7 +1128,7 @@
       ]
     },
     "screenshot": "public_daftar_1440.png",
-    "fileSize": 90950,
+    "fileSize": 90841,
     "status": "PASS"
   },
   {
@@ -1189,7 +1189,7 @@
         },
         {
           "tag": "input",
-          "text": "DEMO-ID-0005",
+          "text": "Contoh: DEMO-ID-0010",
           "width": 590,
           "height": 40,
           "isUsable": true
@@ -1204,7 +1204,7 @@
       ]
     },
     "screenshot": "public_daftar_1920.png",
-    "fileSize": 118653,
+    "fileSize": 118547,
     "status": "PASS"
   }
 ]

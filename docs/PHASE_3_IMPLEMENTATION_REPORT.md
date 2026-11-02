@@ -146,3 +146,65 @@ Dilakukan pengujian otomasi headless Chrome terhadap seluruh 8 standar breakpoin
 ## 5. Kesimpulan & Status Akhir
 
 Seluruh kriteria penerimaan Phase 3 telah terpenuhi dengan integritas Separation of Duties (SoD) yang teruji, tata kelola data demonstrasi yang aman (tanpa NIK dan tanpa backend), antarmuka pengguna yang terhubung secara end-to-end, serta seluruh quality gate hijau.
+
+
+---
+
+## 6. Phase 3.1 — Independent Audit Remediation
+
+Pada Phase 3.1, dilakukan audit independen dan perbaikan terarah untuk memperkuat privasi anggota, keunikan identitas demonstrasi, integritas aturan bisnis keuangan koperasi, pencegahan *role spoofing*, dan jejak audit verifikasi.
+
+### A. Rincian Remediasi Temuan Audit
+
+| ID | Kategori | File Terdampak | Temuan Audit | Tindakan Remediasi Terverifikasi |
+|---|---|---|---|---|
+| **P0** | **Isolasi Profil Anggota** | `src/features/membership/pages/MemberProfilePortalView.tsx` | Penggunaan fallback `getMemberByDemoId(memberDemoId) || members[0]` berpotensi membocorkan data profil anggota lain bila ID tidak ditemukan. | Dihapus seluruh fallback ke `members[0]` atau ID statis. Jika `memberDemoId` tidak ada atau tidak cocok di Buku Induk Anggota, sistem secara deterministik menampilkan `EmptyState` ("Profil Keanggotaan Tidak Ditemukan"). Data anggota lain tidak akan pernah ditampilkan. |
+| **P1** | **ID Demonstrasi Unik Dinamis** | `src/features/public/RegistrationWizardView.tsx`, `src/features/membership/stores/membershipStore.ts` | Default ID statis `DEMO-ID-0005` memicu duplikasi ID antara pendaftar baru dan data mock yang sudah ada. | Diterapkan fungsi generator `generateUniqueDemoId()` yang memeriksa seluruh `applications` dan `members`. Mengisi celah terendah dalam rentang `DEMO-ID-0001` s.d `DEMO-ID-9999` dan menangani batas kapasitas (>9999) dengan error deskriptif. Layar pendaftaran menampilkan ID unik yang terbuat secara dinamis. |
+| **P1** | **Pemisahan Persetujuan dari Saldo Simpanan** | `src/features/membership/stores/membershipStore.ts`, `src/features/membership/pages/MemberListView.tsx` | Pada saat disetujui, anggota langsung diberi saldo simpanan pokok (Rp 100.000) dan wajib (Rp 50.000) padahal belum ada transaksi pembayaran nyata. | Nilai saldo awal anggota yang baru disetujui diinisialisasi secara ketat menjadi `0` (`saldoPokok: 0`, `saldoWajib: 0`, `saldoSukarela: 0`). Komitmen kewajiban (`simpananPokokNominal: 100000`, `simpananWajibBulanan: 50000`) dicatat terpisah tanpa memicu saldo fiktif atau transaksi bayar. |
+| **P1** | **Penguatan Identitas Aktif (Anti-Role Spoofing)** | `src/features/membership/stores/membershipStore.ts`, `src/features/admin/MemberVerificationView.tsx` | Aksi store menerima argumen `caller` dari parameter fungsi yang dapat dipalsukan (*parameter spoofing*). | Sumber identitas dan peran aktor sepenuhnya diikat langsung (*anchored*) ke `useAuthStore.getState().currentUser`. Upaya memalsukan peran lewat parameter ditolak. Perubahan peran pada switcher demo langsung mengubah hak akses operasional. |
+| **Log** | **Audit Trail Checklist Verifikasi** | `src/features/membership/stores/membershipStore.ts` | Pembaruan checklist tidak tercatat dalam riwayat aktivitas aplikasi (`history`). | Ditambahkan pencatatan entri aktivitas baru berlabel `"Pembaruan Checklist Verifikasi"` ke dalam `history` tanpa membuat transisi status palsu (`fromStatus: app.status`, `toStatus: app.status`), mencatat rincian butir yang diverifikasi dan catatan staf serta mempertahankan log historis. |
+
+### B. Hasil Quality Gates Phase 3.1
+
+Seluruh pengujian dijalankan ulang secara terpisah:
+
+1. **TypeScript Strict Typecheck (`pnpm typecheck`):**
+   ```bash
+   $ tsc --noEmit
+   Exit code: 0 (Clean, 0 errors)
+   ```
+
+2. **ESLint Code Quality (`pnpm lint`):**
+   ```bash
+   $ eslint "src/**/*.{ts,tsx}" --max-warnings 0
+   Exit code: 0 (Clean, 0 warnings, 0 errors)
+   ```
+
+3. **Vitest Unit & Integration Tests (`pnpm test`):**
+   ```
+    RUN  v5.0.5 C:/Users/ocitt/OneDrive/Dokumen/Finance
+
+    ✓ src/tests/menuVisibility.test.ts (11 tests) 7ms
+    ✓ src/tests/rbac.test.ts (14 tests) 9ms
+    ✓ src/tests/membership.test.ts (18 tests) 17ms
+
+    Test Files  3 passed (3)
+         Tests  43 passed (43)
+      Duration  212ms
+   ```
+   *Total 43/43 pengujian LULUS (100% PASS), termasuk 8 pengujian regresi spesifik Phase 3.1 untuk isolasi profil, generator ID unik, anti-spoofing peran, saldo awal 0, dan audit trail checklist.*
+
+4. **Production Build (`pnpm build`):**
+   ```bash
+   $ tsc --noEmit && vite build
+   ✓ 2464 modules transformed.
+   dist/index.html                   0.89 kB │ gzip:   0.51 kB
+   dist/assets/index-B5QHoDzB.css   37.73 kB │ gzip:   6.92 kB
+   dist/assets/index-DU-1OAXn.js   569.75 kB │ gzip: 158.48 kB
+   ✓ built in 3.96s
+   Exit code: 0
+   ```
+
+5. **Automated Responsive Verification (`node scripts/verify_responsive.js`):**
+   - Headless Chrome CDP verification pada 8 breakpoint standar (320px, 375px, 390px, 768px, 1024px, 1280px, 1440px, 1920px) untuk route beranda dan pendaftaran.
+   - Hasil: **16 dari 16 skenario PASS** (0px horizontal overflow, DOM valid, buttons found, no clipping).
