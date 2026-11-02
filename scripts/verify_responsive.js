@@ -332,20 +332,50 @@ async function main() {
               const bodyText = document.body.innerText || '';
               const rawMarkdownFound = bodyText.includes('**');
 
-              // Find elements overflowing viewport width
+              // Threshold for layout bounds (sub-pixel rounding tolerance)
+              const OVERFLOW_TOLERANCE = 1.0;
+
+              // Overflow occurs if scrollWidth exceeds clientWidth
+              const scrollOverflow =
+                docScrollW > clientW + OVERFLOW_TOLERANCE ||
+                bodyScrollW > clientW + OVERFLOW_TOLERANCE;
+
+              // Find elements overflowing client layout width
               const overflowingElements = [];
               const clippedElements = [];
 
               document.querySelectorAll('*').forEach((el) => {
                 const rect = el.getBoundingClientRect();
                 if (rect.width > 0 && rect.height > 0) {
-                  // Overflow viewport width
-                  if (rect.right > innerW + 1.5) {
+                  // Check if element is inside an intentional horizontally scrollable ancestor (e.g. data table)
+                  let isInsideScrollable = false;
+                  let curr = el.parentElement;
+                  while (curr && curr !== document.body && curr !== document.documentElement) {
+                    const style = window.getComputedStyle(curr);
+                    if (style.overflowX === 'auto' || style.overflowX === 'scroll') {
+                      isInsideScrollable = true;
+                      break;
+                    }
+                    curr = curr.parentElement;
+                  }
+
+                  // Overflow clientWidth boundary (if not in an intentional scroll container)
+                  if (!isInsideScrollable && rect.right > clientW + OVERFLOW_TOLERANCE) {
                     overflowingElements.push({
                       tag: el.tagName.toLowerCase(),
-                      className: (el.className || '').toString().slice(0, 60),
+                      id: el.id || '',
+                      className: (el.className || '').toString().slice(0, 80),
+                      width: Math.round(rect.width),
+                      left: Math.round(rect.left),
                       right: Math.round(rect.right),
-                      width: Math.round(rect.width)
+                      viewportRight: Math.round(clientW),
+                      parent: el.parentElement
+                        ? {
+                            tag: el.parentElement.tagName.toLowerCase(),
+                            id: el.parentElement.id || '',
+                            className: (el.parentElement.className || '').toString().slice(0, 60),
+                          }
+                        : null,
                     });
                   }
 
@@ -357,10 +387,17 @@ async function main() {
                     if (isClippedOverflow && rect.right > pRect.right + 2 && el.tagName !== 'SVG' && !el.classList.contains('truncate')) {
                       clippedElements.push({
                         tag: el.tagName.toLowerCase(),
-                        parentTag: el.parentElement.tagName.toLowerCase(),
+                        id: el.id || '',
                         className: (el.className || '').toString().slice(0, 60),
-                        pRight: Math.round(pRect.right),
-                        elRight: Math.round(rect.right)
+                        width: Math.round(rect.width),
+                        left: Math.round(rect.left),
+                        right: Math.round(rect.right),
+                        parent: {
+                          tag: el.parentElement.tagName.toLowerCase(),
+                          id: el.parentElement.id || '',
+                          className: (el.parentElement.className || '').toString().slice(0, 60),
+                          pRight: Math.round(pRect.right),
+                        },
                       });
                     }
                   }
@@ -378,7 +415,7 @@ async function main() {
                   isUsable: b.getBoundingClientRect().width >= 20 && b.getBoundingClientRect().height >= 20
                 }));
 
-              const hasOverflow = docScrollW > innerW + 1 || bodyScrollW > innerW + 1 || overflowingElements.length > 0;
+              const hasOverflow = scrollOverflow || overflowingElements.length > 0;
 
               return {
                 innerWidth: innerW,
@@ -406,8 +443,8 @@ async function main() {
         // Validation Rules:
         // - DOM must be ready
         // - DOM completeness validation must pass
-        // - docScrollWidth === innerWidth (or <= innerWidth)
-        // - bodyScrollWidth <= innerWidth
+        // - docScrollWidth <= clientWidth + 1
+        // - bodyScrollWidth <= clientWidth + 1
         // - No overflow
         // - No raw markdown **
         // - No clipping
@@ -417,6 +454,8 @@ async function main() {
           isDomReady &&
           domValidation.isValid &&
           !metrics.hasOverflow &&
+          metrics.docScrollWidth <= metrics.clientWidth + 1 &&
+          metrics.bodyScrollWidth <= metrics.clientWidth + 1 &&
           !metrics.rawMarkdownFound &&
           metrics.clippedElements.length === 0 &&
           metrics.buttonsSample.length > 0 &&
@@ -424,7 +463,10 @@ async function main() {
 
         console.log(`DOM Ready: ${isDomReady} | DOM Valid: ${domValidation.isValid} (${domValidation.reason})`);
         console.log(`Buttons sample (${metrics.buttonsSample.length}):`, metrics.buttonsSample.map(b => `${b.tag}[${b.text}:${b.width}x${b.height}]`).join(', '));
-        console.log(`InnerWidth: ${metrics.innerWidth} | ScrollWidth: ${metrics.docScrollWidth} | BodyScrollW: ${metrics.bodyScrollWidth}`);
+        console.log(`InnerWidth: ${metrics.innerWidth} | ClientWidth: ${metrics.clientWidth} | ScrollWidth: ${metrics.docScrollWidth} | BodyScrollW: ${metrics.bodyScrollWidth}`);
+        if (metrics.overflowingElements.length > 0) {
+          console.error(`Overflowing elements (${metrics.overflowingElements.length}):`, JSON.stringify(metrics.overflowingElements, null, 2));
+        }
         console.log(`Screenshot: ${shotFilename} (${Math.round(fileSize / 1024)} KB) -> STATUS: ${isPassed ? 'PASS' : 'FAIL'}`);
 
         results.push({
@@ -454,7 +496,9 @@ async function main() {
         Page: r.page,
         Viewport: r.viewport,
         'Inner Width': r.metrics.innerWidth,
+        'Client Width': r.metrics.clientWidth,
         'Doc ScrollW': r.metrics.docScrollWidth,
+        'Body ScrollW': r.metrics.bodyScrollWidth,
         'DOM Valid': r.domValidation.isValid ? 'YES' : 'FAIL',
         Overflow: r.metrics.hasOverflow ? 'FAIL' : 'OK',
         'Raw Markdown': r.metrics.rawMarkdownFound ? 'FAIL' : 'OK',

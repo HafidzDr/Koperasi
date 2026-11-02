@@ -108,41 +108,45 @@ Seluruh perintah pengujian dijalankan ulang secara terpisah dengan hasil sukses 
 
 ## 6. HASIL VERIFIKASI RESPONSIVITAS & AUTOMATED BROWSER AUDIT
 
-### 6.1 Metodologi Sinkronisasi & Validasi Kelengkapan DOM
-Pengujian responsivitas otomatis dijalankan menggunakan Google Chrome headless (`C:\Program Files\Google\Chrome\Application\chrome.exe` dengan `--headless=new`) melalui skrip otomasi [`scripts/verify_responsive.js`](file:///c:/Users/ocitt/OneDrive/Dokumen/Finance/scripts/verify_responsive.js).
+### 6.1 Koreksi Metodologi Pengukuran Horizontal Overflow
+Berdasarkan tinjauan Phase 2.2.1, metodologi evaluasi horizontal overflow pada [`scripts/verify_responsive.js`](file:///c:/Users/ocitt/OneDrive/Dokumen/Finance/scripts/verify_responsive.js) telah disempurnakan:
 
-Fitur keamanan dan validitas pengujian mutakhir:
-1. **Target Tab Halaman Bersih:** Skrip mendeteksi dan secara eksplisit menempelkan sesi CDP ke target bertipe `page` (`chrome://newtab/` yang dinavigasi ke target), bukan background extension.
-2. **Sinkronisasi Berbasis Kondisi DOM Nyata:** Menggantikan fixed delay dengan polling asinkron hingga elemen kritis React selesai dimuat dan dirender:
-   - **Beranda (`/`):** Memastikan `h1` memuat identitas "Koperasi" dan tombol CTA primer (`Daftar Menjadi Anggota`, dsb.) berukuran nyata (`offsetWidth > 0 && offsetHeight > 0`).
-   - **Pendaftaran (`/daftar`):** Memastikan `h1` memuat judul form, elemen `<form>` aktif, minimal 2 input terlihat (`fullName`, `demoId`), dan tombol navigasi `Selanjutnya` berukuran nyata.
-3. **Validasi Kelengkapan DOM Sebelum Pengukuran:** Sebelum evaluasi overflow, skrip memverifikasi:
-   - `document.body.innerText` tidak kosong (panjang karakter > 300 untuk beranda dan > 200 untuk pendaftaran).
-   - Elemen utama memiliki dimensi non-zero (`width > 0 && height > 0`).
-   - `buttonsSample` wajib terisi (berisi minimal 6 elemen interaktif aktif per skenario).
-   - Berkas tangkapan layar screenshot berukuran valid (> 10 KB) dan menampilkan UI nyata, bukan kanvas kosong.
-4. **Isolasi Profil Browser:** Setiap pengujian dijalankan dengan direktori `tempProfileDir` unik untuk menjamin ketiadaan data residual `localStorage`.
+1. **Koreksi Kesalahan Pembanding Viewport Terdahulu:**
+   - *Metode Sebelumnya:* Menggunakan `window.innerWidth` sebagai satu-satunya pembanding scroll width. Pada peramban desktop dengan *classic vertical scrollbar*, `window.innerWidth` mencakup lebar scrollbar (15–17 px), sehingga tidak merefleksikan batas ruang layout CSS sebenarnya.
+   - *Metode Terkoreksi:* Batas acuan layout CSS mutlak adalah `document.documentElement.clientWidth`. Kondisi overflow dihitung terhadap batas `clientWidth`, yaitu:
+     $$\text{Overflow} \iff (\text{docScrollWidth} > \text{clientWidth} + 1.0) \lor (\text{bodyScrollWidth} > \text{clientWidth} + 1.0)$$
+   - Nilai `window.innerWidth` tetap dicatat untuk keperluan diagnostik ukuran jendela fisik browser.
+2. **Pemeriksaan Batas Koordinat Elemen (`getBoundingClientRect().right`):**
+   - Setiap elemen diuji terhadap `rect.right > clientWidth + 1.0`.
+   - Skrip membedakan overflow disengaja (elemen di dalam kontainer yang memiliki `overflow-x: auto` atau `overflow-x: scroll` seperti tabel data) dari overflow layout halaman utama.
+   - Jika ditemukan overflow, skrip mencatat rincian lengkap: tag, id, className, lebar, posisi left/right, batas clientWidth, dan elemen induknya.
+3. **Validasi Kesiapan & Kelengkapan DOM Terpadu:**
+   - Polling asinkron hingga elemen spesifik React selesai dirender (`h1`, form, tombol CTA, input).
+   - Validasi kelengkapan isi (`bodyText.length > 200/300`, `buttonsSample` minimal 6 elemen, ukuran elemen non-zero).
+   - Setiap pengujian menggunakan profil Chrome sementara (`tempProfileDir`) terisolasi dari sisa cache/localStorage.
 
-### 6.2 Tabel Pengukuran Aktual 16 Kasus Uji
+### 6.2 Tabel Pengukuran Aktual 16 Kasus Uji Terkoreksi
 
-| Halaman | Viewport | Lebar Viewport (`innerW`) | `docScrollWidth` | DOM Completeness | Horizontal Overflow | Raw Markdown `**` | Clipping Unintended | Buttons Sampled | Ukuran PNG | Status |
-|---|---|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
-| `public_home` | 320 × 640 | 320 px | 305 px | **VALID (YES)** | **OK (0 px)** | **OK (Nihil)** | **OK (0)** | 6 elemen | 30 KB | **PASS** |
-| `public_home` | 375 × 667 | 375 px | 360 px | **VALID (YES)** | **OK (0 px)** | **OK (Nihil)** | **OK (0)** | 6 elemen | 36 KB | **PASS** |
-| `public_home` | 390 × 844 | 390 px | 375 px | **VALID (YES)** | **OK (0 px)** | **OK (Nihil)** | **OK (0)** | 6 elemen | 48 KB | **PASS** |
-| `public_home` | 768 × 1024 | 768 px | 753 px | **VALID (YES)** | **OK (0 px)** | **OK (Nihil)** | **OK (0)** | 6 elemen | 101 KB | **PASS** |
-| `public_home` | 1024 × 768 | 1024 px | 1009 px | **VALID (YES)** | **OK (0 px)** | **OK (Nihil)** | **OK (0)** | 6 elemen | 80 KB | **PASS** |
-| `public_home` | 1280 × 800 | 1280 px | 1265 px | **VALID (YES)** | **OK (0 px)** | **OK (Nihil)** | **OK (0)** | 6 elemen | 85 KB | **PASS** |
-| `public_home` | 1440 × 900 | 1440 px | 1425 px | **VALID (YES)** | **OK (0 px)** | **OK (Nihil)** | **OK (0)** | 6 elemen | 89 KB | **PASS** |
-| `public_home` | 1920 × 1080 | 1920 px | 1905 px | **VALID (YES)** | **OK (0 px)** | **OK (Nihil)** | **OK (0)** | 6 elemen | 114 KB | **PASS** |
-| `public_daftar` | 320 × 640 | 320 px | 305 px | **VALID (YES)** | **OK (0 px)** | **OK (Nihil)** | **OK (0)** | 6 elemen | 43 KB | **PASS** |
-| `public_daftar` | 375 × 667 | 375 px | 360 px | **VALID (YES)** | **OK (0 px)** | **OK (Nihil)** | **OK (0)** | 6 elemen | 46 KB | **PASS** |
-| `public_daftar` | 390 × 844 | 390 px | 375 px | **VALID (YES)** | **OK (0 px)** | **OK (Nihil)** | **OK (0)** | 6 elemen | 55 KB | **PASS** |
-| `public_daftar` | 768 × 1024 | 768 px | 753 px | **VALID (YES)** | **OK (0 px)** | **OK (Nihil)** | **OK (0)** | 6 elemen | 100 KB | **PASS** |
-| `public_daftar` | 1024 × 768 | 1024 px | 1009 px | **VALID (YES)** | **OK (0 px)** | **OK (Nihil)** | **OK (0)** | 6 elemen | 73 KB | **PASS** |
-| `public_daftar` | 1280 × 800 | 1280 px | 1265 px | **VALID (YES)** | **OK (0 px)** | **OK (Nihil)** | **OK (0)** | 6 elemen | 74 KB | **PASS** |
-| `public_daftar` | 1440 × 900 | 1440 px | 1425 px | **VALID (YES)** | **OK (0 px)** | **OK (Nihil)** | **OK (0)** | 6 elemen | 86 KB | **PASS** |
-| `public_daftar` | 1920 × 1080 | 1920 px | 1905 px | **VALID (YES)** | **OK (0 px)** | **OK (Nihil)** | **OK (0)** | 6 elemen | 113 KB | **PASS** |
+| Halaman | Viewport | `innerWidth` | `clientWidth` | `docScrollWidth` | `bodyScrollWidth` | DOM Valid | Overflow | Raw Markdown `**` | Clipping | Buttons Found | Ukuran PNG | Status |
+|---|---|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
+| `public_home` | 320 × 640 | 320 px | 305 px | 305 px | 305 px | **YES** | **OK (0 px)** | **OK (Nihil)** | **OK (0)** | 6 | 38 KB | **PASS** |
+| `public_home` | 375 × 667 | 375 px | 360 px | 360 px | 360 px | **YES** | **OK (0 px)** | **OK (Nihil)** | **OK (0)** | 6 | 46 KB | **PASS** |
+| `public_home` | 390 × 844 | 390 px | 375 px | 375 px | 375 px | **YES** | **OK (0 px)** | **OK (Nihil)** | **OK (0)** | 6 | 48 KB | **PASS** |
+| `public_home` | 768 × 1024 | 768 px | 753 px | 753 px | 753 px | **YES** | **OK (0 px)** | **OK (Nihil)** | **OK (0)** | 6 | 101 KB | **PASS** |
+| `public_home` | 1024 × 768 | 1024 px | 1009 px | 1009 px | 1009 px | **YES** | **OK (0 px)** | **OK (Nihil)** | **OK (0)** | 6 | 80 KB | **PASS** |
+| `public_home` | 1280 × 800 | 1280 px | 1265 px | 1265 px | 1265 px | **YES** | **OK (0 px)** | **OK (Nihil)** | **OK (0)** | 6 | 85 KB | **PASS** |
+| `public_home` | 1440 × 900 | 1440 px | 1425 px | 1425 px | 1425 px | **YES** | **OK (0 px)** | **OK (Nihil)** | **OK (0)** | 6 | 89 KB | **PASS** |
+| `public_home` | 1920 × 1080 | 1920 px | 1905 px | 1905 px | 1905 px | **YES** | **OK (0 px)** | **OK (Nihil)** | **OK (0)** | 6 | 114 KB | **PASS** |
+| `public_daftar` | 320 × 640 | 320 px | 305 px | 305 px | 305 px | **YES** | **OK (0 px)** | **OK (Nihil)** | **OK (0)** | 6 | 43 KB | **PASS** |
+| `public_daftar` | 375 × 667 | 375 px | 360 px | 360 px | 360 px | **YES** | **OK (0 px)** | **OK (Nihil)** | **OK (0)** | 6 | 46 KB | **PASS** |
+| `public_daftar` | 390 × 844 | 390 px | 375 px | 375 px | 375 px | **YES** | **OK (0 px)** | **OK (Nihil)** | **OK (0)** | 6 | 55 KB | **PASS** |
+| `public_daftar` | 768 × 1024 | 768 px | 753 px | 753 px | 753 px | **YES** | **OK (0 px)** | **OK (Nihil)** | **OK (0)** | 6 | 100 KB | **PASS** |
+| `public_daftar` | 1024 × 768 | 1024 px | 1009 px | 1009 px | 1009 px | **YES** | **OK (0 px)** | **OK (Nihil)** | **OK (0)** | 6 | 73 KB | **PASS** |
+| `public_daftar` | 1280 × 800 | 1280 px | 1265 px | 1265 px | 1265 px | **YES** | **OK (0 px)** | **OK (Nihil)** | **OK (0)** | 6 | 74 KB | **PASS** |
+| `public_daftar` | 1440 × 900 | 1440 px | 1425 px | 1425 px | 1425 px | **YES** | **OK (0 px)** | **OK (Nihil)** | **OK (0)** | 6 | 86 KB | **PASS** |
+| `public_daftar` | 1920 × 1080 | 1920 px | 1905 px | 1905 px | 1905 px | **YES** | **OK (0 px)** | **OK (Nihil)** | **OK (0)** | 6 | 113 KB | **PASS** |
+
+*Catatan:* Pada seluruh 16 pengujian di atas, terbukti secara mutlak bahwa $\text{docScrollWidth} \le \text{clientWidth}$ dan $\text{bodyScrollWidth} \le \text{clientWidth}$ secara presisi (0 piksel sisa overflow).
 
 ### 6.3 Verifikasi Visual Detail pada Viewport Kritis (320px)
 - **`HomeView.tsx`:** Judul KMB menggunakan `text-2xl` dengan `break-words` sehingga tidak terpotong. Tagline tampil bersih dalam tipografi italic netral tanpa karakter asteris mentah. Dua tombol CTA utama tersusun vertikal penuh (`flex-col w-full`) dengan target sentuh nyaman. Metadata badan hukum/NIKOP terpusat rapi dan melipat responsif.
@@ -161,7 +165,8 @@ Fitur keamanan dan validitas pengujian mutakhir:
 - **Phase 2.1 Commit:** `0b9e524`
 - **Phase 2.2 Commit:** `23c2ba7` (`fix(phase-2): harden route permissions and demo controls`)
 - **Phase 2.2 Responsive Fix:** `62e69e4` (`fix(phase-2): resolve mobile clipping and verify responsive layouts`)
-- **Pesan Commit Validasi Sinkronisasi:** `test(phase-2): enforce DOM readiness and completeness in responsive suite`
+- **Phase 2.2 Sync Fix:** `3f61b74` (`test(phase-2): enforce DOM readiness and completeness in responsive suite`)
+- **Pesan Commit Koreksi Akurasi Overflow:** `test(phase-2): correct responsive overflow measurement`
 
 ---
 
