@@ -282,7 +282,6 @@ Sepanjang Phase 3.2, batasan arsitektur tetap dipatuhi secara ketat:
    - Headless Chrome CDP verification pada 8 breakpoint standar (320px s.d. 1920px) untuk route `/` dan `/daftar`.
    - Hasil: **16 dari 16 skenario PASS** (0px horizontal overflow, DOM valid, buttons found, no clipping).
 
-
 ---
 
 ## 8. Phase 3.3 — Configuration Persistence & Component Test Integrity
@@ -359,3 +358,93 @@ Pada Phase 3.3, dilakukan perbaikan terarah terhadap persistensi konfigurasi sim
 5. **Automated Responsive Verification (`node scripts/verify_responsive.js`):**
    - Headless Chrome CDP verification pada 8 breakpoint standar (320px s.d. 1920px) untuk route `/` dan `/daftar`.
    - Hasil: **16 dari 16 skenario PASS** (0px horizontal overflow, DOM valid, buttons found, no clipping).
+
+---
+
+## 9. Phase 3.4 — Final Persistence Test & Input Validation
+
+### A. Konteks & Temuan Audit Lanjutan
+
+Audit independen lanjutan terhadap Phase 3.3 mencatat dua catatan penguatan:
+1. **P1 — Pengujian Re-inisialisasi Store yang Sesungguhnya:** Pengujian sebelumnya membaca `localStorage` lalu memanggil fungsi pembantu `validateSavingsConfig()` secara terpisah, belum menguji re-instansiasi modul store Zustand melalui jalur produksi penuh saat peramban dimuat ulang.
+2. **P2 — Validasi Input Kosong pada `PlatformSettingsView.tsx`:** Fungsi penanganan simpan sebelumnya menggunakan konversi langsung `Number(input)` yang meloloskan string kosong `""` atau string spasi `"   "` menjadi angka `0` tanpa pesan kesalahan penolakan input kosong.
+
+### B. Tindakan Remediasi Kode & Arsitektur
+
+| No | Fokus Perbaikan | Kategori | File Terdampak | Tindakan Kode |
+|---|---|---|---|---|
+| 1 | **Validasi Input Kosong, Spasi & Batas Ekstrem** | P2 | `src/features/admin/PlatformSettingsView.tsx` | - Validasi eksplisit terhadap string kosong `""` dan spasi `"   "` menggunakan `trim()`. Ditampilkan pesan: *"Nominal Simpanan Pokok/Wajib wajib diisi dan tidak boleh kosong."*<br>- Validasi format numerik terstruktur (`/^-?\d+$/`), menolak karakter alfabetis dan nilai non-angka.<br>- Penolakan eksplisit angka negatif ($< 0$) dengan pesan: *"Nominal tidak boleh bernilai negatif."*<br>- Penolakan nilai melebihi batas wajar ($> 1.000.000.000$) dengan pesan batas maksimum.<br>- Angka nol (`0` atau `"0"`) tetap diperbolehkan sebagai nilai valid.<br>- Menambahkan atribut `noValidate` pada `<form>` agar feedback validasi ditangani secara konsisten melalui komponen UI error (`savingsFormError`) dan toast notifikasi (`addToast`). |
+| 2 | **Pengujian Re-inisialisasi Store Produksi (`vi.resetModules()`)** | P1 | `src/tests/membership.test.ts` | - Pengujian menyimpan konfigurasi kustom (Pokok: Rp450.000, Wajib: Rp180.000) ke `localStorage`.<br>- Menjalankan `vi.resetModules()` dan me-load ulang modul `membershipStore.ts` via dynamic `import()` untuk menguji inisialisasi produksi sesungguhnya.<br>- Memverifikasi store baru berhasil memulihkan konfigurasi kustom dari `localStorage`.<br>- Pengujian data rusak (*corrupted data*): jika `savingsConfig` rusak/abnormal, store baru otomatis fallback ke `DEFAULT_SAVINGS_CONFIG` secara aman tanpa merusak atau menghapus data pendaftaran (`applications`) dan anggota (`members`).<br>- Pengujian `resetToSeed()` memastikan konfigurasi kembali ke nilai bawaan dan memperbarui `localStorage`. |
+| 3 | **Pengujian DOM Komponen Input Validation** | P2 | `src/tests/platformSettings.test.tsx` | Membuat test suite komponen DOM riil menggunakan `@testing-library/react` dan `jsdom` yang mencakup 7 skenario pengujian input form secara lengkap. |
+
+### C. Matriks Pengujian Input & Persistensi (Phase 3.4)
+
+1. **Kasus Input Nominal Simpanan (`PlatformSettingsView`):**
+   - String kosong `""` $\rightarrow$ **Ditolak** (Pesan: *"Nominal Simpanan Pokok wajib diisi dan tidak boleh kosong"*).
+   - String hanya spasi `"   "` $\rightarrow$ **Ditolak** (Pesan: *"Nominal Simpanan Pokok wajib diisi dan tidak boleh kosong"*).
+   - String non-numerik/alfabetis $\rightarrow$ **Ditolak** (Pesan: *"Nominal Simpanan Pokok harus berupa angka yang valid"*).
+   - Angka negatif `-1` $\rightarrow$ **Ditolak** (Pesan: *"Nominal Simpanan Pokok tidak boleh bernilai negatif"*).
+   - Nominal melebihi Rp1.000.000.000 $\rightarrow$ **Ditolak** (Pesan: *"Nominal Simpanan Pokok melebihi batas maksimum wajar"*).
+   - Angka nol `0` / `"0"` $\rightarrow$ **Diterima** (Tersimpan ke store, pesan error bersih).
+   - Nominal valid `150000`, `75000` $\rightarrow$ **Diterima** (Tersimpan ke store, toast notifikasi sukses ditampilkan).
+
+2. **Kasus Re-inisialisasi Store Produksi (`membershipStore`):**
+   - Rehidrasi konfigurasi khusus (Pokok: 450.000, Wajib: 180.000) melalui `vi.resetModules()` $\rightarrow$ **LULUS (100% akurat)**.
+   - Penanganan data konfigurasi korup pada `localStorage` $\rightarrow$ **Fallback aman ke `DEFAULT_SAVINGS_CONFIG` tanpa kehilangan data aplikasi & anggota**.
+   - Pemanggilan `resetToSeed()` $\rightarrow$ **Kembali ke default dan tersinkronisasi ke `localStorage`**.
+
+### D. Hasil Quality Gates Phase 3.4 (Final Baseline)
+
+1. **TypeScript Strict Typecheck (`pnpm typecheck`):**
+   ```bash
+   $ tsc --noEmit
+   Exit code: 0 (Clean, 0 errors)
+   ```
+
+2. **ESLint Code Quality (`pnpm lint`):**
+   ```bash
+   $ eslint "src/**/*.{ts,tsx}" --max-warnings 0
+   Exit code: 0 (Clean, 0 warnings, 0 errors)
+   ```
+
+3. **Vitest Unit, Integration & Component Tests (`pnpm test`):**
+   ```
+    RUN  v5.0.5 C:/Users/ocitt/OneDrive/Dokumen/Finance
+
+    ✓ src/tests/menuVisibility.test.ts (11 tests) 9ms
+    ✓ src/tests/rbac.test.ts (14 tests) 11ms
+    ✓ src/tests/membership.test.ts (28 tests) 19ms
+    ✓ src/tests/memberProfilePortal.test.tsx (5 tests) 98ms
+    ✓ src/tests/platformSettings.test.tsx (7 tests) 323ms
+
+    Test Files  5 passed (5)
+         Tests  65 passed (65)
+      Duration  3.09s
+   ```
+   *Total 65 dari 65 tes LULUS (100% PASS).*
+
+4. **Production Build (`pnpm build`):**
+   ```bash
+   $ tsc --noEmit && vite build
+   ✓ 2465 modules transformed.
+   dist/index.html                   0.89 kB │ gzip:   0.51 kB
+   dist/assets/index-BzBvXs4H.css   37.70 kB │ gzip:   6.91 kB
+   dist/assets/index-DmLtLU6R.js   576.61 kB │ gzip: 160.72 kB
+   ✓ built in 4.18s
+   Exit code: 0
+   ```
+
+5. **Automated Responsive Verification (`node scripts/verify_responsive.js`):**
+   - Headless Chrome CDP verification pada 8 breakpoint standar (320px s.d. 1920px) untuk route `/` dan `/daftar`.
+   - Hasil: **16 dari 16 skenario PASS** (0px horizontal overflow, DOM valid, buttons found, no clipping).
+
+### E. Riwayat Pertumbuhan Uji Otomatis
+
+| Tahapan Proyek | Jumlah Pengujian | Status Kelulusan | Fokus Validasi Tambahan |
+|---|---|---|---|
+| **Phase 3 Baseline** | 35 tests | 100% PASS | Siklus hidup keanggotaan, SoD, auto-numbering `KMB-2026-XXXX`. |
+| **Phase 3.1 Remediasi** | 43 tests | 100% PASS | Isolasi portal anggota, penghapusan fallback profil, audit trail. |
+| **Phase 3.2 Konsistensi** | 53 tests | 100% PASS | Parameter simpanan configurable ilustrasi, demo ID auto-generated sequence. |
+| **Phase 3.3 Persistensi** | 57 tests | 100% PASS | Persistensi `savingsConfig`, sinkronisasi UI admin & home, real DOM portal tests. |
+| **Phase 3.4 Final Validation** | **65 tests** | **100% PASS** | Re-inisialisasi store riil via `vi.resetModules()`, validasi input ketat form admin (empty/spaces/zero/neg/overflow). |
+

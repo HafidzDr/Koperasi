@@ -44,16 +44,42 @@ export const PlatformSettingsView: React.FC = () => {
     e.preventDefault();
     setSavingsFormError(null);
 
-    const numPokok = Number(inputPokok);
-    const numWajib = Number(inputWajib);
+    const trimmedPokok = inputPokok !== undefined && inputPokok !== null ? String(inputPokok).trim() : "";
+    const trimmedWajib = inputWajib !== undefined && inputWajib !== null ? String(inputWajib).trim() : "";
 
-    if (isNaN(numPokok) || !isFinite(numPokok) || numPokok < 0) {
-      const msg = "Nominal Simpanan Pokok harus berupa angka positif atau nol.";
+    // 1. Reject empty or whitespace-only strings
+    if (trimmedPokok === "") {
+      const msg = "Nominal Simpanan Pokok wajib diisi dan tidak boleh kosong.";
       setSavingsFormError(msg);
       addToast({ type: "danger", title: "Validasi Gagal", message: msg });
       return;
     }
 
+    if (trimmedWajib === "") {
+      const msg = "Nominal Simpanan Wajib wajib diisi dan tidak boleh kosong.";
+      setSavingsFormError(msg);
+      addToast({ type: "danger", title: "Validasi Gagal", message: msg });
+      return;
+    }
+
+    // 2. Reject non-numeric strings
+    const numPokok = Number(trimmedPokok);
+    if (isNaN(numPokok) || !/^-?\d+$/.test(trimmedPokok)) {
+      const msg = "Nominal Simpanan Pokok harus berupa angka yang valid.";
+      setSavingsFormError(msg);
+      addToast({ type: "danger", title: "Validasi Gagal", message: msg });
+      return;
+    }
+
+    // 3. Reject negative numbers
+    if (numPokok < 0) {
+      const msg = "Nominal Simpanan Pokok tidak boleh bernilai negatif.";
+      setSavingsFormError(msg);
+      addToast({ type: "danger", title: "Validasi Gagal", message: msg });
+      return;
+    }
+
+    // 4. Reject numbers exceeding 1.000.000.000
     if (numPokok > 1_000_000_000) {
       const msg = "Nominal Simpanan Pokok melebihi batas maksimum wajar (Rp 1.000.000.000).";
       setSavingsFormError(msg);
@@ -61,8 +87,16 @@ export const PlatformSettingsView: React.FC = () => {
       return;
     }
 
-    if (isNaN(numWajib) || !isFinite(numWajib) || numWajib < 0) {
-      const msg = "Nominal Simpanan Wajib harus berupa angka positif atau nol.";
+    const numWajib = Number(trimmedWajib);
+    if (isNaN(numWajib) || !/^-?\d+$/.test(trimmedWajib)) {
+      const msg = "Nominal Simpanan Wajib harus berupa angka yang valid.";
+      setSavingsFormError(msg);
+      addToast({ type: "danger", title: "Validasi Gagal", message: msg });
+      return;
+    }
+
+    if (numWajib < 0) {
+      const msg = "Nominal Simpanan Wajib tidak boleh bernilai negatif.";
       setSavingsFormError(msg);
       addToast({ type: "danger", title: "Validasi Gagal", message: msg });
       return;
@@ -75,6 +109,7 @@ export const PlatformSettingsView: React.FC = () => {
       return;
     }
 
+    // 5. Valid: update store
     updateSavingsConfig({
       simpananPokokNominal: numPokok,
       simpananWajibBulanan: numWajib,
@@ -400,7 +435,7 @@ export const PlatformSettingsView: React.FC = () => {
                 </div>
               )}
 
-              <form onSubmit={handleSaveSavingsConfig} className="space-y-4">
+              <form onSubmit={handleSaveSavingsConfig} noValidate className="space-y-4">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-1">
                     <Input

@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { describe, it, expect, beforeEach } from "vitest";
+import { describe, it, expect, beforeEach, vi } from "vitest";
 import {
   useMembershipStore,
   generateUniqueDemoId,
@@ -537,25 +537,66 @@ describe("PHASE 3 & 3.1 — Membership Management Lifecycle, SoD & Audit Remedia
       expect(parsed.savingsConfig.simpananWajibBulanan).toBe(150000);
     });
 
-    it("should restore configured savings parameters upon simulated page reload / store re-initialization", () => {
+    it("should restore configured savings parameters upon simulated page reload / store re-initialization using vi.resetModules()", async () => {
       // 1. Update config
       useMembershipStore.getState().updateSavingsConfig({
         simpananPokokNominal: 450000,
         simpananWajibBulanan: 180000,
       });
 
-      // 2. Simulate browser reload: reading fresh state from localStorage via validateSavingsConfig
+      // Verify written to localStorage
       const rawStored = localStorage.getItem("kmb_membership_store_v1");
       expect(rawStored).toBeTruthy();
       const parsed = JSON.parse(rawStored!);
+      expect(parsed.savingsConfig.simpananPokokNominal).toBe(450000);
+      expect(parsed.savingsConfig.simpananWajibBulanan).toBe(180000);
 
-      const restoredConfig = validateSavingsConfig(parsed.savingsConfig);
-      expect(restoredConfig.simpananPokokNominal).toBe(450000);
-      expect(restoredConfig.simpananWajibBulanan).toBe(180000);
-      expect(restoredConfig.label).toBe("Nominal Ilustrasi — Dapat Diubah");
+      // 2. Simulate browser reload: reset modules and dynamically re-import useMembershipStore
+      vi.resetModules();
+      const { useMembershipStore: freshStore } = await import(
+        "../features/membership/stores/membershipStore"
+      );
+
+      // 3. Verify the new store instance properly rehydrated the custom config from localStorage
+      const restoredState = freshStore.getState();
+      expect(restoredState.savingsConfig.simpananPokokNominal).toBe(450000);
+      expect(restoredState.savingsConfig.simpananWajibBulanan).toBe(180000);
+      expect(restoredState.savingsConfig.label).toBe("Nominal Ilustrasi — Dapat Diubah");
+      expect(restoredState.applications.length).toBeGreaterThan(0);
+      expect(restoredState.members.length).toBeGreaterThan(0);
     });
 
-    it("should safely fall back to DEFAULT_SAVINGS_CONFIG when stored data is corrupted, negative, or invalid", () => {
+    it("should safely fall back to DEFAULT_SAVINGS_CONFIG upon re-initialization when localStorage has corrupted savings config without wiping applications or members", async () => {
+      // 1. Prepare valid applications and members, but corrupt savingsConfig in localStorage
+      const testApps = useMembershipStore.getState().applications;
+      const testMembers = useMembershipStore.getState().members;
+      localStorage.setItem(
+        "kmb_membership_store_v1",
+        JSON.stringify({
+          applications: testApps,
+          members: testMembers,
+          savingsConfig: { simpananPokokNominal: -99999, simpananWajibBulanan: "corrupted_value" },
+        })
+      );
+
+      // 2. Simulate browser reload
+      vi.resetModules();
+      const { useMembershipStore: safeStore, DEFAULT_SAVINGS_CONFIG: defConfig } = await import(
+        "../features/membership/stores/membershipStore"
+      );
+
+      // 3. Verify corrupted config fell back cleanly to DEFAULT_SAVINGS_CONFIG
+      const safeState = safeStore.getState();
+      expect(safeState.savingsConfig).toEqual(defConfig);
+      expect(safeState.savingsConfig.simpananPokokNominal).toBe(100000);
+      expect(safeState.savingsConfig.simpananWajibBulanan).toBe(50000);
+
+      // 4. Crucially verify applications and members data were preserved intact
+      expect(safeState.applications.length).toBe(testApps.length);
+      expect(safeState.members.length).toBe(testMembers.length);
+    });
+
+    it("should safely fall back to DEFAULT_SAVINGS_CONFIG when validating arbitrary corrupted, negative, or invalid data", () => {
       // Non-numeric or negative values
       expect(validateSavingsConfig({ simpananPokokNominal: -500, simpananWajibBulanan: 50000 })).toEqual(
         DEFAULT_SAVINGS_CONFIG
@@ -574,15 +615,23 @@ describe("PHASE 3 & 3.1 — Membership Management Lifecycle, SoD & Audit Remedia
       expect(validateSavingsConfig({})).toEqual(DEFAULT_SAVINGS_CONFIG);
     });
 
-    it("should reset savings configuration to default when resetToSeed is called", () => {
+    it("should reset savings configuration to default and persist to localStorage when resetToSeed is called", () => {
       useMembershipStore.getState().updateSavingsConfig({
         simpananPokokNominal: 999999,
+        simpananWajibBulanan: 888888,
       });
       expect(useMembershipStore.getState().savingsConfig.simpananPokokNominal).toBe(999999);
 
       useMembershipStore.getState().resetToSeed();
       expect(useMembershipStore.getState().savingsConfig.simpananPokokNominal).toBe(100000);
       expect(useMembershipStore.getState().savingsConfig.simpananWajibBulanan).toBe(50000);
+
+      // Verify localStorage was updated with the default configuration
+      const rawStored = localStorage.getItem("kmb_membership_store_v1");
+      expect(rawStored).toBeTruthy();
+      const parsed = JSON.parse(rawStored!);
+      expect(parsed.savingsConfig.simpananPokokNominal).toBe(100000);
+      expect(parsed.savingsConfig.simpananWajibBulanan).toBe(50000);
     });
   });
 });
