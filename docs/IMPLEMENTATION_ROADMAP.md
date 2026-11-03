@@ -27,10 +27,10 @@ Phase 2: Fondasi Frontend & Design System  [SELESAI]
 Phase 3: Membership Management             [SELESAI]
    ↓
 Phase 4: Savings Management (Simpanan)     [SELESAI]
+   ↓
+Phase 5: Loan & Installment Management     [SELESAI]
    ↓  (persetujuan pengguna wajib)
-Phase 5: Member Portal                     [MENUNGGU]
-   ↓  (persetujuan pengguna wajib)
-Phase 6: Administration Portal             [MENUNGGU]
+Phase 6: Pusat Pembayaran & Rekonsiliasi   [MENUNGGU]
    ↓  (persetujuan pengguna wajib)
 Phase 7: Laporan Keuangan & Audit Simulasi [MENUNGGU]
    ↓  (persetujuan pengguna wajib)
@@ -251,43 +251,40 @@ Sesuai G-02 Dependency Matrix di `.agent/rules/global.md`:
 
 ---
 
-### Phase 5: Member Portal
+### Phase 5: Loan & Installment Management (SELESAI)
 
-**Objective:** Membangun pengalaman portal anggota secara lengkap dengan modul yang dikonfigurasi aktif.
+**Objective:** Mengimplementasikan modul bisnis pinjaman dan angsuran koperasi secara menyeluruh, terintegrasi, dan taat azas Separation of Duties (SoD) serta kewenangan berjenjang tanpa backend nyata.
 
-**Scope:** Seluruh lingkungan `/portal`. Modul yang ditampilkan mengikuti konfigurasi aktif.
+**Scope:**
+- Manajemen 3 Produk Pinjaman: Pinjaman Konsumtif, Pinjaman Modal Usaha Produktif, dan Pinjaman Siaga Darurat.
+- Formula Finansial & Amortisasi: Flat Rate (default), Anuitas, Efektif, presisi Integer Rupiah, dan residual rounding ke angsuran bulan terakhir.
+- Denda & Kolektibilitas: Grace period 3 hari, denda 0,5%/hari, klasifikasi kolektibilitas (Lancar, DPK, Kurang Lancar, Diragukan, Macet).
+- Portal Pinjaman Anggota (`/portal/pinjaman`): Saldo sisa pokok, jadwal angsuran detail, wizard pengajuan pinjaman 4 langkah dengan simulasi unggah bukti pendapatan, dan simulasi pelunasan dipercepat (early repayment).
+- Administrasi Pinjaman Pengurus & Staf (`/admin/pinjaman`): Antrean verifikasi Staf (Level 1), analisa FO (Level 2 $\le$ 10M), approval Pengurus (Level 3 $>$ 10M), antrean pencairan dana khusus FO dengan potongan admin fee 1%, portofolio 30 rekord pinjaman lengkap, pencatatan angsuran dengan prioritas alokasi BR-04.3, penyesuaian denda eksklusif Bendahara, dan konfigurasi kebijakan pinjaman.
+- Katalog Publik & Edukasi (`/layanan/pinjaman`): Simulasi pinjaman interaktif dan ketentuan kelayakan keanggotaan.
 
 **Deliverables:**
-- Portal Shell: Top Bar, Sidebar fixed, Mobile Bottom Nav, Slide-over drawer
-- Dashboard (`/portal/dashboard`): Kartu saldo adaptif, aktivitas terkini
-- Simpanan (`/portal/simpanan`, `/:id`, `/setor`): Daftar rekening, mutasi, pengajuan setoran
-- Pinjaman (`/portal/pinjaman`, `/:id`, `/ajukan`): Hanya tampil jika modul Loan aktif
-- Riwayat Transaksi (`/portal/transaksi`, `/:id`)
-- Pusat Pembayaran (`/portal/pembayaran/manual`, `/instan`)
-- SHU (`/portal/shu`): Hanya tampil jika modul SHU aktif
-- Profil & Dokumen (`/portal/profil`)
-- Notifikasi (`/portal/notifikasi`)
-- Pengaturan (`/portal/pengaturan`)
-
-**Dependencies yang Ditambahkan di Phase 5:**
-`recharts`
-
-**Acceptance Criteria:**
-- Anggota dapat melihat saldo, mutasi, dan status keanggotaan.
-- Pengajuan pinjaman selesai end-to-end dan tersimpan ke store.
-- Pembayaran manual dan instan memperbarui state.
-- Seluruh halaman bersih di 8 viewport.
-- Halaman pinjaman/SHU tidak muncul ketika modul dinonaktifkan.
+- [x] `src/features/loans/types.ts`
+- [x] `src/features/loans/utils/loanCalculations.ts`
+- [x] `src/features/loans/mocks/loanSeedData.ts` (30 seed records)
+- [x] `src/features/loans/stores/loanStore.ts` (Zustand + `localStorage` persistence `kmb_loans_store_v1`)
+- [x] `src/features/loans/pages/PublicLoanCatalogView.tsx`
+- [x] `src/features/loans/pages/MemberLoanPortalView.tsx`
+- [x] `src/features/loans/pages/AdminLoanManagementView.tsx`
+- [x] Integrasi route di `src/app/routes.tsx`
+- [x] Unit, Store, & Component DOM Tests (40 loan tests, 189 tests passing total)
+- [x] `docs/PHASE_5_IMPLEMENTATION_REPORT.md`
 
 **Quality Gates Phase 5:**
-| # | Kriteria |
-|---|----------|
-| QG5-1 | Dashboard dan simpanan berfungsi untuk member |
-| QG5-2 | Pengajuan pinjaman end-to-end (jika modul aktif) |
-| QG5-3 | Pembayaran manual dan instan memperbarui state |
-| QG5-4 | Semua halaman bersih di 8 viewport |
-| QG5-5 | Modul non-aktif tidak menampilkan navigasi/halaman |
-| QG5-6 | Persetujuan eksplisit pengguna diperoleh |
+| # | Kriteria | Status | Bukti |
+|---|----------|--------|-------|
+| QG5-1 | Typecheck (`tsc --noEmit`) lulus tanpa error | PASS | Exit code 0 |
+| QG5-2 | Linting (`eslint`) 0 errors, 0 warnings | PASS | Exit code 0 |
+| QG5-3 | Vitest unit, store, & DOM tests lulus 100% (189 tests) | PASS | Exit code 0 |
+| QG5-4 | Production build (`vite build`) bersih tanpa error | PASS | Exit code 0 |
+| QG5-5 | Responsive verification (16 skenario viewport) 0 overflow/clipping | PASS | Exit code 0 |
+| QG5-6 | Penegakan Separation of Duties (SoD) & approval thresholds | PASS | Exit code 0 |
+| QG5-7 | Isolasi privasi data anggota tanpa fallback | PASS | Exit code 0 |
 
 ---
 

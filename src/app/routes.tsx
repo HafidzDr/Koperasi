@@ -17,6 +17,9 @@ import { PlatformSettingsView } from "@/features/admin/PlatformSettingsView";
 import { PublicSavingsCatalogView } from "@/features/savings/pages/PublicSavingsCatalogView";
 import { MemberSavingsPortalView } from "@/features/savings/pages/MemberSavingsPortalView";
 import { AdminSavingsManagementView } from "@/features/savings/pages/AdminSavingsManagementView";
+import { PublicLoanCatalogView } from "@/features/loans/pages/PublicLoanCatalogView";
+import { MemberLoanPortalView } from "@/features/loans/pages/MemberLoanPortalView";
+import { AdminLoanManagementView } from "@/features/loans/pages/AdminLoanManagementView";
 import { ModulePlaceholderView } from "@/components/common/ModulePlaceholderView";
 import { RouteGuard } from "@/components/common/RouteGuard";
 
@@ -34,15 +37,7 @@ export const router = createBrowserRouter([
       },
       {
         path: "layanan/pinjaman",
-        element: (
-          <ModulePlaceholderView
-            moduleKey="loans"
-            title="Layanan Pembiayaan & Pinjaman"
-            description="Kalkulator simulasi pinjaman produktif modal usaha bagi anggota."
-            environment="Public"
-            phasePlanned={5}
-          />
-        ),
+        element: <PublicLoanCatalogView />,
       },
       {
         path: "cara-bergabung",
@@ -87,15 +82,7 @@ export const router = createBrowserRouter([
       },
       {
         path: "pinjaman",
-        element: (
-          <ModulePlaceholderView
-            moduleKey="loans"
-            title="Pinjaman & Jadwal Angsuran"
-            description="Status kolektibilitas pinjaman aktif, rincian jadwal jatuh tempo, dan pengajuan baru."
-            environment="Portal"
-            phasePlanned={5}
-          />
-        ),
+        element: <MemberLoanPortalView />,
       },
       {
         path: "pembayaran",
@@ -180,15 +167,7 @@ export const router = createBrowserRouter([
       },
       {
         path: "pinjaman",
-        element: (
-          <ModulePlaceholderView
-            moduleKey="loans"
-            title="Manajemen Pengajuan & Pencairan Pinjaman"
-            description="Workflow persetujuan berjenjang: Level 1 Verifikasi, Level 2 Analisa FO, Level 3 Approval Pengurus."
-            environment="Admin"
-            phasePlanned={5}
-          />
-        ),
+        element: <AdminLoanManagementView />,
       },
       {
         path: "keuangan",
