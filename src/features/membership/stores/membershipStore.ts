@@ -98,6 +98,8 @@ interface MembershipState {
   applications: MembershipApplication[];
   members: Member[];
   savingsConfig: SavingsConfig;
+  processedSavingsTransactions: string[];
+  reversedSavingsTransactions: string[];
 
   // Actions - Savings Configuration (Demonstrasi / Ilustrasi)
   updateSavingsConfig: (updates: Partial<SavingsConfig>) => void;
@@ -502,16 +504,29 @@ export function validateSavingsConfig(raw: unknown): SavingsConfig {
   return DEFAULT_SAVINGS_CONFIG;
 }
 
+export const INITIAL_PROCESSED_TRANSACTIONS: string[] = [
+  "SAV-TRX-2026-0001",
+  "SAV-TRX-2026-0002",
+  "SAV-TRX-2026-0003",
+  "SAV-TRX-2026-0006",
+];
+
+export const INITIAL_REVERSED_TRANSACTIONS: string[] = [];
+
 function getInitialState(): {
   applications: MembershipApplication[];
   members: Member[];
   savingsConfig: SavingsConfig;
+  processedSavingsTransactions: string[];
+  reversedSavingsTransactions: string[];
 } {
   if (typeof window === "undefined") {
     return {
       applications: initialApplications,
       members: initialMembers,
       savingsConfig: DEFAULT_SAVINGS_CONFIG,
+      processedSavingsTransactions: INITIAL_PROCESSED_TRANSACTIONS,
+      reversedSavingsTransactions: INITIAL_REVERSED_TRANSACTIONS,
     };
   }
   try {
@@ -522,8 +537,20 @@ function getInitialState(): {
         Array.isArray(parsed.applications) ? parsed.applications : initialApplications;
       const members = Array.isArray(parsed.members) ? parsed.members : initialMembers;
       const savingsConfig = validateSavingsConfig(parsed.savingsConfig);
+      const processedSavingsTransactions = Array.isArray(parsed.processedSavingsTransactions)
+        ? parsed.processedSavingsTransactions
+        : INITIAL_PROCESSED_TRANSACTIONS;
+      const reversedSavingsTransactions = Array.isArray(parsed.reversedSavingsTransactions)
+        ? parsed.reversedSavingsTransactions
+        : INITIAL_REVERSED_TRANSACTIONS;
 
-      return { applications, members, savingsConfig };
+      return {
+        applications,
+        members,
+        savingsConfig,
+        processedSavingsTransactions,
+        reversedSavingsTransactions,
+      };
     }
   } catch {
     // fallback
@@ -532,19 +559,31 @@ function getInitialState(): {
     applications: initialApplications,
     members: initialMembers,
     savingsConfig: DEFAULT_SAVINGS_CONFIG,
+    processedSavingsTransactions: INITIAL_PROCESSED_TRANSACTIONS,
+    reversedSavingsTransactions: INITIAL_REVERSED_TRANSACTIONS,
   };
 }
 
 function saveToStorage(
   applications: MembershipApplication[],
   members: Member[],
-  savingsConfig: SavingsConfig
+  savingsConfig: SavingsConfig,
+  processedSavingsTransactions?: string[],
+  reversedSavingsTransactions?: string[]
 ) {
   if (typeof window === "undefined") return;
   try {
     localStorage.setItem(
       STORAGE_KEY,
-      JSON.stringify({ applications, members, savingsConfig })
+      JSON.stringify({
+        applications,
+        members,
+        savingsConfig,
+        processedSavingsTransactions:
+          processedSavingsTransactions ?? INITIAL_PROCESSED_TRANSACTIONS,
+        reversedSavingsTransactions:
+          reversedSavingsTransactions ?? INITIAL_REVERSED_TRANSACTIONS,
+      })
     );
   } catch {
     // ignore
@@ -605,12 +644,20 @@ export const useMembershipStore = create<MembershipState>((rawSet, get) => {
   const set: typeof rawSet = (updater) => {
     rawSet(updater);
     const updated = get();
-    saveToStorage(updated.applications, updated.members, updated.savingsConfig);
+    saveToStorage(
+      updated.applications,
+      updated.members,
+      updated.savingsConfig,
+      updated.processedSavingsTransactions,
+      updated.reversedSavingsTransactions
+    );
   };
   return {
     applications: initial.applications,
     members: initial.members,
     savingsConfig: initial.savingsConfig,
+    processedSavingsTransactions: initial.processedSavingsTransactions,
+    reversedSavingsTransactions: initial.reversedSavingsTransactions,
 
     // ----------------------------------------------------------------------
     // SAVINGS CONFIGURATION ACTIONS (Demonstrasi / Ilustrasi)
@@ -1290,7 +1337,35 @@ export const useMembershipStore = create<MembershipState>((rawSet, get) => {
 
       // Workflow Check: Reversal vs Approval
       if (context.isReversal) {
-        // Reversal requires savings:adjust (strictly Treasurer per BUSINESS_RULES.md)
+        // --- MUTASI REVERSAL ---
+        // 1. Transaction status enforcement: strictly "approved" only
+        if (trx.status !== "approved") {
+          return {
+            success: false,
+            error: `Pembalikan saldo ditolak: Transaksi berstatus "${trx.status}". Hanya transaksi berstatus "approved" yang dapat dibalikkan.`,
+          };
+        }
+
+        // 2. Prior normal mutation check: must have actually produced a normal mutation
+        if (!get().processedSavingsTransactions.includes(trx.id)) {
+          return {
+            success: false,
+            error: `Pembalikan saldo ditolak: Transaksi "${trx.id}" belum pernah menghasilkan mutasi saldo normal.`,
+          };
+        }
+
+        // 3. Reversal idempotency check: cannot reverse twice
+        if (
+          get().reversedSavingsTransactions.includes(trx.id) ||
+          trx.isReversed
+        ) {
+          return {
+            success: false,
+            error: `Pembalikan saldo ditolak: Transaksi "${trx.id}" telah dibalikkan sebelumnya (idempotensi reversal).`,
+          };
+        }
+
+        // 4. Role authority check: strictly Treasurer (savings:adjust)
         if (!canAdjust) {
           return {
             success: false,
@@ -1298,13 +1373,7 @@ export const useMembershipStore = create<MembershipState>((rawSet, get) => {
           };
         }
 
-        if (trx.isReversed) {
-          return {
-            success: false,
-            error: `Pembalikan saldo ditolak: Transaksi "${trx.id}" telah dibatalkan atau dibalikkan sebelumnya.`,
-          };
-        }
-
+        // 5. Delta consistency check
         const expectedReverseDelta =
           trx.transactionType === "deposit" ? -trx.amount : trx.amount;
         const targetDelta =
@@ -1329,7 +1398,24 @@ export const useMembershipStore = create<MembershipState>((rawSet, get) => {
           };
         }
       } else {
-        // Normal Approval flow
+        // --- MUTASI NORMAL / APPROVAL ---
+        // 1. Transaction status enforcement: strictly "under_review" only
+        if (trx.status !== "under_review") {
+          return {
+            success: false,
+            error: `Mutasi saldo normal ditolak: Transaksi berstatus "${trx.status}". Hanya transaksi berstatus "under_review" yang dapat disetujui untuk mutasi saldo.`,
+          };
+        }
+
+        // 2. Idempotency check: cannot apply normal mutation twice
+        if (get().processedSavingsTransactions.includes(trx.id)) {
+          return {
+            success: false,
+            error: `Mutasi saldo normal ditolak: Transaksi "${trx.id}" telah diproses sebelumnya (idempotensi mutasi).`,
+          };
+        }
+
+        // 3. Role authority check: savings:approve
         if (!canApprove && !canAdjust) {
           return {
             success: false,
@@ -1337,7 +1423,7 @@ export const useMembershipStore = create<MembershipState>((rawSet, get) => {
           };
         }
 
-        // SoD check: Transaction creator cannot approve their own transaction
+        // 4. SoD check: Transaction creator cannot approve their own transaction
         if (trx.createdById === authUser.id) {
           return {
             success: false,
@@ -1345,6 +1431,7 @@ export const useMembershipStore = create<MembershipState>((rawSet, get) => {
           };
         }
 
+        // 5. Delta consistency check
         const expectedApprovalDelta =
           trx.transactionType === "deposit" ? trx.amount : -trx.amount;
         const targetDelta =
@@ -1382,8 +1469,21 @@ export const useMembershipStore = create<MembershipState>((rawSet, get) => {
         }
         return m;
       });
-      set({ members: updatedMembers });
-      saveToStorage(get().applications, updatedMembers, get().savingsConfig);
+
+      if (context.isReversal) {
+        const newReversed = [...get().reversedSavingsTransactions, trx.id];
+        set({
+          members: updatedMembers,
+          reversedSavingsTransactions: newReversed,
+        });
+      } else {
+        const newProcessed = [...get().processedSavingsTransactions, trx.id];
+        set({
+          members: updatedMembers,
+          processedSavingsTransactions: newProcessed,
+        });
+      }
+
       return { success: true };
     },
 
@@ -1399,8 +1499,16 @@ export const useMembershipStore = create<MembershipState>((rawSet, get) => {
         applications: initialApplications,
         members: initialMembers,
         savingsConfig: DEFAULT_SAVINGS_CONFIG,
+        processedSavingsTransactions: INITIAL_PROCESSED_TRANSACTIONS,
+        reversedSavingsTransactions: INITIAL_REVERSED_TRANSACTIONS,
       });
-      saveToStorage(initialApplications, initialMembers, DEFAULT_SAVINGS_CONFIG);
+      saveToStorage(
+        initialApplications,
+        initialMembers,
+        DEFAULT_SAVINGS_CONFIG,
+        INITIAL_PROCESSED_TRANSACTIONS,
+        INITIAL_REVERSED_TRANSACTIONS
+      );
     },
   };
 });

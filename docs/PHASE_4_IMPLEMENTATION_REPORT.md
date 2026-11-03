@@ -342,4 +342,75 @@ Audit independen terhadap rilis awal Phase 4 mengidentifikasi 5 area tata kelola
 > [!NOTE]
 > Seluruh mekanisme otorisasi, validasi konsistensi ledger, Segregation of Duties (SoD), dan isolasi saldo anggota pada fase ini diimplementasikan secara client-side simulatif berbasis React, Zustand, dan localStorage. Implementasi ini tidak mengklaim tingkat keamanan setara backend produksi perbankan/finansial, namun menjamin kepatuhan aturan bisnis (*business rules integrity*), konsistensi alur transaksi, serta kesiapan audit fungsional aplikasi.
 
+---
+
+## 11. Laporan Remediasi Final Phase 4.3: Transaction State Enforcement & Balance Mutation Idempotency
+
+### A. Temuan & Tindakan Remediasi
+
+#### 1. Validasi Status Transaksi pada Lapisan Store (P0)
+- **Temuan**: Method `adjustMemberBalances()` pada `membershipStore.ts` sebelumnya belum menegakkan syarat status transaksi aktual secara ketat. Akibatnya, pemanggilan langsung berpotensi memutasi saldo pada transaksi yang belum diverifikasi (`submitted`) atau membalikkan transaksi yang belum disetujui.
+- **Remediasi**:
+  1. **Mutasi Normal / Approval (`!context.isReversal`)**:
+     - Status transaksi aktual via resolver wajib **`under_review`**.
+     - Transaksi berstatus `submitted`, `approved`, `rejected`, dan `cancelled` **DITOLAK SECARA MUTLAK** pada lapisan store dengan pesan kesalahan yang jelas dan spesifik.
+     - Tetap menegakkan verifikasi izin `savings:approve`, Segregation of Duties (SoD: pembuat transaksi dilarang memutasi saldo transaksinya sendiri), kecocokan `memberDemoId`, nominal, dan jenis simpanan.
+  2. **Mutasi Reversal (`context.isReversal === true`)**:
+     - Status transaksi aktual via resolver wajib **`approved`**.
+     - Transaksi berstatus `submitted`, `under_review`, `rejected`, dan `cancelled` **DITOLAK SECARA MUTLAK**.
+     - Hanya aktor dengan izin `savings:adjust` (**Treasurer / Bendahara**) yang berwenang mengeksekusi reversal.
+     - Memeriksa bahwa saldo akhir anggota pasca-pembalikan tidak menjadi negatif (< 0).
+
+#### 2. Idempotensi Mutasi Saldo & Pelacakan Pemrosesan Persisten
+- **Mekanisme Idempotensi**:
+  1. Menambahkan state pelacak transaksi `processedSavingsTransactions: string[]` dan `reversedSavingsTransactions: string[]` pada `MembershipState` yang terhubung secara persisten ke `localStorage` (`kmb_membership_store_v1`).
+  2. **Satu Mutasi Normal Per Transaksi**: ID transaksi (`trx.id`) menjadi kunci idempotensi. Jika transaksi sudah tercatat dalam `processedSavingsTransactions`, pemanggilan ulang ditolak (*"Transaksi telah diproses sebelumnya (idempotensi mutasi)"*).
+  3. **Reversal Bersyarat & Tunggal**: Reversal hanya dapat dilakukan jika transaksi sudah tercatat pernah menghasilkan mutasi normal (`processedSavingsTransactions.includes(trx.id)`), dan belum pernah dibalikkan sebelumnya (`!reversedSavingsTransactions.includes(trx.id)` serta `!trx.isReversed`). Pemanggilan ulang reversal ditolak (*"Transaksi telah dibalikkan sebelumnya (idempotensi reversal)"*).
+  4. **Pembaruan State Atomik**: Mutasi saldo anggota dan penambahan ID transaksi ke dalam array pelacak pemrosesan dilakukan dalam satu pembaruan state `set()` yang atomik dan konsisten.
+  5. **Integritas Kegagalan**: Apabila ada validasi yang gagal, tidak ada perubahan pada saldo anggota, catatan pelacak pemrosesan, maupun `localStorage`.
+  6. **Pemulihan Seed**: Fungsi `resetToSeed()` mengembalikan seluruh array pelacak pemrosesan ke data seed awal (`INITIAL_PROCESSED_TRANSACTIONS`) secara deterministik.
+
+#### 3. Konsistensi Antar-Store (`savingsStore` & `membershipStore`)
+- **Alur Persetujuan**: `savingsStore.approveTransaction()` hanya bertransisi ke status `approved` dan mencatat audit log jika `adjustMemberBalances()` mengembalikan `{ success: true }`. Jika mutasi saldo gagal, status transaksi tetap `under_review`.
+- **Alur Koreksi/Pembalikan**: `savingsStore.cancelTransaction()` hanya bertransisi ke status `cancelled` dengan `isReversed: true` jika `adjustMemberBalances()` pembalikan mengembalikan `{ success: true }`. Jika pembalikan gagal, status transaksi tetap `approved`.
+- **Bebas Ketergantungan Sirkular**: Menggunakan mekanisme *Transaction Resolver* satu arah (`savingsStore` mendaftarkan fungsi pencarian transaksi ke `membershipStore`), mempertahankan integritas arsitektur tanpa siklus impor modul.
+
+---
+
+### B. Metrik Kualitas & Hasil Pengujian Regresi Phase 4.3
+
+| Quality Gate | Hasil Pengujian | Status |
+|---|---|---|
+| **TypeScript Typecheck** (`tsc --noEmit`) | 0 errors | **PASS** |
+| **ESLint Analysis** (`eslint "src/**/*.{ts,tsx}" --max-warnings 0`) | 0 errors, 0 warnings | **PASS** |
+| **Vitest Test Suite** (`vitest run`) | **8 files, 148 tests passed** (100% lulus) | **PASS** |
+| **Responsive Verification** (`scripts/verify_responsive.js`) | 16/16 skenario viewport, 0 overflow, 0 clipping | **PASS** |
+| **Production Build** (`vite build`) | Sukses bersih (`dist/` generated dalam 4.84s) | **PASS** |
+
+---
+
+### C. Rincian Penambahan Tes Regresi Seksi 12 (16 Tests Spesifik Phase 4.3)
+1. `12.1. Mutasi normal dengan transaksi submitted ditolak` — **PASS**
+2. `12.2. Mutasi normal dengan transaksi approved ditolak` — **PASS**
+3. `12.3. Mutasi normal dengan transaksi rejected ditolak` — **PASS**
+4. `12.4. Mutasi normal dengan transaksi cancelled ditolak` — **PASS**
+5. `12.5. Mutasi normal dengan transaksi under_review yang sah berhasil tepat satu kali` — **PASS**
+6. `12.6. Pemanggilan ulang mutasi normal dengan ID transaksi yang sama ditolak` — **PASS**
+7. `12.7. Reversal terhadap transaksi submitted ditolak` — **PASS**
+8. `12.8. Reversal terhadap transaksi under_review ditolak` — **PASS**
+9. `12.9. Reversal terhadap transaksi rejected ditolak` — **PASS**
+10. `12.10. Reversal terhadap transaksi cancelled ditolak` — **PASS**
+11. `12.11. Reversal terhadap transaksi approved yang sudah memiliki mutasi normal berhasil tepat satu kali oleh Treasurer` — **PASS**
+12. `12.12. Pemanggilan ulang reversal dengan ID transaksi yang sama ditolak` — **PASS**
+13. `12.13. Manager dan Finance Officer tetap tidak dapat melakukan reversal` — **PASS**
+14. `12.14. Kegagalan mutasi tidak mengubah saldo, state, maupun localStorage` — **PASS**
+15. `12.15. Approval yang sah tetap bekerja melalui alur verifikasi dan persetujuan yang sudah ada` — **PASS**
+16. `12.16. Reset demo menghapus catatan pemrosesan transaksi dan memulihkan saldo seed secara konsisten` — **PASS**
+
+---
+
+### D. Catatan Arsitektur & Batasan Implementasi
+> [!NOTE]
+> Seluruh mekanisme otorisasi peran, validasi status transaksi, Segregation of Duties (SoD), dan idempotensi mutasi saldo pada fase ini diimplementasikan secara client-side simulatif berbasis React, Zustand, dan localStorage. Implementasi ini tidak mengklaim tingkat keamanan setara backend produksi perbankan/finansial, namun menjamin kepatuhan aturan bisnis (*business rules integrity*), konsistensi alur transaksi, serta kesiapan audit fungsional aplikasi.
+
 
