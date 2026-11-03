@@ -9,9 +9,6 @@ import {
   ArrowRight,
   ShieldCheck,
   Users,
-  Building2,
-  FileCheck2,
-  Sparkles,
   ChevronDown,
   CheckCircle2,
   Coins,
@@ -20,6 +17,8 @@ import {
   Wallet,
   ArrowUpRight,
   Quote,
+  Play,
+  Sprout,
 } from "lucide-react";
 
 export const HomeView: React.FC = () => {
@@ -116,83 +115,81 @@ export const HomeView: React.FC = () => {
   ];
 
   return (
-    <div className="space-y-16 sm:space-y-24 py-4 sm:py-8 overflow-x-hidden">
+    <div className="space-y-16 sm:space-y-24 pb-12 overflow-x-hidden">
       {/* =========================================================================
-          1. HERO SECTION (Editorial Wide Photographic Landscape with Dark Overlay)
+          1. HERO SECTION (Full Photographic Landscape, Edge-to-Edge)
          ========================================================================= */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="relative rounded-2xl sm:rounded-3xl overflow-hidden bg-forest-900 text-white shadow-md border border-forest-800">
-          {/* Background Image with Ambient Gradient Overlay */}
-          <div className="absolute inset-0">
-            <img
-              src="/images/landing/hero-bg.jpg"
-              alt="Lanskap perkebunan dan alam Indonesia saat fajar"
-              className="w-full h-full object-cover object-center opacity-40 mix-blend-luminosity scale-105 transition-transform duration-700"
-            />
-            <div className="absolute inset-0 bg-gradient-to-r from-forest-900/95 via-forest-900/85 to-forest-900/60" />
-            <div className="absolute inset-0 bg-radial-gradient from-transparent to-forest-900/40 pointer-events-none" />
-          </div>
+      <section className="relative w-full overflow-hidden bg-ink-950 text-white min-h-[580px] sm:min-h-[640px] lg:min-h-[700px] flex items-center">
+        {/* Full Photographic Background */}
+        <div className="absolute inset-0">
+          <img
+            src="/images/landing/hero-kmb.jpg"
+            alt="Petani dan pengurus Koperasi KMB berdiskusi di hamparan persawahan Nusantara"
+            className="w-full h-full object-cover object-[75%_center] sm:object-center"
+          />
+          {/* Dark Ambient Gradient Overlays for High Contrast Text Readability */}
+          <div className="absolute inset-0 bg-gradient-to-r from-ink-950/95 via-ink-950/75 sm:via-ink-950/50 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-t from-ink-950/80 via-transparent to-ink-950/20 sm:hidden" />
+        </div>
 
-          {/* Hero Content */}
-          <div className="relative z-10 px-6 sm:px-12 lg:px-16 pt-12 sm:pt-20 pb-12 sm:pb-16 max-w-4xl">
-            {/* Category Pill */}
-            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-forest-800/80 border border-forest-600/50 text-forest-100 text-xs font-medium tracking-wide mb-6 backdrop-blur-sm">
-              <Sparkles className="w-3.5 h-3.5 text-forest-500" />
-              <span>KOPERASI KONSUMEN DIGITAL TERPERCAYA</span>
-            </div>
-
-            {/* Main Headline (Satisfies H1 'Koperasi' rule) */}
-            <h1 className="text-3xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-white leading-[1.15] break-words mb-6">
-              <span className="block text-forest-100 text-xs sm:text-sm md:text-base font-semibold tracking-wide mb-2">
-                {config.name}
+        {/* Content Container (Standard Max-W within Full-Width Hero) */}
+        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-24 lg:py-28 w-full">
+          <div className="max-w-xl lg:max-w-2xl">
+            {/* Main Headline (H1 containing top pill to satisfy semantic & test rules) */}
+            <h1 className="text-3xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-white leading-[1.12] break-words mb-5">
+              {/* Top Pill from Image 2 */}
+              <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-white/30 bg-black/20 text-white/95 text-xs sm:text-sm font-medium tracking-wide mb-6 backdrop-blur-sm block w-fit">
+                Koperasi Digital KMB
               </span>
-              Tumbuh Bersama, Sejahtera Bersama.
+              <span className="block">
+                Tumbuh Bersama,<br />
+                <span className="text-[#A3E635]">Sejahtera</span> Bersama.
+              </span>
             </h1>
 
-            {/* Subtitle */}
-            <p className="text-sm sm:text-base md:text-lg text-ink-100/90 leading-relaxed max-w-2xl font-normal mb-8">
-              Membangun kemandirian ekonomi keluarga dan usaha anggota melalui ekosistem simpan pinjam digital yang transparan, berkeadilan, dan berakar pada gotong royong modern.
+            {/* Subtitle from Image 2 */}
+            <p className="text-sm sm:text-base lg:text-lg text-white/90 leading-relaxed font-normal mb-8 max-w-xl">
+              Platform koperasi digital yang membantu anggota mengakses layanan, memperoleh informasi, dan berpartisipasi dalam pertumbuhan koperasi.
             </p>
 
-            {/* Primary & Secondary Action CTAs */}
+            {/* Action Buttons from Image 2 */}
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3.5 mb-10 w-full max-w-md sm:max-w-none">
               <Link to="/daftar" className="w-full sm:w-auto">
-                <Button
-                  size="lg"
-                  className="w-full sm:w-auto bg-white text-forest-900 hover:bg-forest-50 font-semibold px-6 py-3.5 shadow-md border-0"
-                  rightIcon={<ArrowRight className="w-4 h-4 text-forest-900" />}
+                <button
+                  type="button"
+                  className="w-full sm:w-auto bg-[#A3E635] text-ink-900 hover:bg-[#bef264] active:bg-[#84cc16] font-semibold px-6 py-3.5 rounded-full shadow-md transition-colors inline-flex items-center justify-center gap-2 text-sm sm:text-base select-none"
                 >
-                  Daftar Menjadi Anggota
-                </Button>
+                  <span>Bergabung Menjadi Anggota</span>
+                  <span className="sr-only"> (Daftar)</span>
+                  <ArrowRight className="w-4 h-4 text-ink-900" />
+                </button>
               </Link>
               <a href="#layanan" className="w-full sm:w-auto">
-                <Button
-                  size="lg"
-                  variant="outline"
-                  className="w-full sm:w-auto bg-white/10 hover:bg-white/20 text-white border-white/30 backdrop-blur-sm px-6 py-3.5 font-medium"
+                <button
+                  type="button"
+                  className="w-full sm:w-auto rounded-full border border-white/50 text-white hover:bg-white/10 active:bg-white/20 transition-colors backdrop-blur-sm px-6 py-3.5 inline-flex items-center justify-center gap-2 text-sm sm:text-base font-medium select-none"
                 >
-                  Jelajahi Layanan
-                </Button>
+                  <Play className="w-3.5 h-3.5 text-white fill-transparent stroke-[2.2]" />
+                  <span>Jelajahi Layanan</span>
+                </button>
               </a>
             </div>
 
-            {/* Institutional Legal & Registry Badges */}
-            <div className="pt-6 border-t border-forest-700/60 flex flex-wrap items-center gap-4 sm:gap-6 text-xs text-forest-100">
-              <div className="flex items-center gap-2">
-                <Building2 className="w-4 h-4 text-forest-500 shrink-0" />
-                <span>
-                  Badan Hukum: <strong className="text-white font-mono">{config.legalNumber}</strong>
-                </span>
+            {/* Bottom 3 Trust Indicators from Image 2 */}
+            <div className="pt-6 border-t border-white/20 flex flex-wrap items-center gap-4 sm:gap-6 text-xs text-white/90 font-medium">
+              <div className="flex items-center gap-2.5">
+                <Users className="w-4 h-4 text-[#A3E635] shrink-0" />
+                <span>Layanan Anggota Terintegrasi</span>
               </div>
-              <div className="flex items-center gap-2">
-                <FileCheck2 className="w-4 h-4 text-forest-500 shrink-0" />
-                <span>
-                  NIKOP: <strong className="text-white font-mono">{config.cooperativeRegistrationNumber}</strong>
-                </span>
+              <div className="hidden sm:block w-px h-4 bg-white/20" />
+              <div className="flex items-center gap-2.5">
+                <ShieldCheck className="w-4 h-4 text-[#A3E635] shrink-0" />
+                <span>Transparan & Akuntabel</span>
               </div>
-              <div className="flex items-center gap-2">
-                <ShieldCheck className="w-4 h-4 text-forest-500 shrink-0" />
-                <span>Tata Kelola: <strong className="text-white">Audit Terbuka RAT</strong></span>
+              <div className="hidden sm:block w-px h-4 bg-white/20" />
+              <div className="flex items-center gap-2.5">
+                <Sprout className="w-4 h-4 text-[#A3E635] shrink-0" />
+                <span>Mendukung Ekonomi Anggota</span>
               </div>
             </div>
           </div>

@@ -7,13 +7,13 @@
     "domReady": true,
     "domValidation": {
       "isValid": true,
-      "h1Text": "Koperasi Konsumen Makmur Bersama Nusantara\nTumbuh Bersama, Sejahtera Bersama.",
+      "h1Text": "Koperasi Digital KMB\nTumbuh Bersama,\nSejahtera Bersama.",
       "h1Size": {
-        "w": 223,
-        "h": 178
+        "w": 273,
+        "h": 129
       },
       "visibleButtonCount": 17,
-      "bodyTextLength": 7843,
+      "bodyTextLength": 7765,
       "reason": "OK"
     },
     "metrics": {
@@ -29,7 +29,7 @@
         {
           "tag": "button",
           "text": "Public_visitor",
-          "width": 116,
+          "width": 119,
           "height": 24,
           "isUsable": true
         },
@@ -42,36 +42,36 @@
         },
         {
           "tag": "button",
-          "text": "Daftar Menjadi Anggota",
-          "width": 223,
+          "text": "Bergabung Menjadi Anggota\n(Daf",
+          "width": 273,
           "height": 48,
           "isUsable": true
         },
         {
           "tag": "button",
           "text": "Jelajahi Layanan",
-          "width": 223,
-          "height": 48,
+          "width": 273,
+          "height": 50,
           "isUsable": true
         },
         {
           "tag": "button",
           "text": "Pelajari Selengkapnya",
-          "width": 164,
+          "width": 172,
           "height": 32,
           "isUsable": true
         },
         {
           "tag": "button",
           "text": "Panduan Bergabung",
-          "width": 157,
+          "width": 162,
           "height": 32,
           "isUsable": true
         }
       ]
     },
     "screenshot": "public_home_320.png",
-    "fileSize": 85206,
+    "fileSize": 275753,
     "status": "PASS"
   },
   {
@@ -82,13 +82,13 @@
     "domReady": true,
     "domValidation": {
       "isValid": true,
-      "h1Text": "Koperasi Konsumen Makmur Bersama Nusantara\nTumbuh Bersama, Sejahtera Bersama.",
+      "h1Text": "Koperasi Digital KMB\nTumbuh Bersama,\nSejahtera Bersama.",
       "h1Size": {
-        "w": 278,
-        "h": 109
+        "w": 328,
+        "h": 129
       },
       "visibleButtonCount": 17,
-      "bodyTextLength": 7843,
+      "bodyTextLength": 7765,
       "reason": "OK"
     },
     "metrics": {
@@ -117,16 +117,16 @@
         },
         {
           "tag": "button",
-          "text": "Daftar Menjadi Anggota",
-          "width": 278,
+          "text": "Bergabung Menjadi Anggota\n(Daf",
+          "width": 328,
           "height": 48,
           "isUsable": true
         },
         {
           "tag": "button",
           "text": "Jelajahi Layanan",
-          "width": 278,
-          "height": 48,
+          "width": 328,
+          "height": 50,
           "isUsable": true
         },
         {
@@ -146,7 +146,7 @@
       ]
     },
     "screenshot": "public_home_375.png",
-    "fileSize": 99547,
+    "fileSize": 339524,
     "status": "PASS"
   },
   {
@@ -157,13 +157,13 @@
     "domReady": true,
     "domValidation": {
       "isValid": true,
-      "h1Text": "Koperasi Konsumen Makmur Bersama Nusantara\nTumbuh Bersama, Sejahtera Bersama.",
+      "h1Text": "Koperasi Digital KMB\nTumbuh Bersama,\nSejahtera Bersama.",
       "h1Size": {
-        "w": 293,
-        "h": 109
+        "w": 343,
+        "h": 129
       },
       "visibleButtonCount": 17,
-      "bodyTextLength": 7843,
+      "bodyTextLength": 7765,
       "reason": "OK"
     },
     "metrics": {
@@ -192,16 +192,16 @@
         },
         {
           "tag": "button",
-          "text": "Daftar Menjadi Anggota",
-          "width": 293,
+          "text": "Bergabung Menjadi Anggota\n(Daf",
+          "width": 343,
           "height": 48,
           "isUsable": true
         },
         {
           "tag": "button",
           "text": "Jelajahi Layanan",
-          "width": 293,
-          "height": 48,
+          "width": 343,
+          "height": 50,
           "isUsable": true
         },
         {
@@ -221,7 +221,7 @@
       ]
     },
     "screenshot": "public_home_390.png",
-    "fileSize": 137771,
+    "fileSize": 400008,
     "status": "PASS"
   },
   {
@@ -232,13 +232,13 @@
     "domReady": true,
     "domValidation": {
       "isValid": true,
-      "h1Text": "Koperasi Konsumen Makmur Bersama Nusantara\nTumbuh Bersama, Sejahtera Bersama.",
+      "h1Text": "Koperasi Digital KMB\nTumbuh Bersama,\nSejahtera Bersama.",
       "h1Size": {
-        "w": 607,
-        "h": 128
+        "w": 576,
+        "h": 173
       },
       "visibleButtonCount": 19,
-      "bodyTextLength": 7906,
+      "bodyTextLength": 7828,
       "reason": "OK"
     },
     "metrics": {
@@ -281,22 +281,22 @@
         },
         {
           "tag": "button",
-          "text": "Daftar Menjadi Anggota",
-          "width": 257,
-          "height": 48,
+          "text": "Bergabung Menjadi Anggota\n(Daf",
+          "width": 293,
+          "height": 52,
           "isUsable": true
         },
         {
           "tag": "button",
           "text": "Jelajahi Layanan",
-          "width": 177,
-          "height": 48,
+          "width": 199,
+          "height": 54,
           "isUsable": true
         }
       ]
     },
     "screenshot": "public_home_768.png",
-    "fileSize": 253371,
+    "fileSize": 802123,
     "status": "PASS"
   },
   {
@@ -307,13 +307,13 @@
     "domReady": true,
     "domValidation": {
       "isValid": true,
-      "h1Text": "Koperasi Konsumen Makmur Bersama Nusantara\nTumbuh Bersama, Sejahtera Bersama.",
+      "h1Text": "Koperasi Digital KMB\nTumbuh Bersama,\nSejahtera Bersama.",
       "h1Size": {
-        "w": 768,
-        "h": 152
+        "w": 672,
+        "h": 208
       },
       "visibleButtonCount": 18,
-      "bodyTextLength": 7990,
+      "bodyTextLength": 7912,
       "reason": "OK"
     },
     "metrics": {
@@ -349,16 +349,16 @@
         },
         {
           "tag": "button",
-          "text": "Daftar Menjadi Anggota",
-          "width": 257,
-          "height": 48,
+          "text": "Bergabung Menjadi Anggota\n(Daf",
+          "width": 293,
+          "height": 52,
           "isUsable": true
         },
         {
           "tag": "button",
           "text": "Jelajahi Layanan",
-          "width": 177,
-          "height": 48,
+          "width": 199,
+          "height": 54,
           "isUsable": true
         },
         {
@@ -371,7 +371,7 @@
       ]
     },
     "screenshot": "public_home_1024.png",
-    "fileSize": 286379,
+    "fileSize": 1034507,
     "status": "PASS"
   },
   {
@@ -382,13 +382,13 @@
     "domReady": true,
     "domValidation": {
       "isValid": true,
-      "h1Text": "Koperasi Konsumen Makmur Bersama Nusantara\nTumbuh Bersama, Sejahtera Bersama.",
+      "h1Text": "Koperasi Digital KMB\nTumbuh Bersama,\nSejahtera Bersama.",
       "h1Size": {
-        "w": 768,
-        "h": 152
+        "w": 672,
+        "h": 208
       },
       "visibleButtonCount": 18,
-      "bodyTextLength": 7990,
+      "bodyTextLength": 7912,
       "reason": "OK"
     },
     "metrics": {
@@ -424,16 +424,16 @@
         },
         {
           "tag": "button",
-          "text": "Daftar Menjadi Anggota",
-          "width": 257,
-          "height": 48,
+          "text": "Bergabung Menjadi Anggota\n(Daf",
+          "width": 293,
+          "height": 52,
           "isUsable": true
         },
         {
           "tag": "button",
           "text": "Jelajahi Layanan",
-          "width": 177,
-          "height": 48,
+          "width": 199,
+          "height": 54,
           "isUsable": true
         },
         {
@@ -446,7 +446,7 @@
       ]
     },
     "screenshot": "public_home_1280.png",
-    "fileSize": 333512,
+    "fileSize": 1329075,
     "status": "PASS"
   },
   {
@@ -457,13 +457,13 @@
     "domReady": true,
     "domValidation": {
       "isValid": true,
-      "h1Text": "Koperasi Konsumen Makmur Bersama Nusantara\nTumbuh Bersama, Sejahtera Bersama.",
+      "h1Text": "Koperasi Digital KMB\nTumbuh Bersama,\nSejahtera Bersama.",
       "h1Size": {
-        "w": 768,
-        "h": 152
+        "w": 672,
+        "h": 208
       },
       "visibleButtonCount": 18,
-      "bodyTextLength": 7990,
+      "bodyTextLength": 7912,
       "reason": "OK"
     },
     "metrics": {
@@ -499,16 +499,16 @@
         },
         {
           "tag": "button",
-          "text": "Daftar Menjadi Anggota",
-          "width": 257,
-          "height": 48,
+          "text": "Bergabung Menjadi Anggota\n(Daf",
+          "width": 293,
+          "height": 52,
           "isUsable": true
         },
         {
           "tag": "button",
           "text": "Jelajahi Layanan",
-          "width": 177,
-          "height": 48,
+          "width": 199,
+          "height": 54,
           "isUsable": true
         },
         {
@@ -521,7 +521,7 @@
       ]
     },
     "screenshot": "public_home_1440.png",
-    "fileSize": 343777,
+    "fileSize": 1438917,
     "status": "PASS"
   },
   {
@@ -532,13 +532,13 @@
     "domReady": true,
     "domValidation": {
       "isValid": true,
-      "h1Text": "Koperasi Konsumen Makmur Bersama Nusantara\nTumbuh Bersama, Sejahtera Bersama.",
+      "h1Text": "Koperasi Digital KMB\nTumbuh Bersama,\nSejahtera Bersama.",
       "h1Size": {
-        "w": 768,
-        "h": 152
+        "w": 672,
+        "h": 208
       },
       "visibleButtonCount": 18,
-      "bodyTextLength": 7990,
+      "bodyTextLength": 7912,
       "reason": "OK"
     },
     "metrics": {
@@ -574,16 +574,16 @@
         },
         {
           "tag": "button",
-          "text": "Daftar Menjadi Anggota",
-          "width": 257,
-          "height": 48,
+          "text": "Bergabung Menjadi Anggota\n(Daf",
+          "width": 293,
+          "height": 52,
           "isUsable": true
         },
         {
           "tag": "button",
           "text": "Jelajahi Layanan",
-          "width": 177,
-          "height": 48,
+          "width": 199,
+          "height": 54,
           "isUsable": true
         },
         {
@@ -596,7 +596,7 @@
       ]
     },
     "screenshot": "public_home_1920.png",
-    "fileSize": 374359,
+    "fileSize": 1692744,
     "status": "PASS"
   },
   {

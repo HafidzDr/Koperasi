@@ -23,7 +23,7 @@ Referensi visual AgroCore (`media_1793711132669_b4ac7606.jpg`) memiliki karakter
 
 | Elemen Referensi AgroCore | Karakter Visual | Translasi Kontekstual Koperasi KMB |
 | :--- | :--- | :--- |
-| **Hero Landscape** | Fotografi perkebunan berkabut fajar dengan vignette gelap dan kontras teks tinggi | Fotografi lanskap agraris Indonesia fajar berkabut dengan overlay gradient Forest Green (`#1B3320`) dan headline H1 berkelembagaan |
+| **Hero Landscape** | Fotografi perkebunan berkabut fajar dengan vignette gelap dan kontras teks tinggi | Fotografi penuh tepi-ke-tepi (*full bleed edge-to-edge*, tanpa kontainer kartu) aktivitas anggota dan pengurus koperasi berdiskusi di hamparan sawah Indonesia (`/images/landing/hero-kmb.jpg`) dengan teks kontras tinggi dan aksen warna lime green `#A3E635` |
 | **Pill Kategori & Tag** | Kapsul hijau daun dengan teks uppercase | Badge pill berseri: *"KOPERASI KONSUMEN DIGITAL TERPERCAYA"* dan *"TENTANG KOPERASI KMB"* |
 | **Floating Stat Card** | Kartu melayang semi-transparan di sudut atas hero | Widget akuntabilitas lembaga: *"Badan Hukum Resmi"*, *"NIKOP"*, dan *"Audit Terbuka RAT"* |
 | **Prinsip Garis Strip** | Pita horizontal nilai inti pertanian presisi | Pita 5 Prinsip Koperasi: Keanggotaan Terbuka, Pengelolaan Demokratis, Partisipasi Ekonomi, Kemandirian, dan Edukasi |
@@ -55,7 +55,7 @@ Sebelum implementasi antarmuka landing page, seluruh kondisi baseline Phase 5 di
 Struktur komponen pada `src/features/public/HomeView.tsx` dibangun atas 11 seksi bertingkat:
 
 ```
-[1. Hero Section] -> Fotografi fajar, H1 kelembagaan, call-to-action ganda, indikator legalitas
+[1. Hero Section] -> Foto persawahan penuh tepi-ke-tepi (full width tanpa card), H1 kelembagaan + aksen lime green, tombol pill ganda, 3 pilar layanan terintegrasi
        │
 [2. Cooperative Principles] -> Pita horizontal 5 pilar gotong royong modern
        │
@@ -226,3 +226,4 @@ Redesign halaman publik Koperasi Digital KMB telah berhasil mewujudkan visi anta
 **Rekomendasi Langkah Lanjutan:**
 1. Pengurus dapat melanjutkan review visual pada perangkat mobile dan desktop nyata.
 2. Menyempurnakan halaman sub-layanan publik (`/tentang`, `/cara-bergabung`, `/transparansi`) dengan bahasa desain editorial yang sama pada fase pemeliharaan berikutnya.
+
