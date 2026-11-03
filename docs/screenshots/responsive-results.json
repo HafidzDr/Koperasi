@@ -7,13 +7,13 @@
     "domReady": true,
     "domValidation": {
       "isValid": true,
-      "h1Text": "Koperasi Konsumen Makmur Bersama Nusantara",
+      "h1Text": "Koperasi Konsumen Makmur Bersama Nusantara\nTumbuh Bersama, Sejahtera Bersama.",
       "h1Size": {
-        "w": 273,
-        "h": 90
+        "w": 223,
+        "h": 178
       },
-      "visibleButtonCount": 6,
-      "bodyTextLength": 2865,
+      "visibleButtonCount": 17,
+      "bodyTextLength": 7843,
       "reason": "OK"
     },
     "metrics": {
@@ -29,7 +29,7 @@
         {
           "tag": "button",
           "text": "Public_visitor",
-          "width": 119,
+          "width": 116,
           "height": 24,
           "isUsable": true
         },
@@ -43,35 +43,35 @@
         {
           "tag": "button",
           "text": "Daftar Menjadi Anggota",
-          "width": 273,
+          "width": 223,
           "height": 48,
           "isUsable": true
         },
         {
           "tag": "button",
-          "text": "Buka Portal Anggota",
-          "width": 273,
+          "text": "Jelajahi Layanan",
+          "width": 223,
           "height": 48,
           "isUsable": true
         },
         {
           "tag": "button",
-          "text": "Lihat Seluruh Layanan",
-          "width": 153,
+          "text": "Pelajari Selengkapnya",
+          "width": 164,
           "height": 32,
           "isUsable": true
         },
         {
           "tag": "button",
-          "text": "Mulai Pendaftaran Online",
-          "width": 225,
-          "height": 48,
+          "text": "Panduan Bergabung",
+          "width": 157,
+          "height": 32,
           "isUsable": true
         }
       ]
     },
     "screenshot": "public_home_320.png",
-    "fileSize": 39407,
+    "fileSize": 85206,
     "status": "PASS"
   },
   {
@@ -82,13 +82,13 @@
     "domReady": true,
     "domValidation": {
       "isValid": true,
-      "h1Text": "Koperasi Konsumen Makmur Bersama Nusantara",
+      "h1Text": "Koperasi Konsumen Makmur Bersama Nusantara\nTumbuh Bersama, Sejahtera Bersama.",
       "h1Size": {
-        "w": 328,
-        "h": 60
+        "w": 278,
+        "h": 109
       },
-      "visibleButtonCount": 6,
-      "bodyTextLength": 2865,
+      "visibleButtonCount": 17,
+      "bodyTextLength": 7843,
       "reason": "OK"
     },
     "metrics": {
@@ -118,35 +118,35 @@
         {
           "tag": "button",
           "text": "Daftar Menjadi Anggota",
-          "width": 328,
+          "width": 278,
           "height": 48,
           "isUsable": true
         },
         {
           "tag": "button",
-          "text": "Buka Portal Anggota",
-          "width": 328,
+          "text": "Jelajahi Layanan",
+          "width": 278,
           "height": 48,
           "isUsable": true
         },
         {
           "tag": "button",
-          "text": "Lihat Seluruh Layanan",
-          "width": 153,
+          "text": "Pelajari Selengkapnya",
+          "width": 172,
           "height": 32,
           "isUsable": true
         },
         {
           "tag": "button",
-          "text": "Mulai Pendaftaran Online",
-          "width": 280,
-          "height": 48,
+          "text": "Panduan Bergabung",
+          "width": 162,
+          "height": 32,
           "isUsable": true
         }
       ]
     },
     "screenshot": "public_home_375.png",
-    "fileSize": 47424,
+    "fileSize": 99547,
     "status": "PASS"
   },
   {
@@ -157,13 +157,13 @@
     "domReady": true,
     "domValidation": {
       "isValid": true,
-      "h1Text": "Koperasi Konsumen Makmur Bersama Nusantara",
+      "h1Text": "Koperasi Konsumen Makmur Bersama Nusantara\nTumbuh Bersama, Sejahtera Bersama.",
       "h1Size": {
-        "w": 343,
-        "h": 60
+        "w": 293,
+        "h": 109
       },
-      "visibleButtonCount": 6,
-      "bodyTextLength": 2865,
+      "visibleButtonCount": 17,
+      "bodyTextLength": 7843,
       "reason": "OK"
     },
     "metrics": {
@@ -193,35 +193,35 @@
         {
           "tag": "button",
           "text": "Daftar Menjadi Anggota",
-          "width": 343,
+          "width": 293,
           "height": 48,
           "isUsable": true
         },
         {
           "tag": "button",
-          "text": "Buka Portal Anggota",
-          "width": 343,
+          "text": "Jelajahi Layanan",
+          "width": 293,
           "height": 48,
           "isUsable": true
         },
         {
           "tag": "button",
-          "text": "Lihat Seluruh Layanan",
-          "width": 153,
+          "text": "Pelajari Selengkapnya",
+          "width": 172,
           "height": 32,
           "isUsable": true
         },
         {
           "tag": "button",
-          "text": "Mulai Pendaftaran Online",
-          "width": 295,
-          "height": 48,
+          "text": "Panduan Bergabung",
+          "width": 162,
+          "height": 32,
           "isUsable": true
         }
       ]
     },
     "screenshot": "public_home_390.png",
-    "fileSize": 49439,
+    "fileSize": 137771,
     "status": "PASS"
   },
   {
@@ -232,13 +232,13 @@
     "domReady": true,
     "domValidation": {
       "isValid": true,
-      "h1Text": "Koperasi Konsumen Makmur Bersama Nusantara",
+      "h1Text": "Koperasi Konsumen Makmur Bersama Nusantara\nTumbuh Bersama, Sejahtera Bersama.",
       "h1Size": {
-        "w": 705,
-        "h": 96
+        "w": 607,
+        "h": 128
       },
-      "visibleButtonCount": 8,
-      "bodyTextLength": 2928,
+      "visibleButtonCount": 19,
+      "bodyTextLength": 7906,
       "reason": "OK"
     },
     "metrics": {
@@ -282,21 +282,21 @@
         {
           "tag": "button",
           "text": "Daftar Menjadi Anggota",
-          "width": 249,
+          "width": 257,
           "height": 48,
           "isUsable": true
         },
         {
           "tag": "button",
-          "text": "Buka Portal Anggota",
-          "width": 199,
+          "text": "Jelajahi Layanan",
+          "width": 177,
           "height": 48,
           "isUsable": true
         }
       ]
     },
     "screenshot": "public_home_768.png",
-    "fileSize": 101176,
+    "fileSize": 253371,
     "status": "PASS"
   },
   {
@@ -307,13 +307,13 @@
     "domReady": true,
     "domValidation": {
       "isValid": true,
-      "h1Text": "Koperasi Konsumen Makmur Bersama Nusantara",
+      "h1Text": "Koperasi Konsumen Makmur Bersama Nusantara\nTumbuh Bersama, Sejahtera Bersama.",
       "h1Size": {
         "w": 768,
-        "h": 96
+        "h": 152
       },
-      "visibleButtonCount": 7,
-      "bodyTextLength": 3012,
+      "visibleButtonCount": 18,
+      "bodyTextLength": 7990,
       "reason": "OK"
     },
     "metrics": {
@@ -350,28 +350,28 @@
         {
           "tag": "button",
           "text": "Daftar Menjadi Anggota",
-          "width": 249,
+          "width": 257,
           "height": 48,
           "isUsable": true
         },
         {
           "tag": "button",
-          "text": "Buka Portal Anggota",
-          "width": 199,
+          "text": "Jelajahi Layanan",
+          "width": 177,
           "height": 48,
           "isUsable": true
         },
         {
           "tag": "button",
-          "text": "Lihat Seluruh Layanan",
-          "width": 153,
+          "text": "Pelajari Selengkapnya",
+          "width": 172,
           "height": 32,
           "isUsable": true
         }
       ]
     },
     "screenshot": "public_home_1024.png",
-    "fileSize": 82295,
+    "fileSize": 286379,
     "status": "PASS"
   },
   {
@@ -382,13 +382,13 @@
     "domReady": true,
     "domValidation": {
       "isValid": true,
-      "h1Text": "Koperasi Konsumen Makmur Bersama Nusantara",
+      "h1Text": "Koperasi Konsumen Makmur Bersama Nusantara\nTumbuh Bersama, Sejahtera Bersama.",
       "h1Size": {
         "w": 768,
-        "h": 96
+        "h": 152
       },
-      "visibleButtonCount": 7,
-      "bodyTextLength": 3012,
+      "visibleButtonCount": 18,
+      "bodyTextLength": 7990,
       "reason": "OK"
     },
     "metrics": {
@@ -425,28 +425,28 @@
         {
           "tag": "button",
           "text": "Daftar Menjadi Anggota",
-          "width": 249,
+          "width": 257,
           "height": 48,
           "isUsable": true
         },
         {
           "tag": "button",
-          "text": "Buka Portal Anggota",
-          "width": 199,
+          "text": "Jelajahi Layanan",
+          "width": 177,
           "height": 48,
           "isUsable": true
         },
         {
           "tag": "button",
-          "text": "Lihat Seluruh Layanan",
-          "width": 153,
+          "text": "Pelajari Selengkapnya",
+          "width": 172,
           "height": 32,
           "isUsable": true
         }
       ]
     },
     "screenshot": "public_home_1280.png",
-    "fileSize": 89197,
+    "fileSize": 333512,
     "status": "PASS"
   },
   {
@@ -457,13 +457,13 @@
     "domReady": true,
     "domValidation": {
       "isValid": true,
-      "h1Text": "Koperasi Konsumen Makmur Bersama Nusantara",
+      "h1Text": "Koperasi Konsumen Makmur Bersama Nusantara\nTumbuh Bersama, Sejahtera Bersama.",
       "h1Size": {
         "w": 768,
-        "h": 96
+        "h": 152
       },
-      "visibleButtonCount": 7,
-      "bodyTextLength": 3012,
+      "visibleButtonCount": 18,
+      "bodyTextLength": 7990,
       "reason": "OK"
     },
     "metrics": {
@@ -500,28 +500,28 @@
         {
           "tag": "button",
           "text": "Daftar Menjadi Anggota",
-          "width": 249,
+          "width": 257,
           "height": 48,
           "isUsable": true
         },
         {
           "tag": "button",
-          "text": "Buka Portal Anggota",
-          "width": 199,
+          "text": "Jelajahi Layanan",
+          "width": 177,
           "height": 48,
           "isUsable": true
         },
         {
           "tag": "button",
-          "text": "Lihat Seluruh Layanan",
-          "width": 153,
+          "text": "Pelajari Selengkapnya",
+          "width": 172,
           "height": 32,
           "isUsable": true
         }
       ]
     },
     "screenshot": "public_home_1440.png",
-    "fileSize": 93971,
+    "fileSize": 343777,
     "status": "PASS"
   },
   {
@@ -532,13 +532,13 @@
     "domReady": true,
     "domValidation": {
       "isValid": true,
-      "h1Text": "Koperasi Konsumen Makmur Bersama Nusantara",
+      "h1Text": "Koperasi Konsumen Makmur Bersama Nusantara\nTumbuh Bersama, Sejahtera Bersama.",
       "h1Size": {
         "w": 768,
-        "h": 96
+        "h": 152
       },
-      "visibleButtonCount": 7,
-      "bodyTextLength": 3012,
+      "visibleButtonCount": 18,
+      "bodyTextLength": 7990,
       "reason": "OK"
     },
     "metrics": {
@@ -575,28 +575,28 @@
         {
           "tag": "button",
           "text": "Daftar Menjadi Anggota",
-          "width": 249,
+          "width": 257,
           "height": 48,
           "isUsable": true
         },
         {
           "tag": "button",
-          "text": "Buka Portal Anggota",
-          "width": 199,
+          "text": "Jelajahi Layanan",
+          "width": 177,
           "height": 48,
           "isUsable": true
         },
         {
           "tag": "button",
-          "text": "Lihat Seluruh Layanan",
-          "width": 153,
+          "text": "Pelajari Selengkapnya",
+          "width": 172,
           "height": 32,
           "isUsable": true
         }
       ]
     },
     "screenshot": "public_home_1920.png",
-    "fileSize": 119241,
+    "fileSize": 374359,
     "status": "PASS"
   },
   {
