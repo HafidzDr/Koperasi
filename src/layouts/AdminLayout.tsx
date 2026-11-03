@@ -28,6 +28,7 @@ import {
   Vote,
   ExternalLink,
   Eye,
+  LogOut,
 } from "lucide-react";
 
 const ICON_MAP = {
@@ -45,7 +46,7 @@ const ICON_MAP = {
 };
 
 export const AdminLayout: React.FC = () => {
-  const { currentUser } = useAuthStore();
+  const { currentUser, setRole } = useAuthStore();
   const { config } = useConfigStore();
   const location = useLocation();
   const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
@@ -90,24 +91,24 @@ export const AdminLayout: React.FC = () => {
         <aside className="hidden lg:flex flex-col w-64 bg-white border-r border-ink-200 shrink-0">
           <div className="p-4 border-b border-ink-100 flex items-center justify-between">
             <BrandLogo size="sm" to="/admin" />
-            <span className="text-[10px] font-bold uppercase tracking-wider bg-ink-100 text-ink-700 px-1.5 py-0.5 rounded">
+            <span className="text-[10px] font-bold uppercase tracking-wider bg-forest-100 text-forest-900 border border-forest-200 px-1.5 py-0.5 rounded">
               ADMIN
             </span>
           </div>
 
           {/* Active Admin Role Context Badge */}
-          <div className="p-3 mx-3 mt-3 bg-forest-50 border border-forest-100 rounded-lg">
-            <div className="flex items-center gap-2">
+          <div className="p-3 mx-3 mt-3 bg-forest-50/70 border border-forest-200/60 rounded-xl text-left">
+            <div className="flex items-center gap-2.5">
               <Avatar name={currentUser.name} size="sm" />
               <div className="min-w-0 flex-1">
-                <p className="text-xs font-semibold text-ink-900 truncate">
+                <p className="text-xs font-bold text-ink-900 truncate">
                   {currentUser.name}
                 </p>
                 <div className="flex items-center gap-1.5 mt-0.5">
                   <Badge
                     variant={currentUser.role === "auditor" ? "neutral" : "forest"}
                     size="sm"
-                    className="text-[9px] px-1 py-0 uppercase"
+                    className="text-[9px] px-1.5 py-0 uppercase"
                   >
                     {currentUser.role === "auditor" ? "Auditor (Read-Only)" : currentUser.roleName}
                   </Badge>
@@ -120,7 +121,7 @@ export const AdminLayout: React.FC = () => {
           <nav className="flex-1 px-3 py-3 space-y-4 overflow-y-auto text-left">
             {navSections.map((section) => (
               <div key={section.title} className="space-y-1">
-                <div className="px-3 text-[10px] font-bold uppercase tracking-wider text-ink-500">
+                <div className="px-3 text-[10px] font-bold uppercase tracking-wider text-ink-400">
                   {section.title}
                 </div>
                 {section.items.map((item) => {
@@ -134,14 +135,14 @@ export const AdminLayout: React.FC = () => {
                     <Link
                       key={item.href}
                       to={item.href}
-                      className={`flex items-center justify-between px-3 py-2 rounded-md text-xs font-medium transition-colors ${
+                      className={`flex items-center justify-between px-3.5 py-2 rounded-lg text-xs font-medium transition-all ${
                         isActive
-                          ? "bg-forest-800 text-white font-semibold"
-                          : "text-ink-700 hover:text-ink-900 hover:bg-ink-100/70"
+                          ? "bg-forest-800 text-white font-semibold shadow-xs"
+                          : "text-ink-600 hover:text-ink-900 hover:bg-ink-100/70"
                       }`}
                     >
                       <div className="flex items-center gap-2.5 truncate">
-                        <Icon className="w-4 h-4 shrink-0" />
+                        <Icon className={`w-4 h-4 shrink-0 ${isActive ? "text-white" : "text-ink-500"}`} />
                         <span className="truncate">{item.label}</span>
                       </div>
                       {item.badge && (
@@ -163,25 +164,32 @@ export const AdminLayout: React.FC = () => {
           </nav>
 
           {/* Bottom Switcher CTA / Portal preview */}
-          <div className="p-3 border-t border-ink-100 bg-ink-50 text-[11px] text-ink-600">
+          <div className="p-3 border-t border-ink-100 bg-ink-50/60 text-xs text-ink-600 flex flex-col gap-1.5">
             <Link
               to="/"
-              className="flex items-center justify-between hover:text-forest-700 transition-colors"
+              className="flex items-center justify-between hover:text-forest-700 transition-colors py-1 px-2 rounded hover:bg-white"
             >
-              <span>Lihat Situs Publik</span>
+              <span>Lihat Halaman Publik</span>
               <ExternalLink className="w-3.5 h-3.5" />
             </Link>
+            <button
+              onClick={() => setRole("public_visitor")}
+              className="w-full flex items-center justify-between text-ink-600 hover:text-danger-700 transition-colors py-1 px-2 rounded hover:bg-white"
+            >
+              <span>Keluar ke Mode Publik</span>
+              <LogOut className="w-3.5 h-3.5" />
+            </button>
           </div>
         </aside>
 
         {/* 3. Main Content Area */}
         <div className="flex-1 flex flex-col min-w-0 overflow-y-auto">
           {/* Topbar */}
-          <header className="h-14 bg-white border-b border-ink-200 px-4 sm:px-6 flex items-center justify-between shrink-0">
+          <header className="sticky top-0 z-30 h-16 bg-white/95 backdrop-blur-none border-b border-ink-200 px-4 sm:px-6 flex items-center justify-between shrink-0 shadow-xs">
             <div className="flex items-center gap-3">
               <button
                 onClick={() => setMobileDrawerOpen(true)}
-                className="lg:hidden p-1.5 rounded-md text-ink-600 hover:bg-ink-100"
+                className="lg:hidden p-2 rounded-md text-ink-600 hover:bg-ink-100 transition-colors"
                 aria-label="Buka menu navigasi administrasi"
               >
                 <Menu className="w-5 h-5" />
@@ -189,9 +197,9 @@ export const AdminLayout: React.FC = () => {
 
               <div className="flex items-center gap-2 text-xs text-ink-600">
                 <span className="font-semibold text-ink-900">Admin Portal</span>
-                <span>/</span>
-                <span className="text-ink-500 font-mono">
-                  {location.pathname.replace(/^\/admin/, "") || "dashboard"}
+                <span className="text-ink-300">/</span>
+                <span className="text-forest-800 font-medium capitalize">
+                  {location.pathname.replace(/^\/admin\/?/, "").replace(/-/g, " ") || "Dashboard"}
                 </span>
               </div>
             </div>
@@ -208,11 +216,16 @@ export const AdminLayout: React.FC = () => {
                 KMB Operational Live
               </Badge>
 
-              <div className="flex items-center gap-2 pl-3 border-l border-ink-200">
+              <div className="flex items-center gap-2.5 pl-3 border-l border-ink-200">
                 <Avatar name={currentUser.name} size="sm" />
-                <span className="text-xs font-medium text-ink-900 hidden md:inline">
-                  {currentUser.name}
-                </span>
+                <div className="hidden md:block text-left">
+                  <span className="text-xs font-semibold text-ink-900 block leading-tight">
+                    {currentUser.name}
+                  </span>
+                  <span className="text-[10px] text-ink-500">
+                    {currentUser.roleName}
+                  </span>
+                </div>
               </div>
             </div>
           </header>
@@ -232,46 +245,74 @@ export const AdminLayout: React.FC = () => {
         </div>
       </div>
 
-      {/* 4. Mobile Drawer */}
+      {/* Mobile Drawer */}
       <Drawer
         isOpen={mobileDrawerOpen}
         onClose={() => setMobileDrawerOpen(false)}
-        title="Navigasi Administrasi"
+        title="Menu Navigasi Administrasi"
         side="left"
       >
-        <div className="space-y-4 text-left">
-          {navSections.map((sec) => (
-            <div key={sec.title} className="space-y-1">
-              <span className="text-[10px] font-bold text-ink-500 uppercase px-2">
-                {sec.title}
-              </span>
-              {sec.items.map((it) => {
-                const Icon = ICON_MAP[it.iconName];
-                return (
-                  <Link
-                    key={it.href}
-                    to={it.href}
-                    onClick={() => setMobileDrawerOpen(false)}
-                    className={`flex items-center justify-between px-2.5 py-2 rounded text-xs ${
-                      location.pathname === it.href
-                        ? "bg-forest-800 text-white font-semibold"
-                        : "text-ink-700 hover:bg-ink-100"
-                    }`}
-                  >
-                    <div className="flex items-center gap-2">
-                      <Icon className="w-3.5 h-3.5" />
-                      <span>{it.label}</span>
-                    </div>
-                    {it.badge && (
-                      <span className="px-1.5 py-0.2 text-[10px] bg-forest-100 text-forest-900 rounded font-bold">
-                        {it.badge}
-                      </span>
-                    )}
-                  </Link>
-                );
-              })}
+        <div className="space-y-4 py-2 text-left">
+          <div className="p-3 bg-forest-50 rounded-lg border border-forest-100 flex items-center gap-2.5">
+            <Avatar name={currentUser.name} size="sm" />
+            <div>
+              <div className="text-xs font-bold text-ink-900">{currentUser.name}</div>
+              <div className="text-[10px] text-forest-800 uppercase font-semibold">{currentUser.roleName}</div>
             </div>
-          ))}
+          </div>
+
+          <div className="space-y-4">
+            {navSections.map((section) => (
+              <div key={section.title} className="space-y-1">
+                <div className="text-[10px] font-bold uppercase tracking-wider text-ink-400 px-2">
+                  {section.title}
+                </div>
+                {section.items.map((item) => {
+                  const Icon = ICON_MAP[item.iconName];
+                  const isActive =
+                    item.href === "/admin"
+                      ? location.pathname === "/admin"
+                      : location.pathname.startsWith(item.href);
+
+                  return (
+                    <Link
+                      key={item.href}
+                      to={item.href}
+                      onClick={() => setMobileDrawerOpen(false)}
+                      className={`flex items-center justify-between px-3 py-2 rounded-md text-xs font-medium ${
+                        isActive
+                          ? "bg-forest-800 text-white font-semibold"
+                          : "text-ink-700 hover:bg-ink-100"
+                      }`}
+                    >
+                      <div className="flex items-center gap-2.5">
+                        <Icon className="w-4 h-4 shrink-0" />
+                        <span>{item.label}</span>
+                      </div>
+                      {item.badge && (
+                        <span className="text-[10px] font-bold px-1.5 py-0.2 rounded bg-forest-100 text-forest-800">
+                          {item.badge}
+                        </span>
+                      )}
+                    </Link>
+                  );
+                })}
+              </div>
+            ))}
+          </div>
+
+          <div className="pt-4 border-t border-ink-100">
+            <button
+              onClick={() => {
+                setMobileDrawerOpen(false);
+                setRole("public_visitor");
+              }}
+              className="w-full flex items-center justify-between text-xs text-danger-700 py-2 px-3 rounded hover:bg-danger-50"
+            >
+              <span>Keluar ke Mode Publik</span>
+              <LogOut className="w-3.5 h-3.5" />
+            </button>
+          </div>
         </div>
       </Drawer>
     </div>
