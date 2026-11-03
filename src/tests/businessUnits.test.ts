@@ -643,8 +643,16 @@ describe("PHASE 6 — Business Unit Management (Pengelolaan Unit Usaha)", () => 
       staffActor
     );
 
+    // In Phase 6.1, recorded activities do NOT count toward grossRevenue until verified
     const recapAfterSale = useBusinessUnitStore.getState().getPerformanceRecap();
-    expect(recapAfterSale.grossRevenue).toBe(recapInitial.grossRevenue + 1500000);
+    expect(recapAfterSale.grossRevenue).toBe(recapInitial.grossRevenue);
+    expect(recapAfterSale.recordedActivities).toBe(recapInitial.recordedActivities + 1);
+
+    // Verify the sale
+    useBusinessUnitStore.getState().verifyActivity(newSale.id, staffActor);
+    const recapAfterVerify = useBusinessUnitStore.getState().getPerformanceRecap();
+    expect(recapAfterVerify.grossRevenue).toBe(recapInitial.grossRevenue + 1500000);
+    expect(recapAfterVerify.recordedActivities).toBe(recapInitial.recordedActivities);
 
     // Now cancel that sale
     useBusinessUnitStore.getState().cancelActivity(
@@ -663,8 +671,8 @@ describe("PHASE 6 — Business Unit Management (Pengelolaan Unit Usaha)", () => 
   it("21. Memastikan data partisipasi ekonomi anggota dapat dibaca dan teragregasi rapi untuk Phase 7", () => {
     const store = useBusinessUnitStore.getState();
 
-    // Query participation for Siti Rahma (DEMO-ID-0001)
-    const part1 = store.getMemberEconomicParticipation("DEMO-ID-0001");
+    // Query participation for Siti Rahma (DEMO-ID-0001) with memberActor1
+    const part1 = store.getMemberEconomicParticipation("DEMO-ID-0001", memberActor1);
     expect(part1.memberDemoId).toBe("DEMO-ID-0001");
     expect(part1.memberName).toBe("Siti Rahma");
     // Seed has 1 belanja sembako (285.000) and 1 pasokan kopi (11.250.000)
@@ -673,8 +681,9 @@ describe("PHASE 6 — Business Unit Management (Pengelolaan Unit Usaha)", () => 
     expect(part1.totalTransactionCount).toBe(2);
     expect(part1.activities).toHaveLength(2);
 
-    // Query participation for Dian Pratama (DEMO-ID-0007)
-    const part2 = store.getMemberEconomicParticipation("DEMO-ID-0007");
+    // Query participation for Dian Pratama (DEMO-ID-0007) with dianActor
+    const dianActor: BusinessUnitActor = { ...memberActor1, memberId: "DEMO-ID-0007", name: "Dian Pratama" };
+    const part2 = store.getMemberEconomicParticipation("DEMO-ID-0007", dianActor);
     expect(part2.memberDemoId).toBe("DEMO-ID-0007");
     expect(part2.totalSpending).toBe(198000);
   });
@@ -807,6 +816,231 @@ describe("PHASE 6 — Business Unit Management (Pengelolaan Unit Usaha)", () => 
       expect(canPerformAction("admin", "business_units", "create")).toBe(false);
       expect(canPerformAction("super_admin", "business_units", "record")).toBe(false);
       expect(canPerformAction("super_admin", "business_units", "create")).toBe(false);
+    });
+  });
+
+  describe("PHASE 6.1 — Remediation Tests: Privacy & Data Integrity", () => {
+    it("6.1.1. P0: Anggota hanya dapat membaca partisipasi ekonomi miliknya sendiri (Cross-member access ditolak)", () => {
+      const store = useBusinessUnitStore.getState();
+
+      // Siti Rahma (DEMO-ID-0001) membaca data dirinya sendiri -> BERHASIL
+      const ownData = store.getMemberEconomicParticipation("DEMO-ID-0001", memberActor1);
+      expect(ownData.memberDemoId).toBe("DEMO-ID-0001");
+      expect(ownData.memberName).toBe("Siti Rahma");
+
+      // Siti Rahma mencoba membaca data Budi Santoso (DEMO-ID-0002) -> DITOLAK
+      expect(() => {
+        store.getMemberEconomicParticipation("DEMO-ID-0002", memberActor1);
+      }).toThrow(/Akses ditolak: Anggota hanya memiliki hak untuk membaca data partisipasi ekonomi miliknya sendiri/);
+    });
+
+    it("6.1.2. P0: Sesi anggota tanpa memberId ditolak secara fail-closed (Zero Data Leakage)", () => {
+      const store = useBusinessUnitStore.getState();
+
+      const invalidMemberActor: BusinessUnitActor = {
+        id: "usr-ghost",
+        name: "Pengguna Tanpa MemberId",
+        role: "member",
+        // memberId intentionally undefined
+      };
+
+      expect(() => {
+        store.getMemberEconomicParticipation("DEMO-ID-0001", invalidMemberActor);
+      }).toThrow(/Identitas keanggotaan \(memberId\) tidak ditemukan pada akun Anda/);
+
+      expect(() => {
+        store.getMemberActivities("DEMO-ID-0001", invalidMemberActor);
+      }).toThrow(/Identitas keanggotaan \(memberId\) tidak ditemukan pada akun Anda/);
+    });
+
+    it("6.1.3. P0: Non-member tanpa hak izin business_units:view ditolak fail-closed", () => {
+      const store = useBusinessUnitStore.getState();
+
+      const unauthorizedActor: BusinessUnitActor = {
+        id: "usr-unauth",
+        name: "Admin SoD",
+        role: "admin", // Admin has no business_units:view
+      };
+
+      expect(() => {
+        store.getMemberEconomicParticipation("DEMO-ID-0001", unauthorizedActor);
+      }).toThrow(/Akses ditolak.*tidak memiliki izin/i);
+    });
+
+    it("6.1.4. P0: Staf resmi dengan izin business_units:view dapat membaca partisipasi ekonomi anggota", () => {
+      const store = useBusinessUnitStore.getState();
+
+      // Staff query member 1 -> BERHASIL
+      const staffQuery1 = store.getMemberEconomicParticipation("DEMO-ID-0001", staffActor);
+      expect(staffQuery1.memberDemoId).toBe("DEMO-ID-0001");
+
+      // Staff query member 2 -> BERHASIL
+      const staffQuery2 = store.getMemberEconomicParticipation("DEMO-ID-0007", staffActor);
+      expect(staffQuery2.memberDemoId).toBe("DEMO-ID-0007");
+    });
+
+    it("6.1.5. P0: Penolakan akses tidak memutasi state maupun localStorage (Zero Mutation)", () => {
+      const store = useBusinessUnitStore.getState();
+      const activitiesCountBefore = store.activities.length;
+      const unitsCountBefore = store.businessUnits.length;
+
+      try {
+        store.getMemberEconomicParticipation("DEMO-ID-0007", memberActor1);
+      } catch {
+        // Expected
+      }
+
+      expect(useBusinessUnitStore.getState().activities.length).toBe(activitiesCountBefore);
+      expect(useBusinessUnitStore.getState().businessUnits.length).toBe(unitsCountBefore);
+    });
+
+    it("6.1.6. P1: Agregasi partisipasi ekonomi (SHU) hanya mengakumulasi transaksi berstatus VERIFIED", () => {
+      const store = useBusinessUnitStore.getState();
+
+      // Ambil nilai awal partisipasi Siti Rahma (DEMO-ID-0001)
+      const initialPart = store.getMemberEconomicParticipation("DEMO-ID-0001", memberActor1);
+      const initialSpending = initialPart.totalSpending;
+      const initialTxCount = initialPart.totalTransactionCount;
+
+      // Catat transaksi baru belanja sembako Siti Rahma senilai Rp 250.000 (status awal: 'recorded')
+      const recordedAct = store.recordActivity(
+        {
+          unitId: "BU-001",
+          activityDate: "2026-03-01",
+          activityType: "sales",
+          description: "Belanja sembako baru Siti Rahma (Belum diverifikasi)",
+          quantity: 2,
+          amount: 250000,
+          memberDemoId: "DEMO-ID-0001",
+        },
+        staffActor
+      );
+
+      expect(recordedAct.status).toBe("recorded");
+
+      // Transaksi berstatus 'recorded' TIDAK BOLEH menambah total spending SHU
+      const partAfterRecord = store.getMemberEconomicParticipation("DEMO-ID-0001", memberActor1);
+      expect(partAfterRecord.totalSpending).toBe(initialSpending);
+      expect(partAfterRecord.totalTransactionCount).toBe(initialTxCount);
+      expect(partAfterRecord.activities).toHaveLength(initialTxCount);
+      // Namun ada pada allActivities untuk transparansi riwayat pribadi
+      expect(partAfterRecord.allActivities).toHaveLength(initialTxCount + 1);
+
+      // Verifikasi transaksi oleh staf
+      store.verifyActivity(recordedAct.id, staffActor);
+
+      // Setelah 'verified', total spending dan count bertambah secara akurat
+      const partAfterVerify = store.getMemberEconomicParticipation("DEMO-ID-0001", memberActor1);
+      expect(partAfterVerify.totalSpending).toBe(initialSpending + 250000);
+      expect(partAfterVerify.totalTransactionCount).toBe(initialTxCount + 1);
+      expect(partAfterVerify.activities).toHaveLength(initialTxCount + 1);
+
+      // Batalkan transaksi
+      store.cancelActivity(recordedAct.id, "Pembatalan pesanan atas permintaan anggota", staffActor);
+
+      // Setelah 'cancelled', total spending harus kembali ke saldo semula
+      const partAfterCancel = store.getMemberEconomicParticipation("DEMO-ID-0001", memberActor1);
+      expect(partAfterCancel.totalSpending).toBe(initialSpending);
+      expect(partAfterCancel.totalTransactionCount).toBe(initialTxCount);
+      expect(partAfterCancel.activities).toHaveLength(initialTxCount);
+    });
+
+    it("6.1.7. P1: Kinerja operasional (Performance Recap) hanya mengakumulasi transaksi VERIFIED", () => {
+      const store = useBusinessUnitStore.getState();
+      const initialRecap = store.getPerformanceRecap();
+
+      // Tambah transaksi pengadaan persediaan pupuk (purchase) senilai Rp 5.000.000 (status: recorded)
+      const recordedPurchase = store.recordActivity(
+        {
+          unitId: "BU-002",
+          activityDate: "2026-03-01",
+          activityType: "purchase",
+          description: "Pengadaan pupuk NPK 50 sak (Pending verifikasi)",
+          quantity: 50,
+          amount: 5000000,
+        },
+        staffActor
+      );
+
+      const recapAfterRecord = store.getPerformanceRecap();
+      // recordedActivities bertambah 1 sebagai antrean verifikasi
+      expect(recapAfterRecord.recordedActivities).toBe(initialRecap.recordedActivities + 1);
+      // Namun expenditure dan volume TIDAK bertambah sampai diverifikasi
+      expect(recapAfterRecord.totalExpenditure).toBe(initialRecap.totalExpenditure);
+      expect(recapAfterRecord.totalVolume).toBe(initialRecap.totalVolume);
+
+      // Verifikasi transaksi
+      store.verifyActivity(recordedPurchase.id, staffActor);
+      const recapAfterVerify = store.getPerformanceRecap();
+      expect(recapAfterVerify.recordedActivities).toBe(initialRecap.recordedActivities);
+      expect(recapAfterVerify.totalExpenditure).toBe(initialRecap.totalExpenditure + 5000000);
+      expect(recapAfterVerify.totalVolume).toBe(initialRecap.totalVolume + 50);
+
+      // Batalkan transaksi
+      store.cancelActivity(recordedPurchase.id, "Bahan baku ditolak pemasok", staffActor);
+      const recapAfterCancel = store.getPerformanceRecap();
+      expect(recapAfterCancel.totalExpenditure).toBe(initialRecap.totalExpenditure);
+      expect(recapAfterCancel.totalVolume).toBe(initialRecap.totalVolume);
+      expect(recapAfterCancel.cancelledActivities).toBe(initialRecap.cancelledActivities + 1);
+    });
+
+    it("6.1.8. P1: memberInvolvementCount hanya menghitung anggota dengan transaksi VERIFIED", () => {
+      const store = useBusinessUnitStore.getState();
+      const initialRecap = store.getPerformanceRecap();
+
+      // Daftarkan anggota aktif baru di membershipStore
+      useMembershipStore.setState((s) => ({
+        members: [
+          ...s.members,
+          {
+            id: "MBR-TEST-001",
+            memberNumber: "KMB-2026-9999",
+            demoId: "DEMO-ID-9999",
+            fullName: "Anggota Test Baru",
+            email: "test.baru@koperasi.invalid",
+            phone: "0812-9999-9999",
+            city: "Jakarta",
+            address: "Jl. Baru No. 1",
+            occupation: "Petani",
+            status: "active",
+            joinDate: "2026-01-01T00:00:00Z",
+            saldoPokok: 100000,
+            saldoWajib: 50000,
+            saldoSukarela: 0,
+            simpananPokokNominal: 100000,
+            simpananWajibBulanan: 50000,
+            approvedBy: "Hendra Kurniawan (Ketua Pengurus)",
+            applicationId: "APP-TEST-9999",
+          },
+        ],
+      }));
+
+      // Daftarkan transaksi untuk anggota baru (DEMO-ID-9999) status 'recorded'
+      const newAct = store.recordActivity(
+        {
+          unitId: "BU-003",
+          activityDate: "2026-03-01",
+          activityType: "service",
+          description: "Jasa angkut armada logistik KMB",
+          amount: 800000,
+          memberDemoId: "DEMO-ID-9999",
+        },
+        staffActor
+      );
+
+      // Sebelum diverifikasi, involvement count TIDAK bertambah
+      const recapPending = store.getPerformanceRecap();
+      expect(recapPending.memberInvolvementCount).toBe(initialRecap.memberInvolvementCount);
+
+      // Verifikasi
+      store.verifyActivity(newAct.id, staffActor);
+      const recapVerified = store.getPerformanceRecap();
+      expect(recapVerified.memberInvolvementCount).toBe(initialRecap.memberInvolvementCount + 1);
+
+      // Batalkan
+      store.cancelActivity(newAct.id, "Jasa dibatalkan", staffActor);
+      const recapCancelled = store.getPerformanceRecap();
+      expect(recapCancelled.memberInvolvementCount).toBe(initialRecap.memberInvolvementCount);
     });
   });
 });

@@ -65,7 +65,10 @@ interface BusinessUnitStoreState {
   getUnitByCode: (code: string) => BusinessUnit | undefined;
   getActivityById: (activityId: string) => UnitActivityRecord | undefined;
   getPerformanceRecap: (unitId?: string, periodYear?: number) => BusinessUnitPerformanceRecap;
-  getMemberEconomicParticipation: (memberDemoId: string) => MemberEconomicParticipation;
+  getMemberEconomicParticipation: (
+    memberDemoId: string,
+    actor: BusinessUnitActor
+  ) => MemberEconomicParticipation;
   getMemberActivities: (
     memberDemoId: string,
     actor: BusinessUnitActor
@@ -633,12 +636,8 @@ export const useBusinessUnitStore = create<BusinessUnitStoreState>((set, get) =>
         if (act.status === "verified") verifiedCount += 1;
         if (act.status === "cancelled") cancelledCount += 1;
 
-        if (act.memberDemoId) {
-          memberSet.add(act.memberDemoId);
-        }
-
-        // Only verified and recorded transactions count towards financial performance (cancelled excluded)
-        if (act.status !== "cancelled") {
+        // P1 Integrity Rule: ONLY VERIFIED transactions contribute to grossRevenue, expenditure, volume, and member involvement
+        if (act.status === "verified") {
           const meta = UNIT_ACTIVITY_TYPES[act.activityType];
           if (meta.classification === "gross_revenue") {
             grossRevenue += act.amount;
@@ -649,18 +648,24 @@ export const useBusinessUnitStore = create<BusinessUnitStoreState>((set, get) =>
           if (act.quantity && act.quantity > 0) {
             totalVolume += act.quantity;
           }
+
+          if (act.memberDemoId) {
+            memberSet.add(act.memberDemoId);
+          }
         }
       }
 
-      // Build summaries for all units (or selected unit)
+      // Build summaries for all units (or selected unit) using the exact same verified-only rules
       const targetUnits = unitId ? allUnits.filter((u) => u.id === unitId) : allUnits;
       const unitSummaries = targetUnits.map((u) => {
-        const uActs = allActivities.filter((a) => a.unitId === u.id && a.status !== "cancelled");
+        const uActs = allActivities.filter((a) => a.unitId === u.id);
+        const uVerified = uActs.filter((a) => a.status === "verified");
+
         let uRevenue = 0;
         let uExpenditure = 0;
         let uVol = 0;
 
-        for (const a of uActs) {
+        for (const a of uVerified) {
           const meta = UNIT_ACTIVITY_TYPES[a.activityType];
           if (meta.classification === "gross_revenue") {
             uRevenue += a.amount;
@@ -678,7 +683,7 @@ export const useBusinessUnitStore = create<BusinessUnitStoreState>((set, get) =>
           name: u.name,
           category: u.category,
           status: u.status,
-          transactionCount: uActs.length,
+          transactionCount: uVerified.length,
           grossRevenue: uRevenue,
           totalExpenditure: uExpenditure,
           volume: uVol,
@@ -698,20 +703,49 @@ export const useBusinessUnitStore = create<BusinessUnitStoreState>((set, get) =>
       };
     },
 
-    getMemberEconomicParticipation: (memberDemoId) => {
-      const canonicalId = memberDemoId.trim();
+    getMemberEconomicParticipation: (memberDemoId, actor) => {
+      // P0 Ownership & Privacy Enforcement
+      if (!actor) {
+        throw new Error("Akses ditolak: Autentikasi sesi pengguna diperlukan.");
+      }
+
+      const canonicalId = (memberDemoId || "").trim();
+      if (!canonicalId) {
+        throw new Error("Akses ditolak: Identitas anggota tidak valid.");
+      }
+
+      if (actor.role === "member") {
+        if (!actor.memberId || actor.memberId.trim() === "") {
+          throw new Error(
+            "Akses ditolak: Identitas keanggotaan (memberId) tidak ditemukan pada akun Anda."
+          );
+        }
+        if (actor.memberId.trim() !== canonicalId) {
+          throw new Error(
+            "Akses ditolak: Anggota hanya memiliki hak untuk membaca data partisipasi ekonomi miliknya sendiri."
+          );
+        }
+      } else {
+        if (!canPerformAction(actor.role, "business_units", "view")) {
+          throw new Error(
+            `Akses ditolak: Peran ${actor.role} tidak memiliki izin melihat data partisipasi ekonomi anggota.`
+          );
+        }
+      }
+
       const allActivities = get().activities;
 
       const memberActs = allActivities.filter(
-        (a) =>
-          (a.memberDemoId === canonicalId || a.memberId === canonicalId) &&
-          a.status !== "cancelled"
+        (a) => a.memberDemoId === canonicalId || a.memberId === canonicalId
       );
+
+      // P1 Aggregation Integrity: ONLY VERIFIED transactions count towards SHU economic participation
+      const verifiedMemberActs = memberActs.filter((a) => a.status === "verified");
 
       let totalSpending = 0;
       let totalCommoditySupply = 0;
 
-      for (const act of memberActs) {
+      for (const act of verifiedMemberActs) {
         if (act.activityType === "sales") {
           totalSpending += act.amount;
         } else if (act.activityType === "member_supply") {
@@ -730,19 +764,38 @@ export const useBusinessUnitStore = create<BusinessUnitStoreState>((set, get) =>
         memberName,
         totalSpending,
         totalCommoditySupply,
-        totalTransactionCount: memberActs.length,
-        activities: memberActs,
+        totalTransactionCount: verifiedMemberActs.length,
+        activities: verifiedMemberActs,
+        allActivities: memberActs,
       };
     },
 
     getMemberActivities: (memberDemoId, actor) => {
-      const canonicalId = memberDemoId.trim();
+      // P0 Ownership & Privacy Enforcement
+      if (!actor) {
+        throw new Error("Akses ditolak: Autentikasi sesi pengguna diperlukan.");
+      }
 
-      // Privacy enforcement: Members can ONLY access their own activities
+      const canonicalId = (memberDemoId || "").trim();
+      if (!canonicalId) {
+        throw new Error("Akses ditolak: Identitas anggota tidak valid.");
+      }
+
       if (actor.role === "member") {
-        if (!actor.memberId || actor.memberId !== canonicalId) {
+        if (!actor.memberId || actor.memberId.trim() === "") {
+          throw new Error(
+            "Akses ditolak: Identitas keanggotaan (memberId) tidak ditemukan pada akun Anda."
+          );
+        }
+        if (actor.memberId.trim() !== canonicalId) {
           throw new Error(
             "Akses ditolak: Anggota hanya memiliki hak untuk melihat riwayat transaksi dan partisipasi miliknya sendiri."
+          );
+        }
+      } else {
+        if (!canPerformAction(actor.role, "business_units", "view")) {
+          throw new Error(
+            `Akses ditolak: Peran ${actor.role} tidak memiliki izin melihat riwayat aktivitas anggota.`
           );
         }
       }

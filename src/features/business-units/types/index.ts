@@ -161,10 +161,11 @@ export interface UnitActivityRecord {
 export interface MemberEconomicParticipation {
   memberDemoId: string;
   memberName: string;
-  totalSpending: number; // Total purchases from coop units
-  totalCommoditySupply: number; // Total commodity value supplied to coop
-  totalTransactionCount: number;
-  activities: UnitActivityRecord[];
+  totalSpending: number; // Verified total purchases from coop units
+  totalCommoditySupply: number; // Verified total commodity value supplied to coop
+  totalTransactionCount: number; // Verified transactions count
+  activities: UnitActivityRecord[]; // Verified activities for economic participation
+  allActivities?: UnitActivityRecord[]; // All member activities (recorded, verified, cancelled)
 }
 
 export interface BusinessUnitPerformanceRecap {
@@ -263,3 +264,4 @@ export const recordActivitySchema = z.object({
 });
 
 export type RecordActivityInput = z.infer<typeof recordActivitySchema>;
+

@@ -446,7 +446,7 @@
       ]
     },
     "screenshot": "public_home_1280.png",
-    "fileSize": 1281988,
+    "fileSize": 1281990,
     "status": "PASS"
   },
   {
@@ -803,7 +803,7 @@
       ]
     },
     "screenshot": "public_daftar_390.png",
-    "fileSize": 58797,
+    "fileSize": 57978,
     "status": "PASS"
   },
   {
@@ -879,7 +879,7 @@
       ]
     },
     "screenshot": "public_daftar_768.png",
-    "fileSize": 101882,
+    "fileSize": 101884,
     "status": "PASS"
   },
   {
@@ -955,7 +955,7 @@
       ]
     },
     "screenshot": "public_daftar_1024.png",
-    "fileSize": 73558,
+    "fileSize": 73609,
     "status": "PASS"
   },
   {
@@ -1024,14 +1024,14 @@
         {
           "tag": "button",
           "text": "Selanjutnya",
-          "width": 93,
+          "width": 113,
           "height": 32,
           "isUsable": true
         }
       ]
     },
     "screenshot": "public_daftar_1280.png",
-    "fileSize": 79224,
+    "fileSize": 79227,
     "status": "PASS"
   },
   {
@@ -1100,14 +1100,14 @@
         {
           "tag": "button",
           "text": "Selanjutnya",
-          "width": 93,
+          "width": 113,
           "height": 32,
           "isUsable": true
         }
       ]
     },
     "screenshot": "public_daftar_1440.png",
-    "fileSize": 86683,
+    "fileSize": 86684,
     "status": "PASS"
   },
   {
@@ -1176,14 +1176,14 @@
         {
           "tag": "button",
           "text": "Selanjutnya",
-          "width": 93,
+          "width": 113,
           "height": 32,
           "isUsable": true
         }
       ]
     },
     "screenshot": "public_daftar_1920.png",
-    "fileSize": 120684,
+    "fileSize": 120678,
     "status": "PASS"
   }
 ]

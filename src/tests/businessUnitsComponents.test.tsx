@@ -161,5 +161,35 @@ describe("PHASE 6 — Business Units Real DOM Components & User Interaction Test
       // Dian Pratama's transaction (TRX-BU-2026-0002) should NOT be displayed in Siti's table
       expect(screen.queryByText("TRX-BU-2026-0002")).toBeNull();
     });
+
+    it("2.3. Sesi anggota tanpa memberId tidak menampilkan data anggota lain dan menampilkan peringatan identitas (Zero Data Leakage)", () => {
+      act(() => {
+        useAuthStore.setState({
+          currentUser: {
+            ...demoUsers.member,
+            memberId: undefined, // No memberId
+          },
+        });
+      });
+
+      render(
+        <MemoryRouter>
+          <MemberBusinessUnitsView />
+        </MemoryRouter>
+      );
+
+      // Warning banner displayed
+      expect(screen.getByText(/Identitas Keanggotaan Tidak Ditemukan/i)).toBeTruthy();
+
+      // Zero personal transactions or stats of DEMO-ID-0001 or other members
+      expect(screen.queryByText(/TRX-BU-2026-0001/i)).toBeNull();
+      expect(screen.queryByText(/TRX-BU-2026-0002/i)).toBeNull();
+      expect(screen.queryByText(/Total Belanja di Waserda/i)).toBeNull();
+      expect(screen.queryByText(/Riwayat Partisipasi & Belanja Anda/i)).toBeNull();
+
+      // But public active units catalog remains visible
+      expect(screen.getByText(/Katalog Unit Usaha Koperasi KMB/i)).toBeTruthy();
+    });
   });
 });
+

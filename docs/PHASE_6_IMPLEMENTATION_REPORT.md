@@ -144,6 +144,65 @@ Hak akses untuk domain `business_units` ditegakkan di tingkat store (`businessUn
 1. **Simulasi Lokal (Client-Side):**  
    Penyimpanan menggunakan `localStorage` dengan kunci `kmb_business_units_store_v1`. Telah dilengkapi mekanisme *corrupt recovery* dan *seed restore*.
 2. **Kesiapan SHU (Phase 7):**  
-   Fungsi `getMemberEconomicParticipation(memberDemoId)` telah siap menyediakan data agregasi belanja dan pasokan anggota tanpa melakukan kalkulasi bagi hasil atau pembagian SHU di Phase 6.
+   Fungsi `getMemberEconomicParticipation(memberDemoId, actor)` telah siap menyediakan data agregasi partisipasi ekonomi anggota yang telah diverifikasi (`verified`) tanpa melakukan kalkulasi bagi hasil atau pembagian SHU di Phase 6.
 3. **Konfirmasi Visual:**  
    Tidak ada perombakan visual, penggantian font, perubahan token warna, maupun layout hero landing page. Seluruh antarmuka menggunakan komponen desain Warm Modern Finance yang sudah ada.
+
+---
+
+## 8. REMEDIASI PHASE 6.1: PRIVACY & DATA INTEGRITY
+
+Berdasarkan temuan audit independen terhadap implementasi Phase 6, telah dilakukan remediasi menyeluruh pada aspek privasi data portal anggota dan integritas agregasi keuangan:
+
+### A. Temuan Audit & Solusi Remediasi
+
+1. **P0 — Kebocoran Data Sesi Anggota (Member Portal Privacy & Data Ownership):**
+   - **Temuan:** `MemberBusinessUnitsView.tsx` sebelumnya menggunakan fallback `currentUser.memberId || "DEMO-ID-0001"`, sehingga sesi anggota tanpa `memberId` atau pengguna demo anonim melihat data transaksi milik Siti Rahma. Selain itu, fungsi `getMemberEconomicParticipation` tidak menerima `actor` dan tidak memvalidasi hak kepemilikan data.
+   - **Remediasi:**
+     - Menghapus secara permanen fallback `"DEMO-ID-0001"` dari `MemberBusinessUnitsView.tsx`.
+     - Memperbarui fungsi `getMemberEconomicParticipation(memberDemoId, actor)` dan `getMemberActivities(memberDemoId, actor)` di store untuk mewajibkan parameter `actor: BusinessUnitActor`.
+     - Menerapkan pemeriksaan kepemilikan data (*fail-closed*):
+       - Jika peran `actor` adalah `member`: wajib memiliki `memberId` yang valid dan hanya diizinkan membaca datanya sendiri (`memberDemoId === actor.memberId`). Upaya membaca data anggota lain langsung melempar `Error` akses ditolak.
+       - Jika aktor non-member: wajib memiliki permission `business_units:view` (Staff, Finance Officer, Manager, Treasurer, Auditor).
+       - Peran non-member tanpa izin (Admin, Super Admin) ditolak secara tegas (SoD).
+     - Menambahkan penanganan di UI: jika sesi anggota tidak memiliki `memberId` yang terverifikasi, halaman Portal Anggota menampilkan kartu peringatan verifikasi identitas (`ShieldAlert`) dengan status aman (*Zero Data Leakage*) dan seluruh statistik diset ke Rp 0.
+
+2. **P1 — Integritas Agregasi Partisipasi Ekonomi untuk SHU (SHU Foundation):**
+   - **Temuan:** Transaksi dengan status `recorded` (draf/belum diverifikasi staf) sebelumnya terhitung ke dalam total belanja dan pasokan anggota. Transaksi berstatus `recorded` belum dapat dijadikan dasar pembagian SHU yang sah.
+   - **Remediasi:**
+     - Metrik `totalSpending`, `totalCommoditySupply`, `totalTransactionCount`, dan array `activities` pada `MemberEconomicParticipation` secara ketat hanya menjumlahkan transaksi dengan status **`verified`**.
+     - Transaksi berstatus `recorded` dan `cancelled` dikecualikan secara penuh dari kalkulasi akumulasi ekonomi SHU.
+     - Disediakan array `allActivities` untuk kebutuhan transparansi riwayat transaksi pribadi anggota, sehingga anggota dapat melihat status seluruh pengajuannya (termasuk yang masih berstatus `recorded` dengan badge kuning atau `cancelled` dengan badge merah).
+
+3. **P1 — Integritas Rekapitulasi Kinerja Operasional Unit Usaha (`getPerformanceRecap`):**
+   - **Temuan:** Transaksi operasional berstatus `recorded` sempat diperhitungkan dalam total perputaran kas kotor.
+   - **Remediasi:**
+     - Metrik `grossRevenue`, `totalExpenditure`, `totalVolume`, dan `memberInvolvementCount` di `getPerformanceRecap()` dihitung **secara eksklusif dari transaksi berstatus `verified`**.
+     - Transaksi berstatus `recorded` hanya dihitung pada metric `recordedActivities` sebagai indikator antrean tunggu verifikasi operasional (kontribusi moneter dan volumenya Rp 0).
+     - Transaksi berstatus `cancelled` berkontribusi Rp 0 pada metrik finansial maupun volume.
+     - Perhitungan ringkasan per unit usaha (`unitSummaries`) menerapkan aturan konsisten yang sama persis (hanya transaksi `verified` yang menambah omzet dan volume unit).
+
+### B. Hasil Pengujian Remediasi (`vitest run`)
+
+Telah ditambahkan 9 skenario pengujian regresi spesifik Phase 6.1 (8 skenario di `src/tests/businessUnits.test.ts` dan 1 skenario di `src/tests/businessUnitsComponents.test.tsx`):
+- `6.1.1. P0`: Anggota hanya dapat membaca partisipasi ekonomi miliknya sendiri (cross-member access ditolak).
+- `6.1.2. P0`: Sesi anggota tanpa memberId ditolak secara fail-closed (Zero Data Leakage).
+- `6.1.3. P0`: Non-member tanpa hak izin business_units:view ditolak fail-closed.
+- `6.1.4. P0`: Staf resmi dengan izin business_units:view dapat membaca partisipasi ekonomi anggota.
+- `6.1.5. P0`: Penolakan akses tidak memutasi state maupun localStorage (Zero Mutation).
+- `6.1.6. P1`: Agregasi partisipasi ekonomi (SHU) hanya mengakumulasi transaksi berstatus VERIFIED.
+- `6.1.7. P1`: Kinerja operasional (Performance Recap) hanya mengakumulasi transaksi VERIFIED.
+- `6.1.8. P1`: memberInvolvementCount hanya menghitung anggota dengan transaksi VERIFIED.
+- `2.3 (DOM)`: Sesi anggota tanpa memberId tidak menampilkan data anggota lain dan menampilkan peringatan identitas (Zero Data Leakage).
+
+### C. Ringkasan Quality Gates Phase 6.1
+
+| Quality Gate | Perintah | Status | Hasil |
+|---|---|---|---|
+| **TypeScript Typecheck** | `pnpm typecheck` | **PASS** | 0 error |
+| **ESLint** | `pnpm lint` | **PASS** | 0 warning (`--max-warnings 0`) |
+| **Vitest Tests** | `pnpm test` | **PASS** | 256 passed dari 256 tests (15 test files) |
+| **Vite Production Build** | `pnpm build` | **PASS** | Build sukses dalam 8.24s |
+| **Responsive Verification** | `node scripts/verify_responsive.js` | **PASS** | 16/16 viewports PASS, 0 horizontal overflow, 0 clipping |
+
+
