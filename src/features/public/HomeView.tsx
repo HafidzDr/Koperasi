@@ -115,7 +115,7 @@ export const HomeView: React.FC = () => {
   ];
 
   return (
-    <div className="space-y-16 sm:space-y-24 pb-12 overflow-x-hidden">
+    <div className="overflow-x-hidden">
       {/* =========================================================================
           1. HERO SECTION (Full Photographic Landscape, Edge-to-Edge)
          ========================================================================= */}
@@ -136,9 +136,9 @@ export const HomeView: React.FC = () => {
         <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-24 lg:py-28 w-full">
           <div className="max-w-xl lg:max-w-2xl">
             {/* Main Headline (H1 containing top pill to satisfy semantic & test rules) */}
-            <h1 className="text-3xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-white leading-[1.12] break-words mb-5">
+            <h1 className="text-3xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-white leading-[1.12] sm:leading-[1.08] break-words mb-5">
               {/* Top Pill from Image 2 */}
-              <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-white/30 bg-black/20 text-white/95 text-xs sm:text-sm font-medium tracking-wide mb-6 backdrop-blur-sm block w-fit">
+              <span className="inline-flex items-center gap-2 px-3.5 py-1 sm:px-4 sm:py-1.5 rounded-full border border-white/35 bg-black/30 text-white/95 text-xs sm:text-sm font-medium tracking-wide mb-5 sm:mb-6 backdrop-blur-md shadow-sm block w-fit">
                 Koperasi Digital KMB
               </span>
               <span className="block">
@@ -148,16 +148,16 @@ export const HomeView: React.FC = () => {
             </h1>
 
             {/* Subtitle from Image 2 */}
-            <p className="text-sm sm:text-base lg:text-lg text-white/90 leading-relaxed font-normal mb-8 max-w-xl">
+            <p className="text-sm sm:text-base lg:text-lg text-white/90 leading-relaxed font-normal mb-8 sm:mb-9 max-w-xl text-balance">
               Platform koperasi digital yang membantu anggota mengakses layanan, memperoleh informasi, dan berpartisipasi dalam pertumbuhan koperasi.
             </p>
 
             {/* Action Buttons from Image 2 */}
-            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3.5 mb-10 w-full max-w-md sm:max-w-none">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3.5 sm:gap-4 mb-10 sm:mb-12 w-full max-w-md sm:max-w-none">
               <Link to="/daftar" className="w-full sm:w-auto">
                 <button
                   type="button"
-                  className="w-full sm:w-auto bg-[#A3E635] text-ink-900 hover:bg-[#bef264] active:bg-[#84cc16] font-semibold px-6 py-3.5 rounded-full shadow-md transition-colors inline-flex items-center justify-center gap-2 text-sm sm:text-base select-none"
+                  className="w-full sm:w-auto bg-[#A3E635] text-ink-900 hover:bg-[#bef264] active:bg-[#84cc16] font-semibold px-6 sm:px-7 py-3 sm:py-3.5 rounded-full shadow-md hover:shadow-lg transition-all duration-150 inline-flex items-center justify-center gap-2 text-sm sm:text-base select-none whitespace-nowrap"
                 >
                   <span>Bergabung Menjadi Anggota</span>
                   <span className="sr-only"> (Daftar)</span>
@@ -167,7 +167,7 @@ export const HomeView: React.FC = () => {
               <a href="#layanan" className="w-full sm:w-auto">
                 <button
                   type="button"
-                  className="w-full sm:w-auto rounded-full border border-white/50 text-white hover:bg-white/10 active:bg-white/20 transition-colors backdrop-blur-sm px-6 py-3.5 inline-flex items-center justify-center gap-2 text-sm sm:text-base font-medium select-none"
+                  className="w-full sm:w-auto rounded-full border border-white/60 text-white hover:bg-white/15 active:bg-white/25 transition-all duration-150 backdrop-blur-sm px-6 sm:px-7 py-3 sm:py-3.5 inline-flex items-center justify-center gap-2 text-sm sm:text-base font-medium select-none whitespace-nowrap"
                 >
                   <Play className="w-3.5 h-3.5 text-white fill-transparent stroke-[2.2]" />
                   <span>Jelajahi Layanan</span>
@@ -176,20 +176,20 @@ export const HomeView: React.FC = () => {
             </div>
 
             {/* Bottom 3 Trust Indicators from Image 2 */}
-            <div className="pt-6 border-t border-white/20 flex flex-wrap items-center gap-4 sm:gap-6 text-xs text-white/90 font-medium">
-              <div className="flex items-center gap-2.5">
-                <Users className="w-4 h-4 text-[#A3E635] shrink-0" />
-                <span>Layanan Anggota Terintegrasi</span>
+            <div className="pt-6 sm:pt-7 border-t border-white/20 flex flex-wrap items-center gap-4 sm:gap-6 lg:gap-7">
+              <div className="flex items-center gap-2.5 sm:gap-3">
+                <Users className="w-5 h-5 sm:w-5.5 sm:h-5.5 text-[#A3E635] shrink-0" strokeWidth={2.2} />
+                <span className="text-xs sm:text-sm font-medium tracking-tight text-white/95 whitespace-nowrap">Layanan Anggota Terintegrasi</span>
               </div>
-              <div className="hidden sm:block w-px h-4 bg-white/20" />
-              <div className="flex items-center gap-2.5">
-                <ShieldCheck className="w-4 h-4 text-[#A3E635] shrink-0" />
-                <span>Transparan & Akuntabel</span>
+              <div className="hidden lg:block w-px h-4.5 bg-white/25" />
+              <div className="flex items-center gap-2.5 sm:gap-3">
+                <ShieldCheck className="w-5 h-5 sm:w-5.5 sm:h-5.5 text-[#A3E635] shrink-0" strokeWidth={2.2} />
+                <span className="text-xs sm:text-sm font-medium tracking-tight text-white/95 whitespace-nowrap">Transparan & Akuntabel</span>
               </div>
-              <div className="hidden sm:block w-px h-4 bg-white/20" />
-              <div className="flex items-center gap-2.5">
-                <Sprout className="w-4 h-4 text-[#A3E635] shrink-0" />
-                <span>Mendukung Ekonomi Anggota</span>
+              <div className="hidden lg:block w-px h-4.5 bg-white/25" />
+              <div className="flex items-center gap-2.5 sm:gap-3">
+                <Sprout className="w-5 h-5 sm:w-5.5 sm:h-5.5 text-[#A3E635] shrink-0" strokeWidth={2.2} />
+                <span className="text-xs sm:text-sm font-medium tracking-tight text-white/95 whitespace-nowrap">Mendukung Ekonomi Anggota</span>
               </div>
             </div>
           </div>
@@ -199,15 +199,15 @@ export const HomeView: React.FC = () => {
       {/* =========================================================================
           2. COOPERATIVE PRINCIPLES STRIP (Gotong Royong & Good Governance)
          ========================================================================= */}
-      <section className="bg-white border-y border-ink-200 py-6 sm:py-8 shadow-subtle">
+      <section className="bg-white border-b border-ink-200 py-6 sm:py-7 shadow-subtle relative z-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-6 sm:gap-8">
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-5 sm:gap-6 lg:gap-8">
             {principles.map((item, idx) => {
               const Icon = item.icon;
               return (
                 <div key={idx} className="flex flex-col items-start space-y-2">
-                  <div className="w-8 h-8 rounded-lg bg-forest-100 flex items-center justify-center text-forest-700">
-                    <Icon className="w-4 h-4" />
+                  <div className="w-8 h-8 rounded-lg bg-forest-100 flex items-center justify-center text-forest-700 shrink-0">
+                    <Icon className="w-4.5 h-4.5" />
                   </div>
                   <div>
                     <h3 className="text-xs sm:text-sm font-semibold text-ink-900">{item.title}</h3>
@@ -219,6 +219,9 @@ export const HomeView: React.FC = () => {
           </div>
         </div>
       </section>
+
+      {/* Main Body Content Sections with Balanced Editorial Pacing */}
+      <div className="space-y-16 sm:space-y-24 py-10 sm:py-16">
 
       {/* =========================================================================
           3. ASYMMETRIC ABOUT SECTION (Editorial Split Layout)
@@ -898,6 +901,7 @@ export const HomeView: React.FC = () => {
           </div>
         </div>
       </section>
+      </div>
     </div>
   );
 };

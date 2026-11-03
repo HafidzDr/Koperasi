@@ -28,7 +28,7 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({
   };
 
   const content = (
-    <div className={cn("inline-flex items-center gap-2 sm:gap-2.5 select-none min-w-0 max-w-full", className)}>
+    <div className={cn("inline-flex items-center gap-2 sm:gap-2.5 select-none shrink-0", className)}>
       {/* 2D Flat Geometric Monochromatic Logomark (daun bertaut melingkar) */}
       <div
         className={cn(
@@ -45,10 +45,10 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({
       </div>
 
       {variant !== "icon-only" && (
-        <div className="flex flex-col text-left leading-tight min-w-0">
+        <div className="flex flex-col text-left leading-tight shrink-0">
           <span
             className={cn(
-              "font-semibold tracking-tight text-ink-900 truncate",
+              "font-semibold tracking-tight text-ink-900 whitespace-nowrap",
               variant === "light" && "text-white",
               textSizes[size]
             )}
@@ -57,7 +57,7 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({
           </span>
           <span
             className={cn(
-              "text-[9px] sm:text-[10px] uppercase tracking-widest text-ink-600 font-medium truncate",
+              "text-[9px] sm:text-[10px] uppercase tracking-widest text-ink-600 font-medium whitespace-nowrap",
               variant === "light" && "text-forest-100/80"
             )}
           >
@@ -72,7 +72,7 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({
     return (
       <Link
         to={to}
-        className="inline-flex items-center min-w-0 max-w-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-forest-600 rounded"
+        className="inline-flex items-center shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-forest-600 rounded"
       >
         {content}
       </Link>

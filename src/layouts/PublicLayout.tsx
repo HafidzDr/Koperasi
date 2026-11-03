@@ -29,20 +29,20 @@ export const PublicLayout: React.FC = () => {
 
       {/* 2. Public Header */}
       <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-none border-b border-ink-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-3 sm:gap-4 min-w-0">
-          <div className="min-w-0 shrink">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-6 h-16 flex items-center justify-between gap-3 xl:gap-4">
+          <div className="shrink-0 flex items-center">
             <BrandLogo size="md" to="/" />
           </div>
 
-          {/* Desktop Nav */}
-          <nav className="hidden lg:flex items-center space-x-6 text-sm font-medium text-ink-700">
+          {/* Desktop Nav (displayed on >= 1280px with clean proportional spacing) */}
+          <nav className="hidden xl:flex items-center gap-3.5 2xl:gap-5 text-xs 2xl:text-sm font-medium text-ink-700 shrink-0">
             {navLinks.map((link) => {
               const isActive = location.pathname === link.href;
               return (
                 <Link
                   key={link.href}
                   to={link.href}
-                  className={`transition-colors py-1 ${
+                  className={`transition-colors py-1 whitespace-nowrap ${
                     isActive
                       ? "text-forest-700 font-semibold border-b-2 border-forest-700"
                       : "hover:text-forest-700"
@@ -55,23 +55,23 @@ export const PublicLayout: React.FC = () => {
           </nav>
 
           {/* Actions */}
-          <div className="hidden sm:flex items-center gap-3">
+          <div className="hidden sm:flex items-center gap-2 xl:gap-2.5 shrink-0">
             <Link to="/portal">
-              <Button variant="ghost" size="sm">
+              <Button variant="ghost" size="sm" className="whitespace-nowrap">
                 Masuk Portal
               </Button>
             </Link>
             <Link to="/daftar">
-              <Button variant="primary" size="sm" rightIcon={<ArrowRight className="w-3.5 h-3.5" />}>
+              <Button variant="primary" size="sm" rightIcon={<ArrowRight className="w-3.5 h-3.5" />} className="whitespace-nowrap">
                 Daftar Anggota
               </Button>
             </Link>
           </div>
 
-          {/* Mobile Menu Trigger */}
+          {/* Mobile & Tablet Menu Trigger (up to 1279px) */}
           <button
             onClick={() => setMobileMenuOpen(true)}
-            className="lg:hidden p-2 rounded-md text-ink-700 hover:text-ink-900 hover:bg-ink-100 shrink-0"
+            className="xl:hidden p-2 rounded-md text-ink-700 hover:text-ink-900 hover:bg-ink-100 shrink-0"
             aria-label="Buka menu navigasi"
           >
             <Menu className="w-6 h-6" />
