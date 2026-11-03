@@ -6,6 +6,7 @@ export type Domain =
   | "loans"
   | "installments"
   | "cash"
+  | "business_units"
   | "reports"
   | "users"
   | "platform_config"
@@ -71,6 +72,7 @@ export const ROLE_PERMISSIONS: Record<Role, readonly Permission[]> = {
     "loans:create",
     "installments:view",
     "installments:record",
+    "business_units:view",
     "reports:view",
     "reports:export",
   ],
@@ -91,6 +93,9 @@ export const ROLE_PERMISSIONS: Record<Role, readonly Permission[]> = {
     "installments:view",
     "installments:record",
     "installments:verify",
+    "business_units:view",
+    "business_units:record",
+    "business_units:verify",
   ],
 
   // 3. Finance Officer: Operational financial processing & Level 2 Loan Approval
@@ -112,6 +117,10 @@ export const ROLE_PERMISSIONS: Record<Role, readonly Permission[]> = {
     "cash:view",
     "cash:record",
     "cash:reconcile",
+    "business_units:view",
+    "business_units:record",
+    "business_units:verify",
+    "business_units:export",
     "reports:view",
     "reports:export",
     "product_config:view",
@@ -131,6 +140,8 @@ export const ROLE_PERMISSIONS: Record<Role, readonly Permission[]> = {
     "cash:record",
     "cash:reconcile",
     "cash:approve",
+    "business_units:view",
+    "business_units:export",
     "reports:view",
     "reports:export",
     "platform_config:view",
@@ -152,6 +163,13 @@ export const ROLE_PERMISSIONS: Record<Role, readonly Permission[]> = {
     "loans:reject",
     "cash:view",
     "cash:approve",
+    "business_units:view",
+    "business_units:create",
+    "business_units:update",
+    "business_units:deactivate",
+    "business_units:record",
+    "business_units:verify",
+    "business_units:export",
     "reports:view",
     "reports:export",
     "users:view",
@@ -169,6 +187,8 @@ export const ROLE_PERMISSIONS: Record<Role, readonly Permission[]> = {
     "loans:view",
     "installments:view",
     "cash:view",
+    "business_units:view",
+    "business_units:export",
     "reports:view",
     "reports:export",
     "audit:view",

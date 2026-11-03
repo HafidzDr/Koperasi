@@ -29,8 +29,8 @@ Phase 3: Membership Management             [SELESAI]
 Phase 4: Savings Management (Simpanan)     [SELESAI]
    ↓
 Phase 5: Loan & Installment Management     [SELESAI]
-   ↓  (persetujuan pengguna wajib)
-Phase 6: Pusat Pembayaran & Rekonsiliasi   [MENUNGGU]
+   ↓
+Phase 6: Business Unit Management (Unit Usaha) [SELESAI]
    ↓  (persetujuan pengguna wajib)
 Phase 7: Laporan Keuangan & Audit Simulasi [MENUNGGU]
    ↓  (persetujuan pengguna wajib)

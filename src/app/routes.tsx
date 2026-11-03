@@ -20,6 +20,8 @@ import { AdminSavingsManagementView } from "@/features/savings/pages/AdminSaving
 import { PublicLoanCatalogView } from "@/features/loans/pages/PublicLoanCatalogView";
 import { MemberLoanPortalView } from "@/features/loans/pages/MemberLoanPortalView";
 import { AdminLoanManagementView } from "@/features/loans/pages/AdminLoanManagementView";
+import { AdminBusinessUnitsView } from "@/features/business-units/pages/AdminBusinessUnitsView";
+import { MemberBusinessUnitsView } from "@/features/business-units/pages/MemberBusinessUnitsView";
 import { ModulePlaceholderView } from "@/components/common/ModulePlaceholderView";
 import { RouteGuard } from "@/components/common/RouteGuard";
 
@@ -109,15 +111,7 @@ export const router = createBrowserRouter([
       },
       {
         path: "unit-usaha",
-        element: (
-          <ModulePlaceholderView
-            moduleKey="business_units"
-            title="Katalog & Transaksi Unit Usaha"
-            description="Pencatatan omzet belanja anggota di unit retail/waserda untuk kalkulasi jasa transaksi."
-            environment="Portal"
-            phasePlanned={6}
-          />
-        ),
+        element: <MemberBusinessUnitsView />,
       },
       {
         path: "rapat",
@@ -182,15 +176,7 @@ export const router = createBrowserRouter([
       },
       {
         path: "unit-usaha",
-        element: (
-          <ModulePlaceholderView
-            moduleKey="business_units"
-            title="Portofolio Unit Usaha Koperasi"
-            description="Manajemen toko/waserda, pencatatan omzet unit, dan agregasi kontribusi belanja anggota."
-            environment="Admin"
-            phasePlanned={6}
-          />
-        ),
+        element: <AdminBusinessUnitsView />,
       },
       {
         path: "rapat",
