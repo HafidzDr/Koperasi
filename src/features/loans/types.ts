@@ -99,6 +99,8 @@ export interface LoanInstallment {
   lateFeeAmount: number;
   lateFeeWaived?: boolean;
   lateFeeAdjustmentReason?: string;
+  interestWaived?: boolean;
+  waivedInterestAmount?: number;
   daysLate: number;
   status: InstallmentStatus;
   paidAt?: string;

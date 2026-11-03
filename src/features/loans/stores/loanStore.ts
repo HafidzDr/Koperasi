@@ -10,6 +10,7 @@ import { create } from "zustand";
 import {
   Loan,
   LoanApplication,
+  LoanApplicationStatus,
   LoanProductConfig,
   LoanSystemConfig,
   LoanConfigHistoryEntry,
@@ -56,6 +57,7 @@ export interface RecordInstallmentPaymentPayload {
   paymentMethod?: string;
   referenceNumber?: string;
   notes?: string;
+  idempotencyKey?: string;
 }
 
 export interface AdjustLateFeePayload {
@@ -220,6 +222,23 @@ export const useLoanStore = create<LoanState>((set, get) => {
         return { success: false, error: "Sesi pengguna tidak valid. Silakan masuk terlebih dahulu." };
       }
 
+      // Validasi kewenangan peran (hanya role dengan permission loans:create, yaitu member)
+      if (!hasPermission(currentUser.role, "loans:create")) {
+        return { success: false, error: "Peran Anda tidak memiliki kewenangan mengajukan pinjaman." };
+      }
+
+      // Validasi kepemilikan akun anggota (memberId aktif dan harus sesuai dengan payload)
+      if (!currentUser.memberId) {
+        return { success: false, error: "Akun Anda tidak terhubung dengan profil anggota yang valid." };
+      }
+
+      if (currentUser.memberId !== payload.memberDemoId) {
+        return {
+          success: false,
+          error: "Pengajuan pinjaman hanya dapat dilakukan untuk akun anggota sendiri. Tidak diizinkan mengajukan atas nama anggota lain.",
+        };
+      }
+
       // Validasi Anggota
       const membership = useMembershipStore.getState();
       const member = membership.getMemberByDemoId(payload.memberDemoId);
@@ -261,7 +280,27 @@ export const useLoanStore = create<LoanState>((set, get) => {
         return { success: false, error: "Jenis produk pinjaman tidak aktif atau tidak ditemukan." };
       }
 
-      const amount = Math.round(payload.amount);
+      // Validasi integritas numerik nominal: finite, positif, integer
+      if (
+        typeof payload.amount !== "number" ||
+        !Number.isFinite(payload.amount) ||
+        payload.amount <= 0 ||
+        !Number.isInteger(payload.amount)
+      ) {
+        return { success: false, error: "Nominal pinjaman harus berupa bilangan bulat positif yang valid." };
+      }
+
+      // Validasi integritas numerik tenor: finite, positif, integer
+      if (
+        typeof payload.tenorMonths !== "number" ||
+        !Number.isFinite(payload.tenorMonths) ||
+        payload.tenorMonths <= 0 ||
+        !Number.isInteger(payload.tenorMonths)
+      ) {
+        return { success: false, error: "Tenor pinjaman harus berupa bilangan bulat bulan yang valid." };
+      }
+
+      const amount = payload.amount;
       if (amount < product.minAmount || amount > product.maxAmount) {
         return {
           success: false,
@@ -269,7 +308,7 @@ export const useLoanStore = create<LoanState>((set, get) => {
         };
       }
 
-      const tenor = Math.round(payload.tenorMonths);
+      const tenor = payload.tenorMonths;
       if (tenor < product.minTenorMonths || tenor > product.maxTenorMonths) {
         return {
           success: false,
@@ -483,26 +522,53 @@ export const useLoanStore = create<LoanState>((set, get) => {
         return { success: false, error: "Pengajuan pinjaman tidak ditemukan." };
       }
 
-      if (target.status !== "under_review" && target.status !== "recommended" && target.status !== "submitted") {
+      // 1. Persetujuan langsung dari submitted dilarang keras
+      if (target.status === "submitted") {
         return {
           success: false,
-          error: `Status pengajuan "${target.status}" tidak dapat disetujui.`,
+          error: "Persetujuan langsung dari status diajukan (submitted) tidak diizinkan. Pengajuan harus melalui verifikasi administratif terlebih dahulu.",
         };
       }
 
-      // Separation of Duties
+      // 2. Separation of Duties: Pembuat dilarang menyetujui pinjamannya sendiri
       if (target.createdById === currentUser.id) {
         return {
           success: false,
-          error: "Prinsip SoD: Pejabat yang membuat permohonan pinjaman dilarang menyetujui pinjamannya sendiri.",
+          error: "Prinsip Separation of Duties (SoD): Pejabat yang membuat permohonan pinjaman dilarang menyetujui pinjamannya sendiri.",
         };
       }
 
-      // Threshold check: FO hanya boleh menyetujui s.d. thresholdFoMax (Rp 10.000.000)
-      if (currentUser.role === "finance_officer" && target.amount > systemConfig.approvalThresholdFoMax) {
+      // 3. Validasi alur berdasarkan Peran (FO vs Manager)
+      if (currentUser.role === "finance_officer") {
+        if (target.status !== "under_review") {
+          return {
+            success: false,
+            error: `Finance Officer hanya dapat menyetujui pengajuan berstatus "under_review". Status saat ini: "${target.status}".`,
+          };
+        }
+        if (target.amount > systemConfig.approvalThresholdFoMax) {
+          return {
+            success: false,
+            error: `Nominal pinjaman (Rp ${target.amount.toLocaleString("id-ID")}) melebihi batas kewenangan Finance Officer (maksimal Rp ${systemConfig.approvalThresholdFoMax.toLocaleString("id-ID")}). Pengajuan wajib direkomendasikan dan disetujui oleh Pengurus / Manajer.`,
+          };
+        }
+      } else if (currentUser.role === "manager") {
+        if (target.status === "under_review") {
+          return {
+            success: false,
+            error: "Manajer / Pengurus hanya dapat menyetujui pengajuan yang telah direkomendasikan (status recommended). Pemeriksaan dan rekomendasi tidak boleh dilewati.",
+          };
+        }
+        if (target.status !== "recommended") {
+          return {
+            success: false,
+            error: `Status pengajuan "${target.status}" tidak dapat disetujui oleh Manajer. Status harus "recommended".`,
+          };
+        }
+      } else {
         return {
           success: false,
-          error: `Nominal pinjaman (Rp ${target.amount.toLocaleString("id-ID")}) melebihi batas kewenangan Finance Officer (Rp ${systemConfig.approvalThresholdFoMax.toLocaleString("id-ID")}). Pengajuan wajib disetujui oleh Pengurus / Manajer.`,
+          error: "Peran Anda tidak memiliki kewenangan menyetujui pinjaman.",
         };
       }
 
@@ -546,11 +612,15 @@ export const useLoanStore = create<LoanState>((set, get) => {
         return { success: false, error: "Sesi pengguna tidak valid." };
       }
 
-      if (!hasPermission(currentUser.role, "loans:approve") && !hasPermission(currentUser.role, "loans:review")) {
+      const disallowedRoles = ["auditor", "admin", "super_admin", "member", "public_visitor", "applicant"];
+      if (
+        disallowedRoles.includes(currentUser.role) ||
+        (!hasPermission(currentUser.role, "loans:reject") && !hasPermission(currentUser.role, "loans:approve"))
+      ) {
         return { success: false, error: "Peran Anda tidak memiliki kewenangan menolak pengajuan pinjaman." };
       }
 
-      if (!reason || !reason.trim()) {
+      if (typeof reason !== "string" || !reason.trim()) {
         return { success: false, error: "Alasan penolakan pengajuan wajib diisi secara transparan." };
       }
 
@@ -560,10 +630,19 @@ export const useLoanStore = create<LoanState>((set, get) => {
         return { success: false, error: "Pengajuan pinjaman tidak ditemukan." };
       }
 
-      if (target.status === "approved" || target.status === "rejected" || target.status === "cancelled") {
+      const rejectableStatuses: LoanApplicationStatus[] = ["submitted", "under_review", "recommended"];
+      if (!rejectableStatuses.includes(target.status)) {
         return {
           success: false,
-          error: `Pengajuan berstatus "${target.status}" tidak dapat ditolak lagi.`,
+          error: `Pengajuan berstatus "${target.status}" tidak dapat ditolak.`,
+        };
+      }
+
+      // SoD: Pembuat dilarang menolak permohonan sendiri
+      if (target.createdById === currentUser.id) {
+        return {
+          success: false,
+          error: "Prinsip Separation of Duties (SoD): Anda tidak dapat menolak pengajuan pinjaman yang Anda buat sendiri.",
         };
       }
 
@@ -729,14 +808,30 @@ export const useLoanStore = create<LoanState>((set, get) => {
         return { success: false, error: "Sesi pengguna tidak valid." };
       }
 
-      if (!hasPermission(currentUser.role, "installments:record")) {
-        return { success: false, error: "Peran Anda tidak memiliki kewenangan mencatat pembayaran angsuran." };
-      }
-
       const { loans, paymentRecords, processedPayments } = get();
       const loan = loans.find((l) => l.id === payload.loanId);
       if (!loan) {
         return { success: false, error: "Pinjaman tidak ditemukan." };
+      }
+
+      // Verifikasi hak akses & isolasi anggota
+      if (currentUser.role === "member") {
+        if (!currentUser.memberId || currentUser.memberId !== loan.memberDemoId) {
+          return {
+            success: false,
+            error: "Akses ditolak: Anda hanya dapat melakukan pembayaran angsuran untuk pinjaman Anda sendiri.",
+          };
+        }
+      } else if (!hasPermission(currentUser.role, "installments:record")) {
+        return { success: false, error: "Peran Anda tidak memiliki kewenangan mencatat pembayaran angsuran." };
+      }
+
+      // Idempotency check: jika ada idempotencyKey
+      if (payload.idempotencyKey && processedPayments.includes(payload.idempotencyKey)) {
+        return {
+          success: false,
+          error: `Pembayaran dengan kunci idempotensi "${payload.idempotencyKey}" telah diproses sebelumnya.`,
+        };
       }
 
       if (loan.status === "paid_off") {
@@ -754,28 +849,59 @@ export const useLoanStore = create<LoanState>((set, get) => {
         return { success: false, error: `Angsuran ke-${payload.installmentNumber} sudah lunas.` };
       }
 
-      const paymentAmount = Math.round(payload.amountPaid);
-      if (paymentAmount <= 0) {
-        return { success: false, error: "Nominal pembayaran harus berupa angka positif." };
+      // Validasi nominal pembayaran: integer Rupiah, positif, finite
+      if (
+        typeof payload.amountPaid !== "number" ||
+        !Number.isFinite(payload.amountPaid) ||
+        payload.amountPaid <= 0 ||
+        !Number.isInteger(payload.amountPaid)
+      ) {
+        return { success: false, error: "Nominal pembayaran harus berupa bilangan bulat positif yang valid." };
       }
 
-      // Prioritas Alokasi: Denda -> Bunga -> Pokok (BR-04.3)
+      const paymentAmount = payload.amountPaid;
+
+      // Hitung sisa kewajiban angsuran ini
       const outstandingLateFee = installment.lateFeeWaived
         ? 0
         : Math.max(0, installment.lateFeeAmount - installment.paidLateFee);
       const outstandingInterest = Math.max(0, installment.interestAmount - installment.paidInterest);
       const outstandingPrincipal = Math.max(0, installment.principalAmount - installment.paidPrincipal);
+      const totalObligation = outstandingLateFee + outstandingInterest + outstandingPrincipal;
 
+      if (paymentAmount > totalObligation) {
+        return {
+          success: false,
+          error: `Nominal pembayaran (Rp ${paymentAmount.toLocaleString("id-ID")}) melebihi total sisa kewajiban angsuran ke-${payload.installmentNumber} (Rp ${totalObligation.toLocaleString("id-ID")}). Kelebihan bayar tidak diizinkan.`,
+        };
+      }
+
+      // Prioritas Alokasi: Denda -> Bunga -> Pokok (BR-04.3)
       const {
         allocatedLateFee,
         allocatedInterest,
         allocatedPrincipal,
+        remainingUnallocated,
       } = allocateInstallmentPayment(
         paymentAmount,
         outstandingLateFee,
         outstandingInterest,
         outstandingPrincipal
       );
+
+      // Verifikasi integritas alokasi
+      if (
+        remainingUnallocated !== 0 ||
+        (allocatedLateFee + allocatedInterest + allocatedPrincipal !== paymentAmount) ||
+        allocatedLateFee > outstandingLateFee ||
+        allocatedInterest > outstandingInterest ||
+        allocatedPrincipal > outstandingPrincipal
+      ) {
+        return {
+          success: false,
+          error: "Integritas alokasi pembayaran gagal: alokasi tidak sesuai dengan nominal pembayaran.",
+        };
+      }
 
       const newPaidLateFee = installment.paidLateFee + allocatedLateFee;
       const newPaidInterest = installment.paidInterest + allocatedInterest;
@@ -870,7 +996,11 @@ export const useLoanStore = create<LoanState>((set, get) => {
 
       const updatedLoans = loans.map((l) => (l.id === loan.id ? updatedLoan : l));
       const updatedPaymentRecords = [newPaymentRecord, ...paymentRecords];
-      const updatedProcessedPayments = [...processedPayments, paymentRecordId];
+      const updatedProcessedPayments = [
+        ...processedPayments,
+        paymentRecordId,
+        ...(payload.idempotencyKey ? [payload.idempotencyKey] : []),
+      ];
 
       set({
         loans: updatedLoans,
@@ -903,7 +1033,7 @@ export const useLoanStore = create<LoanState>((set, get) => {
         };
       }
 
-      if (!payload.reason || !payload.reason.trim()) {
+      if (typeof payload.reason !== "string" || !payload.reason.trim()) {
         return { success: false, error: "Alasan penyesuaian/penghapusan denda wajib dicantumkan dalam audit trail." };
       }
 
@@ -920,10 +1050,33 @@ export const useLoanStore = create<LoanState>((set, get) => {
         return { success: false, error: `Angsuran ke-${payload.installmentNumber} tidak ditemukan.` };
       }
 
+      if (!payload.waiveFee) {
+        if (
+          payload.newLateFeeAmount === undefined ||
+          typeof payload.newLateFeeAmount !== "number" ||
+          !Number.isFinite(payload.newLateFeeAmount) ||
+          payload.newLateFeeAmount < 0
+        ) {
+          return {
+            success: false,
+            error: "Nominal penyesuaian denda harus berupa angka valid dan tidak boleh bernilai negatif.",
+          };
+        }
+
+        if (payload.newLateFeeAmount < installment.paidLateFee) {
+          return {
+            success: false,
+            error: `Nominal penyesuaian denda (Rp ${payload.newLateFeeAmount.toLocaleString("id-ID")}) tidak boleh lebih rendah dari nominal denda yang telah dibayar (Rp ${installment.paidLateFee.toLocaleString("id-ID")}).`,
+          };
+        }
+      }
+
       const nowIso = new Date().toISOString();
       const updatedInstallments = loan.installments.map((inst) => {
         if (inst.installmentNumber !== payload.installmentNumber) return inst;
-        const newLateFee = payload.waiveFee ? 0 : Math.max(0, payload.newLateFeeAmount ?? inst.lateFeeAmount);
+        const newLateFee = payload.waiveFee
+          ? inst.paidLateFee
+          : payload.newLateFeeAmount!;
         return {
           ...inst,
           lateFeeAmount: newLateFee,
@@ -964,14 +1117,21 @@ export const useLoanStore = create<LoanState>((set, get) => {
         return { success: false, error: "Sesi pengguna tidak valid." };
       }
 
-      if (!hasPermission(currentUser.role, "installments:record")) {
-        return { success: false, error: "Peran Anda tidak memiliki izin mencatat pelunasan pinjaman." };
-      }
-
       const { loans, paymentRecords, processedPayments } = get();
       const loan = loans.find((l) => l.id === loanId);
       if (!loan) {
         return { success: false, error: "Pinjaman tidak ditemukan." };
+      }
+
+      if (currentUser.role === "member") {
+        if (!currentUser.memberId || currentUser.memberId !== loan.memberDemoId) {
+          return {
+            success: false,
+            error: "Akses ditolak: Anda hanya dapat melakukan pelunasan dipercepat untuk pinjaman Anda sendiri.",
+          };
+        }
+      } else if (!hasPermission(currentUser.role, "installments:record")) {
+        return { success: false, error: "Peran Anda tidak memiliki izin mencatat pelunasan pinjaman." };
       }
 
       if (loan.status === "paid_off") {
@@ -987,27 +1147,52 @@ export const useLoanStore = create<LoanState>((set, get) => {
       const paymentDate = nowIso.slice(0, 10);
       const paymentRecordId = `BYR-2026-${loan.id.slice(8)}-EARLY-${Date.now().toString().slice(-4)}`;
 
-      // Tandai seluruh angsuran menjadi paid
+      // Update status setiap angsuran
+      // Sesuai Financial Integrity: Hanya bunga berjalan (current running) yang dibayarkan.
+      // Bunga masa depan dihapuskan (waived), TIDAK dicatat sebagai paidInterest.
+      let firstUnpaidEncountered = false;
       const updatedInstallments = loan.installments.map((inst) => {
         if (inst.status === "paid") return inst;
-        return {
-          ...inst,
-          paidPrincipal: inst.principalAmount,
-          paidInterest: inst.interestAmount,
-          paidLateFee: inst.lateFeeAmount,
-          status: "paid" as const,
-          paidAt: nowIso,
-          paymentMethod,
-          referenceNumber: `REF-${paymentRecordId}`,
-        };
+
+        if (!firstUnpaidEncountered) {
+          firstUnpaidEncountered = true;
+          return {
+            ...inst,
+            paidPrincipal: inst.principalAmount,
+            paidInterest: inst.interestAmount,
+            paidLateFee: inst.lateFeeWaived ? inst.paidLateFee : inst.lateFeeAmount,
+            status: "paid" as const,
+            paidAt: nowIso,
+            paymentMethod,
+            referenceNumber: `REF-${paymentRecordId}`,
+          };
+        } else {
+          const waivedInterest = Math.max(0, inst.interestAmount - inst.paidInterest);
+          return {
+            ...inst,
+            paidPrincipal: inst.principalAmount,
+            paidInterest: inst.paidInterest, // Tidak ditambah bunga masa depan
+            interestWaived: true,
+            waivedInterestAmount: waivedInterest,
+            paidLateFee: inst.lateFeeWaived ? inst.paidLateFee : inst.lateFeeAmount,
+            status: "paid" as const,
+            paidAt: nowIso,
+            paymentMethod,
+            referenceNumber: `REF-${paymentRecordId}`,
+          };
+        }
       });
+
+      const totalPaidPrincipal = loan.principalAmount;
+      const totalPaidInterest = updatedInstallments.reduce((sum, i) => sum + i.paidInterest, 0);
+      const totalPaidLateFee = updatedInstallments.reduce((sum, i) => sum + i.paidLateFee, 0);
 
       const updatedLoan: Loan = {
         ...loan,
         installments: updatedInstallments,
-        totalPaidPrincipal: loan.principalAmount,
-        totalPaidInterest: loan.totalPaidInterest + settlement.unpaidInterestCurrent,
-        totalPaidLateFee: loan.totalPaidLateFee + settlement.unpaidLateFeeTotal,
+        totalPaidPrincipal,
+        totalPaidInterest,
+        totalPaidLateFee,
         remainingPrincipal: 0,
         status: "paid_off",
         collectibility: "Lancar",
@@ -1041,7 +1226,7 @@ export const useLoanStore = create<LoanState>((set, get) => {
         allocatedPrincipal: settlement.unpaidPrincipalTotal,
         paymentMethod,
         referenceNumber: `REF-${paymentRecordId}`,
-        notes: `Pelunasan dipercepat. Bunga masa depan Rp ${settlement.waivedFutureInterestAmount.toLocaleString("id-ID")} dihapuskan.`,
+        notes: `Pelunasan dipercepat (Bunga dihapuskan: Rp ${settlement.waivedFutureInterestAmount.toLocaleString("id-ID")})${notes ? `. ${notes}` : ""}`,
         recordedById: currentUser.id,
         recordedByRole: currentUser.role,
         recordedByName: currentUser.name,

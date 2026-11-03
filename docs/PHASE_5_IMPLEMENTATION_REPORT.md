@@ -85,7 +85,7 @@ Mengacu pada `DEMO_SIMULATION_SPEC.md` Seksi 3.2:
 |---|---|:---:|---|
 | **QG-1** | Typecheck (`tsc --noEmit`) | **PASS** | 0 TypeScript errors |
 | **QG-2** | Linter (`eslint --max-warnings 0`) | **PASS** | 0 warnings, 0 errors |
-| **QG-3** | Unit, Store, & DOM Tests (`vitest run`) | **PASS** | **189 tests passed** (13 test files, 0 failure) |
+| **QG-3** | Unit, Store, & DOM Tests (`vitest run`) | **PASS** | **206 tests passed** (13 test files, 0 failure) |
 | **QG-4** | Production Build (`vite build`) | **PASS** | `dist/` bundle created cleanly |
 | **QG-5** | Responsive & Overflow (`verify_responsive.js`) | **PASS** | **16 skenario viewport PASS** (0 overflow, 0 clipping) |
 | **QG-6** | Separation of Duties (SoD) & RBAC Threshold | **PASS** | Terverifikasi pada level store & UI |
@@ -111,5 +111,48 @@ Mengacu pada `DEMO_SIMULATION_SPEC.md` Seksi 3.2:
 13. `docs/PHASE_5_IMPLEMENTATION_REPORT.md`
 
 ### Berkas Diperbarui:
-1. `src/app/routes.tsx` (Mengaitkan rute `/layanan/pinjaman`, `/portal/pinjaman`, dan `/admin/pinjaman`)
-2. `docs/IMPLEMENTATION_ROADMAP.md` (Pembaruan status Phase 5)
+1. `src/lib/rbac.ts` (Pembaruan permission matrix: penambahan `loans:create` ke Member, `loans:reject` ke Staff/FO/Manager, penghapusan `loans:review` dari Auditor)
+2. `src/app/routes.tsx` (Mengaitkan rute `/layanan/pinjaman`, `/portal/pinjaman`, dan `/admin/pinjaman`)
+3. `docs/IMPLEMENTATION_ROADMAP.md` (Pembaruan status Phase 5 & Phase 5.1)
+
+---
+
+## 5. CATATAN REMEDIASI PHASE 5.1 (CRITICAL FINANCIAL INTEGRITY & AUTHORIZATION)
+
+Berdasarkan audit independen terhadap Phase 5, perbaikan terintegrasi telah diterapkan pada commit remediasi:
+1. **Access & Submission Ownership (A)**:
+   - Menambahkan izin canonical `loans:create` pada peran `member` di `src/lib/rbac.ts`.
+   - Melarang keras peran Auditor, Admin, Super Admin, dan peran non-anggota lainnya dari pengajuan pinjaman.
+   - Menegakkan kewajiban kepemilikan akun anggota (`currentUser.memberId === payload.memberDemoId`). Menolak pengajuan atas nama anggota lain.
+   - Validasi ketat nominal dan tenor pinjaman sebagai integer positif, finite, dan dalam batas min/max produk.
+2. **Approval Lifecycle & State Transitions (B)**:
+   - Alur sekuensial yang ketat: `submitted -> under_review -> recommended / approved / rejected`.
+   - Persetujuan langsung dari `submitted` dilarang keras.
+   - Staf hanya berwenang memverifikasi dari `submitted -> under_review`.
+   - Finance Officer (FO) hanya dapat menyetujui jika nominal $\le$ `approvalThresholdFoMax` (Rp 10.000.000) dan status `under_review`. Jika nominal $>$ threshold, FO wajib merekomendasikan (`under_review -> recommended`).
+   - Manajer hanya dapat menyetujui pengajuan yang berstatus `recommended`. Manajer dilarang menyetujui langsung dari `under_review` (bypassing verifikasi/rekomendasi).
+   - Pembuat pengajuan dilarang menyetujui pengajuannya sendiri (Separation of Duties).
+3. **Auditor RBAC & Rejection Authority (C)**:
+   - Menghapus hak `loans:review` dari peran `auditor` di `src/lib/rbac.ts`, menjadikan Auditor murni read-only dan export.
+   - Menambahkan izin `loans:reject` pada Staf, Finance Officer, dan Manajer.
+   - Fungsi `rejectApplication` mewajibkan alasan penolakan non-kosong, menegakkan SoD, dan hanya membolehkan penolakan pada status `submitted`, `under_review`, atau `recommended`.
+4. **Payment Isolation & Member Ownership (D)**:
+   - Pada `recordInstallmentPayment` dan `executeEarlyRepayment`: jika peran adalah `member`, wajib memenuhi `currentUser.memberId === loan.memberDemoId`.
+   - Member A dilarang keras membayar atau melunasi pinjaman milik Member B.
+5. **Installment Payment Integrity & Idempotency (E)**:
+   - Nominal pembayaran wajib berupa integer Rupiah positif.
+   - Pembayaran yang melebihi sisa total kewajiban angsuran (`totalObligation = lateFee + interest + principal`) ditolak secara fail-closed.
+   - Memvalidasi pembagian alokasi: `remainingUnallocated === 0` dan $\sum \text{allocated} \equiv \text{amountPaid}$.
+   - Perlindungan idempotensi menggunakan `idempotencyKey` yang dicatat dalam `processedPayments`.
+   - Menolak pembayaran pada angsuran yang telah lunas.
+6. **Early Repayment Financial Consistency (F)**:
+   - Pelunasan dipercepat melunasi pokok tersisa dan bunga bulan berjalan.
+   - Bunga masa mendatang dihapuskan (`interestWaived: true`, `waivedInterestAmount` dicatat), dan TIDAK dimasukkan ke dalam `paidInterest` angsuran masa mendatang.
+   - Total `totalPaidInterest` pada pinjaman konsisten secara matematis dengan penjumlahan `paidInterest` setiap angsuran.
+   - Percobaan pelunasan kedua pada pinjaman lunas ditolak.
+7. **Late Fee Adjustment Integrity (G)**:
+   - Kewenangan penyesuaian/penghapusan denda ditegakkan eksklusif untuk Bendahara (`installments:adjust`).
+   - Alasan penyesuaian wajib diisi.
+   - Nominal denda baru tidak boleh bernilai negatif dan tidak boleh lebih rendah dari nominal denda yang telah dibayar anggota.
+8. **Pengujian Regresi Menyeluruh (H)**:
+   - 17 skenario regresi audit telah diimplementasikan dan diverifikasi 100% lulus pada `loanLifecycle.test.ts`, `loanDisbursementAndInstallments.test.ts`, dan `loanRbacAndPrivacy.test.ts`. Total test suite bertambah menjadi 206 tests lulus (100%).
