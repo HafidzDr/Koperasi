@@ -274,9 +274,72 @@ Audit independen terhadap rilis awal Phase 4 mengidentifikasi 5 area tata kelola
 | **Production Build** (`vite build`) | Bersih tanpa error (5.07s) | **PASS** |
 
 ### C. Rincian Penambahan Tes Regresi (Total 120 Tests):
-- **Seksi 7: Transaction Cancellation Authorization (8 tests)**: Uji isolasi pembatalan Member A vs B, pembatalan mandiri `submitted`, penolakan pembatalan mandiri `under_review`, penolakan staf tanpa izin `savings:adjust`, otorisasi Bendahara/Pengurus, penolakan reversal ganda, dan penanganan transaksi tidak ditemukan.
+- **Seksi 7: Transaction Cancellation Authorization (8 tests)**: Uji isolasi pembatalan Member A vs B, pembatalan mandiri `submitted`, penolakan pembatalan mandiri `under_review`, penolakan staf tanpa izin `savings:adjust`, otorisasi Bendahara (Treasurer), penolakan reversal ganda, dan penanganan transaksi tidak ditemukan.
 - **Seksi 8: Mandatory Verification Before Approval (7 tests)**: Uji penolakan persetujuan/penolakan langsung pada `submitted`, keberhasilan verifikasi ke `under_review`, otorisasi bertingkat, penolakan peran tanpa izin, dan penegakan SoD pembuat dilarang memverifikasi/menyetujui.
 - **Seksi 9: Store Configuration Validation & Audit History (7 tests)**: Uji penyimpanan nilai valid, penolakan nilai negatif, penolakan pecahan Rupiah, penolakan NaN/Infinity, penolakan nilai kosong, integritas storage saat validasi gagal, dan proteksi non-retroaktif pada saldo historis.
 - **Seksi 10: Balance Reversal & Ledger Integrity (3 tests)**: Uji pembalikan setoran utuh, penolakan mutlak pembalikan setoran yang dananya telah terpakai (pencegahan saldo negatif), integritas transaksi tetap `approved` saat gagal balik, dan pembalikan penarikan satu kali.
+
+---
+
+## 10. Laporan Remediasi Final Phase 4.2: Final Balance Mutation Authorization & Ledger Protection
+
+### A. Temuan & Tindakan Remediasi
+
+#### 1. Perlindungan Mutasi Saldo Langsung (`adjustMemberBalances`) (P0)
+- **Temuan**: Method `adjustMemberBalances()` pada `src/features/membership/stores/membershipStore.ts` sebelumnya dapat dipanggil secara terbuka tanpa verifikasi sesi aktor, permission, maupun keterkaitan terhadap transaksi simpanan yang sah. Hal ini membuka celah mutasi saldo arbitrer langsung dari luar alur bisnis.
+- **Remediasi**:
+  1. **Autentikasi & Otorisasi Aktor**: Mengambil aktor secara strictly internal melalui `useAuthStore.getState().currentUser` (tanpa menerima role/identitas dari parameter pemanggil). Memeriksa kepemilikan izin `savings:approve` atau `savings:adjust`. Seluruh peran lain (**Member**, **Staff** operasional, **Auditor**, **Admin**, dan **Super Admin**) ditolak mutlak saat mencoba memanggil fungsi ini.
+  2. **Validasi Ketat Nilai Delta**:
+     - Memastikan seluruh delta (`pokok`, `wajib`, `sukarela`) bertipe angka berhingga (*finite*), bilangan bulat Rupiah (*integer* tanpa desimal), bukan `NaN` atau `Infinity`.
+     - Menolak mutasi jika seluruh delta bernilai 0.
+     - Melakukan kalkulasi saldo akhir (*pre-calculation*); jika salah satu saldo menjadi negatif (< 0), mutasi dibatalkan seketika tanpa mengubah state maupun storage.
+  3. **Pengikatan Transaksi Sah & Konsistensi Delta**:
+     - Setiap pemanggilan mutasi saldo wajib menyertakan konteks transaksi (`transactionId` dan flag `isReversal`).
+     - Menggunakan mekanisme *Transaction Resolver* (`resolveSavingsTransaction`) yang didaftarkan secara satu arah oleh `savingsStore` sehingga memvalidasi eksistensi transaksi dan target anggota (`memberDemoId`) tanpa menimbulkan *circular dependency* antar-modul.
+     - **Pengecekan Konsistensi**: Nilai delta saldo diverifikasi secara eksak terhadap nominal dan jenis transaksi (`trx.amount`, `trx.savingsType`, dan `trx.transactionType`). Upaya memasukkan delta arbitrer atau berbeda dari nilai transaksi ditolak seketika.
+     - **Segregation of Duties (SoD)**: Pembuat transaksi (`trx.createdById`) dilarang keras menyetujui atau memutasi saldo transaksinya sendiri.
+
+#### 2. Penyelarasan Kewenangan Reversal dengan `docs/BUSINESS_RULES.md` (P1)
+- **Acuan Kanonik**: Matriks *Savings Adjust* pada `docs/INFORMATION_ARCHITECTURE.md` dan `src/lib/rbac.ts`.
+- **Ketentuan Otoritas**:
+  - **Treasurer (Bendahara)**: Satu-satunya peran yang memiliki hak `savings:adjust` untuk koreksi/pembalikan saldo simpanan.
+  - **Manager (Pengurus/Pengelola)**: Berwenang melakukan *Persetujuan Final* (`savings:approve`) dan *Penolakan* (`savings:reject`), namun **TIDAK** memiliki `savings:adjust` dan ditolak saat mencoba melakukan reversal transaksi `approved`.
+  - **Finance Officer**: Berwenang melakukan *Persetujuan Final* (`savings:approve`) dan *Penolakan* (`savings:reject`), namun **TIDAK** memiliki `savings:adjust` dan ditolak saat mencoba melakukan reversal transaksi `approved`.
+  - **Staff, Member, Auditor, Admin, Super Admin**: Ditolak mutlak.
+- **Penyelarasan Teks & Pesan Error**: Seluruh pesan kesalahan (`savingsStore.ts`), antarmuka admin, dan dokumentasi secara eksplisit menyebut **Bendahara (Treasurer)** sebagai satu-satunya pemegang otoritas koreksi saldo simpanan.
+
+---
+
+### B. Metrik Kualitas & Hasil Pengujian Regresi Phase 4.2
+
+| Quality Gate | Hasil Pengujian | Status |
+|---|---|---|
+| **TypeScript Typecheck** (`tsc --noEmit`) | 0 errors | **PASS** |
+| **ESLint Analysis** (`eslint "src/**/*.{ts,tsx}" --max-warnings 0`) | 0 errors, 0 warnings | **PASS** |
+| **Vitest Test Suite** (`vitest run`) | **8 files, 132 tests passed** (100% lulus) | **PASS** |
+| **Responsive Verification** (`scripts/verify_responsive.js`) | 16/16 skenario viewport, 0 overflow, 0 clipping | **PASS** |
+| **Production Build** (`vite build`) | Sukses bersih (`dist/` generated dalam 4.87s) | **PASS** |
+
+---
+
+### C. Rincian Penambahan Tes Regresi Seksi 11 (12 Tests Spesifik Phase 4.2)
+1. `11.1. Member tidak dapat memanggil mutasi saldo langsung` — **PASS**
+2. `11.2. Staff tanpa permission tidak dapat memanggil mutasi saldo langsung` — **PASS**
+3. `11.3. Auditor, Admin, dan Super Admin ditolak dari mutasi saldo langsung` — **PASS**
+4. `11.4. Aktor berwenang tidak dapat memasukkan delta arbitrer tanpa transaksi sah` — **PASS**
+5. `11.5. Delta negatif yang menghasilkan saldo negatif ditolak` — **PASS**
+6. `11.6. Delta pecahan, NaN, dan Infinity ditolak` — **PASS**
+7. `11.7. Kegagalan mutasi tidak mengubah state maupun localStorage` — **PASS**
+8. `11.8. Approval transaksi yang sah tetap memperbarui saldo tepat satu kali` — **PASS**
+9. `11.9. Reversal oleh Treasurer tetap berhasil jika saldo mencukupi` — **PASS**
+10. `11.10. Reversal oleh Manager ditolak` — **PASS**
+11. `11.11. Reversal oleh Finance Officer ditolak` — **PASS**
+12. `11.12. Reversal ganda ditolak` — **PASS**
+
+---
+
+### D. Catatan Arsitektur & Batasan Implementasi
+> [!NOTE]
+> Seluruh mekanisme otorisasi, validasi konsistensi ledger, Segregation of Duties (SoD), dan isolasi saldo anggota pada fase ini diimplementasikan secara client-side simulatif berbasis React, Zustand, dan localStorage. Implementasi ini tidak mengklaim tingkat keamanan setara backend produksi perbankan/finansial, namun menjamin kepatuhan aturan bisnis (*business rules integrity*), konsistensi alur transaksi, serta kesiapan audit fungsional aplikasi.
 
 

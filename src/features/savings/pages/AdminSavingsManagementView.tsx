@@ -1340,7 +1340,7 @@ export const AdminSavingsManagementView: React.FC = () => {
 
             {/* Action buttons in modal */}
             <div className="flex items-center justify-between pt-2 border-t border-ink-100">
-              {/* Cancellation option for approved transaction by Treasurer / Manager */}
+              {/* Cancellation option for approved transaction by Treasurer (savings:adjust) */}
               {canAdjust && selectedTransaction.status === "approved" ? (
                 <Button
                   variant="danger"

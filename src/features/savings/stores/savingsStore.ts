@@ -16,7 +16,10 @@ import {
   initialSavingsTransactions,
 } from "../mocks/savingsSeedData";
 import { useAuthStore } from "@/stores/authStore";
-import { useMembershipStore } from "@/features/membership/stores/membershipStore";
+import {
+  useMembershipStore,
+  setSavingsTransactionResolver,
+} from "@/features/membership/stores/membershipStore";
 import { canPerformAction } from "@/lib/rbac";
 
 export { DEFAULT_SUKARELA_CONFIG } from "../mocks/savingsSeedData";
@@ -739,7 +742,11 @@ export const useSavingsStore = create<SavingsState>((set, get) => {
         ? { wajib: deltaAmount }
         : { sukarela: deltaAmount };
 
-      const adjustRes = useMembershipStore.getState().adjustMemberBalances(trx.memberDemoId, delta);
+      const adjustRes = useMembershipStore.getState().adjustMemberBalances(
+        trx.memberDemoId,
+        delta,
+        { transactionId: trx.id, isReversal: false }
+      );
       if (!adjustRes.success) {
         return {
           success: false,
@@ -918,7 +925,7 @@ export const useSavingsStore = create<SavingsState>((set, get) => {
         if (!canPerformAction(authUser.role, "savings", "adjust")) {
           return {
             success: false,
-            error: `Pembatalan transaksi yang telah disetujui memerlukan hak otorisasi koreksi (savings:adjust). Hanya Bendahara atau Pengurus yang berwenang.`,
+            error: `Pembatalan transaksi yang telah disetujui memerlukan hak otorisasi koreksi (savings:adjust). Hanya Bendahara (Treasurer) yang berwenang melakukan koreksi/pembalikan saldo simpanan.`,
           };
         }
 
@@ -961,7 +968,11 @@ export const useSavingsStore = create<SavingsState>((set, get) => {
           ? { wajib: reverseDelta }
           : { sukarela: reverseDelta };
 
-        const adjustRes = useMembershipStore.getState().adjustMemberBalances(trx.memberDemoId, delta);
+        const adjustRes = useMembershipStore.getState().adjustMemberBalances(
+          trx.memberDemoId,
+          delta,
+          { transactionId: trx.id, isReversal: true }
+        );
         if (!adjustRes.success) {
           return {
             success: false,
@@ -1183,4 +1194,10 @@ export const useSavingsStore = create<SavingsState>((set, get) => {
       );
     },
   };
+});
+
+// Register transaction resolver to allow membershipStore to validate transaction integrity
+// without creating a circular module dependency.
+setSavingsTransactionResolver((trxId: string) => {
+  return useSavingsStore.getState().transactions.find((t) => t.id === trxId);
 });

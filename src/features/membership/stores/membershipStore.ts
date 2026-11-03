@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import { Role } from "@/types";
 import { useAuthStore } from "@/stores/authStore";
+import { canPerformAction } from "@/lib/rbac";
 import { DEFAULT_SAVINGS_CONFIG, SavingsConfig } from "../config/savingsConfig";
 import {
   ApplicationStatus,
@@ -33,6 +34,65 @@ export interface UpdateRevisionInput {
   address?: string;
   occupation?: string;
 }
+
+export interface BalanceDelta {
+  pokok?: number;
+  wajib?: number;
+  sukarela?: number;
+}
+
+export interface BalanceMutationContext {
+  transactionId: string;
+  isReversal?: boolean;
+}
+
+export interface SavingsTransactionLookupSnapshot {
+  id: string;
+  memberDemoId: string;
+  transactionType: "deposit" | "withdrawal";
+  savingsType: "pokok" | "wajib" | "sukarela";
+  amount: number;
+  status: string;
+  createdById: string;
+  isReversed?: boolean;
+}
+
+type SavingsTransactionResolver = (
+  trxId: string
+) => SavingsTransactionLookupSnapshot | undefined;
+
+let savingsTransactionResolver: SavingsTransactionResolver | null = null;
+
+export const setSavingsTransactionResolver = (
+  resolver: SavingsTransactionResolver | null
+) => {
+  savingsTransactionResolver = resolver;
+};
+
+const resolveSavingsTransaction = (
+  trxId: string
+): SavingsTransactionLookupSnapshot | undefined => {
+  if (savingsTransactionResolver) {
+    const found = savingsTransactionResolver(trxId);
+    if (found) return found;
+  }
+  if (typeof window !== "undefined") {
+    try {
+      const raw = localStorage.getItem("kmb_savings_store_v1");
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed.transactions)) {
+          return parsed.transactions.find(
+            (t: { id?: string }) => t && t.id === trxId
+          ) as SavingsTransactionLookupSnapshot | undefined;
+        }
+      }
+    } catch {
+      // ignore
+    }
+  }
+  return undefined;
+};
 
 interface MembershipState {
   applications: MembershipApplication[];
@@ -92,7 +152,8 @@ interface MembershipState {
   getMemberById: (id: string) => Member | undefined;
   adjustMemberBalances: (
     demoId: string,
-    delta: { pokok?: number; wajib?: number; sukarela?: number }
+    delta: BalanceDelta,
+    context?: BalanceMutationContext
   ) => { success: boolean; error?: string };
 
   // Reset to initial seed state
@@ -1107,8 +1168,37 @@ export const useMembershipStore = create<MembershipState>((rawSet, get) => {
 
     adjustMemberBalances: (
       demoId: string,
-      delta: { pokok?: number; wajib?: number; sukarela?: number }
+      delta: BalanceDelta,
+      context?: BalanceMutationContext
     ) => {
+      // 1. Actor Authentication Check
+      const authUser = useAuthStore.getState().currentUser;
+      if (!authUser) {
+        return {
+          success: false,
+          error: "Mutasi saldo ditolak: Tidak ada sesi pengguna aktif yang terautentikasi.",
+        };
+      }
+
+      // 2. Permission Check on Actor
+      const canApprove = canPerformAction(authUser.role, "savings", "approve");
+      const canAdjust = canPerformAction(authUser.role, "savings", "adjust");
+
+      if (!canApprove && !canAdjust) {
+        return {
+          success: false,
+          error: `Mutasi saldo ditolak: Peran "${authUser.roleName || authUser.role}" tidak memiliki kewenangan otorisasi saldo simpanan (memerlukan savings:approve atau savings:adjust).`,
+        };
+      }
+
+      // 3. Member DemoId Validation
+      if (!demoId || typeof demoId !== "string" || !demoId.trim()) {
+        return {
+          success: false,
+          error: "Mutasi saldo ditolak: ID anggota tidak valid.",
+        };
+      }
+
       const normalizedDemoId = demoId.trim().toLowerCase();
       const member = get().members.find(
         (m) => m.demoId.toLowerCase() === normalizedDemoId
@@ -1120,11 +1210,49 @@ export const useMembershipStore = create<MembershipState>((rawSet, get) => {
         };
       }
 
-      const newPokok = (member.saldoPokok || 0) + (delta.pokok || 0);
-      const newWajib = (member.saldoWajib || 0) + (delta.wajib || 0);
-      const newSukarela = (member.saldoSukarela || 0) + (delta.sukarela || 0);
+      // 4. Delta Validation (Finite, Integer Rupiah, Non-zero, Non-negative resulting balance)
+      if (!delta || typeof delta !== "object") {
+        return {
+          success: false,
+          error: "Mutasi saldo ditolak: Parameter delta saldo tidak valid.",
+        };
+      }
 
-      // Prevent negative balances without masking using Math.max(0, ...)
+      const { pokok = 0, wajib = 0, sukarela = 0 } = delta;
+
+      if (
+        !Number.isFinite(pokok) ||
+        !Number.isFinite(wajib) ||
+        !Number.isFinite(sukarela)
+      ) {
+        return {
+          success: false,
+          error: "Mutasi saldo ditolak: Nilai delta saldo harus berupa angka berhingga (finite).",
+        };
+      }
+
+      if (
+        !Number.isInteger(pokok) ||
+        !Number.isInteger(wajib) ||
+        !Number.isInteger(sukarela)
+      ) {
+        return {
+          success: false,
+          error: "Mutasi saldo ditolak: Nilai delta saldo harus berupa bilangan bulat Rupiah (integer).",
+        };
+      }
+
+      if (pokok === 0 && wajib === 0 && sukarela === 0) {
+        return {
+          success: false,
+          error: "Mutasi saldo ditolak: Delta saldo tidak boleh bernilai nol untuk seluruh jenis simpanan.",
+        };
+      }
+
+      const newPokok = (member.saldoPokok || 0) + pokok;
+      const newWajib = (member.saldoWajib || 0) + wajib;
+      const newSukarela = (member.saldoSukarela || 0) + sukarela;
+
       if (newPokok < 0 || newWajib < 0 || newSukarela < 0) {
         return {
           success: false,
@@ -1132,6 +1260,117 @@ export const useMembershipStore = create<MembershipState>((rawSet, get) => {
         };
       }
 
+      // 5. Valid Savings Transaction Context & Delta Consistency Check
+      if (
+        !context ||
+        !context.transactionId ||
+        typeof context.transactionId !== "string" ||
+        !context.transactionId.trim()
+      ) {
+        return {
+          success: false,
+          error: "Mutasi saldo ditolak: Perubahan saldo wajib dikaitkan dengan transaksi simpanan yang sah (transactionId diperlukan).",
+        };
+      }
+
+      const trx = resolveSavingsTransaction(context.transactionId.trim());
+      if (!trx) {
+        return {
+          success: false,
+          error: `Mutasi saldo ditolak: Transaksi simpanan dengan ID "${context.transactionId}" tidak ditemukan dalam sistem.`,
+        };
+      }
+
+      if (trx.memberDemoId.trim().toLowerCase() !== normalizedDemoId) {
+        return {
+          success: false,
+          error: `Mutasi saldo ditolak: ID anggota pada transaksi ("${trx.memberDemoId}") tidak sesuai dengan target mutasi ("${demoId}").`,
+        };
+      }
+
+      // Workflow Check: Reversal vs Approval
+      if (context.isReversal) {
+        // Reversal requires savings:adjust (strictly Treasurer per BUSINESS_RULES.md)
+        if (!canAdjust) {
+          return {
+            success: false,
+            error: `Pembalikan saldo ditolak: Peran "${authUser.roleName || authUser.role}" tidak memiliki kewenangan koreksi saldo (savings:adjust). Hanya Bendahara (Treasurer) yang berwenang.`,
+          };
+        }
+
+        if (trx.isReversed) {
+          return {
+            success: false,
+            error: `Pembalikan saldo ditolak: Transaksi "${trx.id}" telah dibatalkan atau dibalikkan sebelumnya.`,
+          };
+        }
+
+        const expectedReverseDelta =
+          trx.transactionType === "deposit" ? -trx.amount : trx.amount;
+        const targetDelta =
+          trx.savingsType === "pokok"
+            ? pokok
+            : trx.savingsType === "wajib"
+            ? wajib
+            : sukarela;
+        const other1 =
+          trx.savingsType === "pokok" ? wajib : pokok;
+        const other2 =
+          trx.savingsType === "sukarela" ? wajib : sukarela;
+
+        if (
+          targetDelta !== expectedReverseDelta ||
+          other1 !== 0 ||
+          other2 !== 0
+        ) {
+          return {
+            success: false,
+            error: `Mutasi saldo ditolak: Nilai delta saldo tidak konsisten dengan transaksi pembalikan ${trx.id} (ekspektasi ${trx.savingsType}: ${expectedReverseDelta}).`,
+          };
+        }
+      } else {
+        // Normal Approval flow
+        if (!canApprove && !canAdjust) {
+          return {
+            success: false,
+            error: `Mutasi persetujuan ditolak: Peran "${authUser.roleName || authUser.role}" tidak memiliki hak persetujuan simpanan (savings:approve).`,
+          };
+        }
+
+        // SoD check: Transaction creator cannot approve their own transaction
+        if (trx.createdById === authUser.id) {
+          return {
+            success: false,
+            error: "Mutasi persetujuan ditolak: Pelanggaran Segregation of Duties (SoD). Pembuat transaksi tidak dapat memutasi saldo transaksinya sendiri.",
+          };
+        }
+
+        const expectedApprovalDelta =
+          trx.transactionType === "deposit" ? trx.amount : -trx.amount;
+        const targetDelta =
+          trx.savingsType === "pokok"
+            ? pokok
+            : trx.savingsType === "wajib"
+            ? wajib
+            : sukarela;
+        const other1 =
+          trx.savingsType === "pokok" ? wajib : pokok;
+        const other2 =
+          trx.savingsType === "sukarela" ? wajib : sukarela;
+
+        if (
+          targetDelta !== expectedApprovalDelta ||
+          other1 !== 0 ||
+          other2 !== 0
+        ) {
+          return {
+            success: false,
+            error: `Mutasi saldo ditolak: Nilai delta saldo tidak konsisten dengan transaksi ${trx.id} (ekspektasi ${trx.savingsType}: ${expectedApprovalDelta}).`,
+          };
+        }
+      }
+
+      // 6. Safe Atomic State Update & Storage Persistence
       const updatedMembers = get().members.map((m) => {
         if (m.demoId.toLowerCase() === normalizedDemoId) {
           return {
