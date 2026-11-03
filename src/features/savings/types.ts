@@ -64,6 +64,12 @@ export interface SavingsTransaction {
   notes?: string;
   rejectionReason?: string;
   cancellationReason?: string;
+  cancelledById?: string;
+  cancelledByRole?: string;
+  cancelledByName?: string;
+  cancelledAt?: string;
+  isReversed?: boolean;
+  originalTransactionId?: string;
   createdById: string;
   createdByRole: string;
   createdByName: string;
@@ -89,6 +95,16 @@ export interface SukarelaConfig {
   disclaimer: string;
 }
 
+export interface SukarelaConfigHistoryEntry {
+  id: string;
+  timestamp: string;
+  actorId: string;
+  actorRole: string;
+  actorName: string;
+  previousConfig: Partial<SukarelaConfig>;
+  newConfig: Partial<SukarelaConfig>;
+}
+
 export interface SavingsReportSummary {
   totalSimpananPokok: number;
   totalSimpananWajib: number;
@@ -108,3 +124,4 @@ export interface SavingsReportSummary {
     totalSaldo: number;
   }[];
 }
+

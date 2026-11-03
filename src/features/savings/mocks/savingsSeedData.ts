@@ -22,9 +22,9 @@ export const defaultSavingsProducts: SavingsProduct[] = [
       "Simpanan awal yang disetor satu kali saat resmi terdaftar menjadi Anggota Koperasi Makmur Bersama Nusantara.",
     withdrawable: false,
     status: "active",
-    badgeLabel: "Standar UU 25/1992",
+    badgeLabel: "Ketentuan Keanggotaan",
     notes:
-      "Tidak dapat ditarik selama masa keanggotaan aktif. Dikembalikan penuh saat berhenti menjadi anggota setelah dikurangi kewajiban.",
+      "Contoh kebijakan produk dalam demonstrasi; simpanan pokok tidak dapat ditarik selama masa keanggotaan aktif. Ketentuan final mengikuti AD/ART dan keputusan Rapat Anggota.",
   },
   {
     id: "PROD-SW",
@@ -433,3 +433,4 @@ export const initialSavingsTransactions: SavingsTransaction[] = [
     ],
   },
 ];
+

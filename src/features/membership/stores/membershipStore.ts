@@ -93,7 +93,7 @@ interface MembershipState {
   adjustMemberBalances: (
     demoId: string,
     delta: { pokok?: number; wajib?: number; sukarela?: number }
-  ) => void;
+  ) => { success: boolean; error?: string };
 
   // Reset to initial seed state
   resetToSeed: () => void;
@@ -1110,11 +1110,30 @@ export const useMembershipStore = create<MembershipState>((rawSet, get) => {
       delta: { pokok?: number; wajib?: number; sukarela?: number }
     ) => {
       const normalizedDemoId = demoId.trim().toLowerCase();
+      const member = get().members.find(
+        (m) => m.demoId.toLowerCase() === normalizedDemoId
+      );
+      if (!member) {
+        return {
+          success: false,
+          error: `Anggota dengan ID "${demoId}" tidak ditemukan dalam direktori keanggotaan.`,
+        };
+      }
+
+      const newPokok = (member.saldoPokok || 0) + (delta.pokok || 0);
+      const newWajib = (member.saldoWajib || 0) + (delta.wajib || 0);
+      const newSukarela = (member.saldoSukarela || 0) + (delta.sukarela || 0);
+
+      // Prevent negative balances without masking using Math.max(0, ...)
+      if (newPokok < 0 || newWajib < 0 || newSukarela < 0) {
+        return {
+          success: false,
+          error: `Mutasi saldo ditolak: Penyesuaian saldo akan menghasilkan nilai negatif (Pokok: Rp ${newPokok.toLocaleString("id-ID")}, Wajib: Rp ${newWajib.toLocaleString("id-ID")}, Sukarela: Rp ${newSukarela.toLocaleString("id-ID")}). Diperlukan penyelesaian/rekonsiliasi saldo terlebih dahulu.`,
+        };
+      }
+
       const updatedMembers = get().members.map((m) => {
         if (m.demoId.toLowerCase() === normalizedDemoId) {
-          const newPokok = Math.max(0, (m.saldoPokok || 0) + (delta.pokok || 0));
-          const newWajib = Math.max(0, (m.saldoWajib || 0) + (delta.wajib || 0));
-          const newSukarela = Math.max(0, (m.saldoSukarela || 0) + (delta.sukarela || 0));
           return {
             ...m,
             saldoPokok: newPokok,
@@ -1126,6 +1145,7 @@ export const useMembershipStore = create<MembershipState>((rawSet, get) => {
       });
       set({ members: updatedMembers });
       saveToStorage(get().applications, updatedMembers, get().savingsConfig);
+      return { success: true };
     },
 
     resetToSeed: () => {

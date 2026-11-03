@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 import { describe, it, expect, beforeEach, vi } from "vitest";
 import { useSavingsStore } from "../features/savings/stores/savingsStore";
+import { SukarelaConfig } from "../features/savings/types";
 import { useMembershipStore } from "../features/membership/stores/membershipStore";
 import { useAuthStore } from "../stores/authStore";
 import { demoUsers } from "../mocks/seedData";
@@ -90,6 +91,11 @@ describe("PHASE 4 — Savings Management Business Logic, SoD & Persistence Tests
       const initialAccount = useSavingsStore.getState().getMemberSavingsAccount("DEMO-ID-0001");
       const prevSukarela = initialAccount!.saldoSukarela;
 
+      // Mandatory verification by staff
+      useAuthStore.setState({ currentUser: demoUsers.staff });
+      const reviewRes = useSavingsStore.getState().reviewTransaction(submitRes.transactionId!);
+      expect(reviewRes.success).toBe(true);
+
       // Finance Officer (Ahmad Fauzi) approves
       useAuthStore.setState({ currentUser: demoUsers.finance_officer });
       const approveRes = useSavingsStore.getState().approveTransaction(
@@ -122,6 +128,10 @@ describe("PHASE 4 — Savings Management Business Logic, SoD & Persistence Tests
         amount: 50000,
       });
 
+      // Verification by staff
+      useAuthStore.setState({ currentUser: demoUsers.staff });
+      useSavingsStore.getState().reviewTransaction(submitRes.transactionId!);
+
       useAuthStore.setState({ currentUser: demoUsers.finance_officer });
       const firstApprove = useSavingsStore.getState().approveTransaction(submitRes.transactionId!);
       expect(firstApprove.success).toBe(true);
@@ -148,6 +158,10 @@ describe("PHASE 4 — Savings Management Business Logic, SoD & Persistence Tests
 
       const initialAccount = useSavingsStore.getState().getMemberSavingsAccount("DEMO-ID-0001");
       const prevWajib = initialAccount!.saldoWajib;
+
+      // Verification by staff
+      useAuthStore.setState({ currentUser: demoUsers.staff });
+      useSavingsStore.getState().reviewTransaction(submitRes.transactionId!);
 
       // Finance Officer rejects with mandatory reason
       useAuthStore.setState({ currentUser: demoUsers.finance_officer });
@@ -183,6 +197,10 @@ describe("PHASE 4 — Savings Management Business Logic, SoD & Persistence Tests
       });
 
       expect(submitRes.success).toBe(true);
+
+      // Staff verifies withdrawal request
+      useAuthStore.setState({ currentUser: demoUsers.staff });
+      useSavingsStore.getState().reviewTransaction(submitRes.transactionId!);
 
       // Treasurer approves withdrawal
       useAuthStore.setState({ currentUser: demoUsers.treasurer });
@@ -245,7 +263,13 @@ describe("PHASE 4 — Savings Management Business Logic, SoD & Persistence Tests
       });
       expect(createRes.success).toBe(true);
 
+      // Dewi Lestari (staff) verifies the transaction to under_review
+      useAuthStore.setState({ currentUser: demoUsers.staff });
+      const reviewRes = useSavingsStore.getState().reviewTransaction(createRes.transactionId!);
+      expect(reviewRes.success).toBe(true);
+
       // Now Ahmad Fauzi attempts to approve his own transaction
+      useAuthStore.setState({ currentUser: demoUsers.finance_officer });
       const selfApproveRes = useSavingsStore.getState().approveTransaction(createRes.transactionId!);
       expect(selfApproveRes.success).toBe(false);
       expect(selfApproveRes.error).toContain("Separation of Duties");
@@ -333,6 +357,10 @@ describe("PHASE 4 — Savings Management Business Logic, SoD & Persistence Tests
         savingsType: "sukarela",
         amount: 300000,
       });
+
+      // Review by staff
+      useAuthStore.setState({ currentUser: demoUsers.staff });
+      useSavingsStore.getState().reviewTransaction(submitRes.transactionId!);
 
       useAuthStore.setState({ currentUser: demoUsers.finance_officer });
       useSavingsStore.getState().approveTransaction(submitRes.transactionId!);
@@ -454,6 +482,563 @@ describe("PHASE 4 — Savings Management Business Logic, SoD & Persistence Tests
       );
       expect(summary.rekapPerAnggota.length).toBe(useMembershipStore.getState().members.length);
       expect(summary.totalTransaksi).toBe(useSavingsStore.getState().transactions.length);
+    });
+  });
+
+  describe("7. Transaction Cancellation Authorization (P0)", () => {
+    it("7.1. Member A tidak dapat membatalkan transaksi pengajuan Member B", () => {
+      // Member B (Dian Pratama / DEMO-ID-0007) submits a deposit
+      useAuthStore.setState({
+        currentUser: {
+          id: "user-member-02",
+          memberId: "DEMO-ID-0007",
+          name: "Dian Pratama",
+          email: "dian@email.invalid",
+          role: "member",
+          roleName: "Anggota",
+        },
+      });
+      const submitRes = useSavingsStore.getState().submitDeposit({
+        memberDemoId: "DEMO-ID-0007",
+        savingsType: "sukarela",
+        amount: 80000,
+      });
+      expect(submitRes.success).toBe(true);
+
+      // Member A (Siti Rahma / DEMO-ID-0001) attempts to cancel Member B's transaction
+      useAuthStore.setState({ currentUser: demoUsers.member });
+      const cancelRes = useSavingsStore.getState().cancelTransaction(
+        submitRes.transactionId!,
+        "Percobaan pembatalan transaksi orang lain"
+      );
+
+      expect(cancelRes.success).toBe(false);
+      expect(cancelRes.error).toContain("Otorisasi Ditolak");
+
+      // Verify transaction remains submitted
+      const trx = useSavingsStore.getState().getTransactionById(submitRes.transactionId!);
+      expect(trx?.status).toBe("submitted");
+    });
+
+    it("7.2. Member A dapat membatalkan pengajuannya sendiri saat masih submitted", () => {
+      useAuthStore.setState({ currentUser: demoUsers.member });
+      const submitRes = useSavingsStore.getState().submitDeposit({
+        memberDemoId: "DEMO-ID-0001",
+        savingsType: "sukarela",
+        amount: 60000,
+      });
+
+      const cancelRes = useSavingsStore.getState().cancelTransaction(
+        submitRes.transactionId!,
+        "Batal ingin menabung saat ini"
+      );
+
+      expect(cancelRes.success).toBe(true);
+      const trx = useSavingsStore.getState().getTransactionById(submitRes.transactionId!);
+      expect(trx?.status).toBe("cancelled");
+      expect(trx?.cancellationReason).toBe("Batal ingin menabung saat ini");
+    });
+
+    it("7.3. Member tidak dapat membatalkan transaksi yang sudah under_review", () => {
+      useAuthStore.setState({ currentUser: demoUsers.member });
+      const submitRes = useSavingsStore.getState().submitDeposit({
+        memberDemoId: "DEMO-ID-0001",
+        savingsType: "sukarela",
+        amount: 70000,
+      });
+
+      // Staff verifies to under_review
+      useAuthStore.setState({ currentUser: demoUsers.staff });
+      useSavingsStore.getState().reviewTransaction(submitRes.transactionId!);
+
+      // Member attempts to cancel
+      useAuthStore.setState({ currentUser: demoUsers.member });
+      const cancelRes = useSavingsStore.getState().cancelTransaction(
+        submitRes.transactionId!,
+        "Ingin membatalkan saat proses verifikasi"
+      );
+
+      expect(cancelRes.success).toBe(false);
+      expect(cancelRes.error).toContain("tahap verifikasi (under_review)");
+      expect(cancelRes.error).toContain("tidak dapat dibatalkan mandiri");
+
+      const trx = useSavingsStore.getState().getTransactionById(submitRes.transactionId!);
+      expect(trx?.status).toBe("under_review");
+    });
+
+    it("7.4. Staff operasional tanpa izin savings:adjust tidak dapat membatalkan transaksi", () => {
+      useAuthStore.setState({ currentUser: demoUsers.member });
+      const submitRes = useSavingsStore.getState().submitDeposit({
+        memberDemoId: "DEMO-ID-0001",
+        savingsType: "sukarela",
+        amount: 50000,
+      });
+
+      // Staff attempts administrative cancellation
+      useAuthStore.setState({ currentUser: demoUsers.staff });
+      const cancelRes = useSavingsStore.getState().cancelTransaction(
+        submitRes.transactionId!,
+        "Pembatalan sepihak oleh staf"
+      );
+
+      expect(cancelRes.success).toBe(false);
+      expect(cancelRes.error).toContain("savings:adjust");
+    });
+
+    it("7.5. Pengunjung publik tidak dapat membatalkan transaksi", () => {
+      useAuthStore.setState({ currentUser: demoUsers.public_visitor });
+      const cancelRes = useSavingsStore.getState().cancelTransaction(
+        "SAV-TRX-2026-0001",
+        "Pembatalan tamu"
+      );
+
+      expect(cancelRes.success).toBe(false);
+      expect(cancelRes.error).toContain("savings:adjust");
+    });
+
+    it("7.6. Approved transaction reversal memerlukan hak savings:adjust (Treasurer / Manager)", () => {
+      // Setup approved transaction
+      useAuthStore.setState({ currentUser: demoUsers.member });
+      const submitRes = useSavingsStore.getState().submitDeposit({
+        memberDemoId: "DEMO-ID-0001",
+        savingsType: "sukarela",
+        amount: 250000,
+      });
+      useAuthStore.setState({ currentUser: demoUsers.staff });
+      useSavingsStore.getState().reviewTransaction(submitRes.transactionId!);
+      useAuthStore.setState({ currentUser: demoUsers.finance_officer });
+      useSavingsStore.getState().approveTransaction(submitRes.transactionId!);
+
+      // Finance officer has approve/reject but NOT adjust
+      const foCancelRes = useSavingsStore.getState().cancelTransaction(
+        submitRes.transactionId!,
+        "Koreksi FO"
+      );
+      expect(foCancelRes.success).toBe(false);
+      expect(foCancelRes.error).toContain("savings:adjust");
+
+      // Treasurer HAS adjust permission
+      useAuthStore.setState({ currentUser: demoUsers.treasurer });
+      const treasurerCancelRes = useSavingsStore.getState().cancelTransaction(
+        submitRes.transactionId!,
+        "Koreksi resmi Bendahara: mutasi dibatalkan bank."
+      );
+      expect(treasurerCancelRes.success).toBe(true);
+
+      const trx = useSavingsStore.getState().getTransactionById(submitRes.transactionId!);
+      expect(trx?.status).toBe("cancelled");
+      expect(trx?.isReversed).toBe(true);
+    });
+
+    it("7.7. Pembalikan (reversal) transaksi yang sama tidak dapat dilakukan dua kali", () => {
+      useAuthStore.setState({ currentUser: demoUsers.member });
+      const submitRes = useSavingsStore.getState().submitDeposit({
+        memberDemoId: "DEMO-ID-0001",
+        savingsType: "sukarela",
+        amount: 200000,
+      });
+      useAuthStore.setState({ currentUser: demoUsers.staff });
+      useSavingsStore.getState().reviewTransaction(submitRes.transactionId!);
+      useAuthStore.setState({ currentUser: demoUsers.finance_officer });
+      useSavingsStore.getState().approveTransaction(submitRes.transactionId!);
+
+      useAuthStore.setState({ currentUser: demoUsers.treasurer });
+      const firstCancel = useSavingsStore.getState().cancelTransaction(
+        submitRes.transactionId!,
+        "Reversal pertama"
+      );
+      expect(firstCancel.success).toBe(true);
+
+      // Second attempt must fail
+      const secondCancel = useSavingsStore.getState().cancelTransaction(
+        submitRes.transactionId!,
+        "Reversal kedua"
+      );
+      expect(secondCancel.success).toBe(false);
+      expect(secondCancel.error).toContain("tidak dapat dibatalkan ulang");
+    });
+
+    it("7.8. Pembatalan transaksi fiktif/tidak ditemukan mengembalikan error informatif", () => {
+      useAuthStore.setState({ currentUser: demoUsers.treasurer });
+      const res = useSavingsStore.getState().cancelTransaction(
+        "NON-EXISTENT-TRX",
+        "Alasan pembatalan"
+      );
+      expect(res.success).toBe(false);
+      expect(res.error).toBe("Transaksi simpanan tidak ditemukan.");
+    });
+  });
+
+  describe("8. Mandatory Verification Before Approval (P1)", () => {
+    it("8.1. Approval terhadap transaksi berstatus submitted harus gagal", () => {
+      useAuthStore.setState({ currentUser: demoUsers.member });
+      const submitRes = useSavingsStore.getState().submitDeposit({
+        memberDemoId: "DEMO-ID-0001",
+        savingsType: "wajib",
+        amount: 50000,
+      });
+
+      // Finance officer attempts direct approval without verification
+      useAuthStore.setState({ currentUser: demoUsers.finance_officer });
+      const approveRes = useSavingsStore.getState().approveTransaction(submitRes.transactionId!);
+
+      expect(approveRes.success).toBe(false);
+      expect(approveRes.error).toContain("wajib diverifikasi terlebih dahulu");
+      expect(approveRes.error).toContain("status harus under_review");
+
+      // Balance remains unchanged
+      const trx = useSavingsStore.getState().getTransactionById(submitRes.transactionId!);
+      expect(trx?.status).toBe("submitted");
+    });
+
+    it("8.2. Rejection terhadap transaksi berstatus submitted harus gagal", () => {
+      useAuthStore.setState({ currentUser: demoUsers.member });
+      const submitRes = useSavingsStore.getState().submitDeposit({
+        memberDemoId: "DEMO-ID-0001",
+        savingsType: "wajib",
+        amount: 50000,
+      });
+
+      useAuthStore.setState({ currentUser: demoUsers.finance_officer });
+      const rejectRes = useSavingsStore.getState().rejectTransaction(
+        submitRes.transactionId!,
+        "Penolakan langsung"
+      );
+
+      expect(rejectRes.success).toBe(false);
+      expect(rejectRes.error).toContain("wajib melalui pemeriksaan berkas terlebih dahulu");
+      expect(rejectRes.error).toContain("under_review");
+    });
+
+    it("8.3. Verifikasi oleh staf terhadap submitted berhasil mengubah status menjadi under_review", () => {
+      useAuthStore.setState({ currentUser: demoUsers.member });
+      const submitRes = useSavingsStore.getState().submitDeposit({
+        memberDemoId: "DEMO-ID-0001",
+        savingsType: "wajib",
+        amount: 50000,
+      });
+
+      useAuthStore.setState({ currentUser: demoUsers.staff });
+      const reviewRes = useSavingsStore.getState().reviewTransaction(
+        submitRes.transactionId!,
+        "Bukti slip setoran valid"
+      );
+
+      expect(reviewRes.success).toBe(true);
+
+      const trx = useSavingsStore.getState().getTransactionById(submitRes.transactionId!);
+      expect(trx?.status).toBe("under_review");
+      expect(trx?.reviewedByRole).toBe("staff");
+      expect(trx?.reviewedByName).toBe("Dewi Lestari");
+    });
+
+    it("8.4. Approval terhadap transaksi under_review oleh role berwenang berhasil", () => {
+      useAuthStore.setState({ currentUser: demoUsers.member });
+      const submitRes = useSavingsStore.getState().submitDeposit({
+        memberDemoId: "DEMO-ID-0001",
+        savingsType: "wajib",
+        amount: 50000,
+      });
+
+      useAuthStore.setState({ currentUser: demoUsers.staff });
+      useSavingsStore.getState().reviewTransaction(submitRes.transactionId!);
+
+      useAuthStore.setState({ currentUser: demoUsers.finance_officer });
+      const approveRes = useSavingsStore.getState().approveTransaction(submitRes.transactionId!);
+      expect(approveRes.success).toBe(true);
+
+      const trx = useSavingsStore.getState().getTransactionById(submitRes.transactionId!);
+      expect(trx?.status).toBe("approved");
+    });
+
+    it("8.5. Approval oleh role tanpa permission (misal staff) gagal", () => {
+      useAuthStore.setState({ currentUser: demoUsers.member });
+      const submitRes = useSavingsStore.getState().submitDeposit({
+        memberDemoId: "DEMO-ID-0001",
+        savingsType: "wajib",
+        amount: 50000,
+      });
+
+      useAuthStore.setState({ currentUser: demoUsers.staff });
+      useSavingsStore.getState().reviewTransaction(submitRes.transactionId!);
+
+      const staffApprove = useSavingsStore.getState().approveTransaction(submitRes.transactionId!);
+      expect(staffApprove.success).toBe(false);
+      expect(staffApprove.error).toContain("tidak memiliki kewenangan");
+    });
+
+    it("8.6. Verifikasi oleh role tanpa permission (misal member atau auditor) gagal", () => {
+      useAuthStore.setState({ currentUser: demoUsers.member });
+      const submitRes = useSavingsStore.getState().submitDeposit({
+        memberDemoId: "DEMO-ID-0001",
+        savingsType: "wajib",
+        amount: 50000,
+      });
+
+      const memberVerify = useSavingsStore.getState().reviewTransaction(submitRes.transactionId!);
+      expect(memberVerify.success).toBe(false);
+      expect(memberVerify.error).toContain("tidak memiliki izin verifikasi");
+
+      useAuthStore.setState({ currentUser: demoUsers.auditor });
+      const auditorVerify = useSavingsStore.getState().reviewTransaction(submitRes.transactionId!);
+      expect(auditorVerify.success).toBe(false);
+      expect(auditorVerify.error).toContain("tidak memiliki izin verifikasi");
+    });
+
+    it("8.7. Pembuat transaksi tidak dapat memverifikasi atau menyetujui transaksinya sendiri (SoD)", () => {
+      // Staff Dewi Lestari records transaction
+      useAuthStore.setState({ currentUser: demoUsers.staff });
+      const recordRes = useSavingsStore.getState().recordStaffTransaction({
+        memberDemoId: "DEMO-ID-0001",
+        savingsType: "wajib",
+        transactionType: "deposit",
+        amount: 50000,
+      });
+      expect(recordRes.success).toBe(true);
+
+      // Staff Dewi Lestari attempts to verify her own transaction -> MUST FAIL
+      const selfVerifyRes = useSavingsStore.getState().reviewTransaction(recordRes.transactionId!);
+      expect(selfVerifyRes.success).toBe(false);
+      expect(selfVerifyRes.error).toContain("SoD");
+      expect(selfVerifyRes.error).toContain("pembuat transaksi");
+    });
+  });
+
+  describe("9. Store-Level Configuration Validation & Audit History (P1)", () => {
+    it("9.1. Nilai konfigurasi valid berhasil disimpan dan tercatat pada configHistory", () => {
+      useAuthStore.setState({ currentUser: demoUsers.treasurer });
+      const updateRes = useSavingsStore.getState().updateSukarelaConfig({
+        minDeposit: 15000,
+        minWithdrawal: 25000,
+        minBalance: 15000,
+        interestRatePct: 2.5,
+      });
+
+      expect(updateRes.success).toBe(true);
+      const cfg = useSavingsStore.getState().sukarelaConfig;
+      expect(cfg.minDeposit).toBe(15000);
+      expect(cfg.minWithdrawal).toBe(25000);
+      expect(cfg.minBalance).toBe(15000);
+      expect(cfg.interestRatePct).toBe(2.5);
+
+      const history = useSavingsStore.getState().configHistory;
+      expect(history.length).toBeGreaterThanOrEqual(1);
+      expect(history[0].actorRole).toBe("treasurer");
+      expect(history[0].actorName).toBe("Sri Mulyani");
+      expect(history[0].newConfig.minDeposit).toBe(15000);
+    });
+
+    it("9.2. Nilai negatif ditolak dan konfigurasi tidak berubah", () => {
+      useAuthStore.setState({ currentUser: demoUsers.treasurer });
+      const prevCfg = { ...useSavingsStore.getState().sukarelaConfig };
+
+      const res = useSavingsStore.getState().updateSukarelaConfig({
+        minDeposit: -10000,
+      });
+
+      expect(res.success).toBe(false);
+      expect(res.error).toContain("positif");
+      expect(useSavingsStore.getState().sukarelaConfig).toEqual(prevCfg);
+    });
+
+    it("9.3. Nilai pecahan Rupiah (desimal) ditolak", () => {
+      useAuthStore.setState({ currentUser: demoUsers.treasurer });
+      const prevCfg = { ...useSavingsStore.getState().sukarelaConfig };
+
+      const res = useSavingsStore.getState().updateSukarelaConfig({
+        minWithdrawal: 25000.75,
+      });
+
+      expect(res.success).toBe(false);
+      expect(res.error).toContain("bilangan bulat Rupiah");
+      expect(useSavingsStore.getState().sukarelaConfig).toEqual(prevCfg);
+    });
+
+    it("9.4. NaN dan Infinity ditolak", () => {
+      useAuthStore.setState({ currentUser: demoUsers.treasurer });
+      const prevCfg = { ...useSavingsStore.getState().sukarelaConfig };
+
+      const nanRes = useSavingsStore.getState().updateSukarelaConfig({
+        minDeposit: NaN,
+      });
+      expect(nanRes.success).toBe(false);
+
+      const infRes = useSavingsStore.getState().updateSukarelaConfig({
+        interestRatePct: Infinity,
+      });
+      expect(infRes.success).toBe(false);
+      expect(useSavingsStore.getState().sukarelaConfig).toEqual(prevCfg);
+    });
+
+    it("9.5. Nilai kosong, null, atau string kosong ditolak", () => {
+      useAuthStore.setState({ currentUser: demoUsers.treasurer });
+      const prevCfg = { ...useSavingsStore.getState().sukarelaConfig };
+
+      const emptyRes = useSavingsStore.getState().updateSukarelaConfig({
+        minDeposit: "",
+      } as unknown as Partial<SukarelaConfig>);
+      expect(emptyRes.success).toBe(false);
+      expect(useSavingsStore.getState().sukarelaConfig).toEqual(prevCfg);
+    });
+
+    it("9.6. Pembaruan konfigurasi yang gagal tidak tersimpan ke localStorage", () => {
+      useAuthStore.setState({ currentUser: demoUsers.treasurer });
+      const rawBefore = localStorage.getItem("kmb_savings_store_v1");
+
+      useSavingsStore.getState().updateSukarelaConfig({
+        minDeposit: -999999,
+      });
+
+      const rawAfter = localStorage.getItem("kmb_savings_store_v1");
+      expect(rawAfter).toBe(rawBefore);
+    });
+
+    it("9.7. Perubahan parameter produk tidak secara retroaktif mengubah transaksi historis atau saldo anggota", () => {
+      const prevSaldo = useSavingsStore.getState().getMemberSavingsAccount("DEMO-ID-0001")?.totalSaldo;
+      const prevTransactions = [...useSavingsStore.getState().transactions];
+
+      useAuthStore.setState({ currentUser: demoUsers.treasurer });
+      useSavingsStore.getState().updateSukarelaConfig({
+        minDeposit: 50000,
+        minWithdrawal: 100000,
+      });
+
+      const afterSaldo = useSavingsStore.getState().getMemberSavingsAccount("DEMO-ID-0001")?.totalSaldo;
+      expect(afterSaldo).toBe(prevSaldo);
+      expect(useSavingsStore.getState().transactions).toEqual(prevTransactions);
+    });
+  });
+
+  describe("10. Balance Reversal & Ledger Integrity (P1)", () => {
+    it("10.1. Reversal setoran yang dananya masih utuh berhasil mengembalikan saldo", () => {
+      useAuthStore.setState({ currentUser: demoUsers.member });
+      const submitRes = useSavingsStore.getState().submitDeposit({
+        memberDemoId: "DEMO-ID-0001",
+        savingsType: "sukarela",
+        amount: 200000,
+      });
+
+      useAuthStore.setState({ currentUser: demoUsers.staff });
+      useSavingsStore.getState().reviewTransaction(submitRes.transactionId!);
+
+      useAuthStore.setState({ currentUser: demoUsers.finance_officer });
+      useSavingsStore.getState().approveTransaction(submitRes.transactionId!);
+
+      const balanceBeforeReversal = useSavingsStore.getState().getMemberSavingsAccount("DEMO-ID-0001")!.saldoSukarela;
+
+      useAuthStore.setState({ currentUser: demoUsers.treasurer });
+      const reversalRes = useSavingsStore.getState().cancelTransaction(
+        submitRes.transactionId!,
+        "Koreksi pembalikan setoran valid"
+      );
+
+      expect(reversalRes.success).toBe(true);
+      const balanceAfterReversal = useSavingsStore.getState().getMemberSavingsAccount("DEMO-ID-0001")!.saldoSukarela;
+      expect(balanceAfterReversal).toBe(balanceBeforeReversal - 200000);
+    });
+
+    it("10.2. Reversal setoran yang dananya sudah terpakai/ditarik ditolak jika saldo tidak mencukupi", () => {
+      // Create new member account with low balance
+      const member = useMembershipStore.getState().getMemberByDemoId("DEMO-ID-0008");
+      expect(member).toBeDefined();
+
+      // Submit and approve deposit of 500.000
+      useAuthStore.setState({
+        currentUser: {
+          id: "user-member-03",
+          memberId: "DEMO-ID-0008",
+          name: member!.fullName,
+          email: member!.email,
+          role: "member",
+          roleName: "Anggota",
+        },
+      });
+      const depositRes = useSavingsStore.getState().submitDeposit({
+        memberDemoId: "DEMO-ID-0008",
+        savingsType: "sukarela",
+        amount: 500000,
+      });
+      useAuthStore.setState({ currentUser: demoUsers.staff });
+      useSavingsStore.getState().reviewTransaction(depositRes.transactionId!);
+      useAuthStore.setState({ currentUser: demoUsers.finance_officer });
+      useSavingsStore.getState().approveTransaction(depositRes.transactionId!);
+
+      // Now member withdraws most of the sukarela funds
+      useAuthStore.setState({
+        currentUser: {
+          id: "user-member-03",
+          memberId: "DEMO-ID-0008",
+          name: member!.fullName,
+          email: member!.email,
+          role: "member",
+          roleName: "Anggota",
+        },
+      });
+      const account = useSavingsStore.getState().getMemberSavingsAccount("DEMO-ID-0008")!;
+      const withdrawAmt = account.availableSukarelaWithdrawal;
+      const wdlRes = useSavingsStore.getState().submitWithdrawal({
+        memberDemoId: "DEMO-ID-0008",
+        amount: withdrawAmt,
+      });
+      useAuthStore.setState({ currentUser: demoUsers.staff });
+      useSavingsStore.getState().reviewTransaction(wdlRes.transactionId!);
+      useAuthStore.setState({ currentUser: demoUsers.treasurer });
+      useSavingsStore.getState().approveTransaction(wdlRes.transactionId!);
+
+      // Now saldoSukarela has only minBalance left (e.g. 10.000).
+      const currentSukarela = useSavingsStore.getState().getMemberSavingsAccount("DEMO-ID-0008")!.saldoSukarela;
+      expect(currentSukarela).toBeLessThan(500000);
+
+      // Attempt reversal of the 500.000 deposit -> MUST BE REJECTED (would yield negative balance)
+      useAuthStore.setState({ currentUser: demoUsers.treasurer });
+      const failedReversal = useSavingsStore.getState().cancelTransaction(
+        depositRes.transactionId!,
+        "Percobaan reversal setoran saat saldo tidak cukup"
+      );
+
+      expect(failedReversal.success).toBe(false);
+      expect(failedReversal.error).toContain("Pembalikan transaksi ditolak");
+      expect(failedReversal.error).toContain("tidak mencukupi");
+
+      // Transaction status must remain approved
+      const depositTrx = useSavingsStore.getState().getTransactionById(depositRes.transactionId!);
+      expect(depositTrx?.status).toBe("approved");
+
+      // Balance must NOT be negative and must NOT be forced to 0
+      const accountAfterFailed = useSavingsStore.getState().getMemberSavingsAccount("DEMO-ID-0008")!;
+      expect(accountAfterFailed.saldoSukarela).toBe(currentSukarela);
+      expect(accountAfterFailed.saldoSukarela).toBeGreaterThanOrEqual(0);
+    });
+
+    it("10.3. Reversal penarikan (withdrawal) mengembalikan saldo simpanan tepat satu kali", () => {
+      useAuthStore.setState({ currentUser: demoUsers.member });
+      const wdlRes = useSavingsStore.getState().submitWithdrawal({
+        memberDemoId: "DEMO-ID-0001",
+        amount: 100000,
+      });
+      useAuthStore.setState({ currentUser: demoUsers.staff });
+      useSavingsStore.getState().reviewTransaction(wdlRes.transactionId!);
+      useAuthStore.setState({ currentUser: demoUsers.treasurer });
+      useSavingsStore.getState().approveTransaction(wdlRes.transactionId!);
+
+      const balanceBeforeWdlCancel = useSavingsStore.getState().getMemberSavingsAccount("DEMO-ID-0001")!.saldoSukarela;
+
+      // Reversal of withdrawal restores funds to member
+      const cancelWdlRes = useSavingsStore.getState().cancelTransaction(
+        wdlRes.transactionId!,
+        "Koreksi penarikan dibatalkan"
+      );
+      expect(cancelWdlRes.success).toBe(true);
+
+      const balanceAfterWdlCancel = useSavingsStore.getState().getMemberSavingsAccount("DEMO-ID-0001")!.saldoSukarela;
+      expect(balanceAfterWdlCancel).toBe(balanceBeforeWdlCancel + 100000);
+
+      // Re-cancellation must fail
+      const repeatCancel = useSavingsStore.getState().cancelTransaction(
+        wdlRes.transactionId!,
+        "Percobaan pembatalan berulang"
+      );
+      expect(repeatCancel.success).toBe(false);
     });
   });
 });

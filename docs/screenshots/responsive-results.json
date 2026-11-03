@@ -29,7 +29,7 @@
         {
           "tag": "button",
           "text": "Public_visitor",
-          "width": 119,
+          "width": 116,
           "height": 24,
           "isUsable": true
         },
@@ -57,7 +57,7 @@
         {
           "tag": "button",
           "text": "Lihat Seluruh Layanan",
-          "width": 153,
+          "width": 145,
           "height": 32,
           "isUsable": true
         },
@@ -71,7 +71,7 @@
       ]
     },
     "screenshot": "public_home_320.png",
-    "fileSize": 39407,
+    "fileSize": 30956,
     "status": "PASS"
   },
   {
@@ -104,7 +104,7 @@
         {
           "tag": "button",
           "text": "Public_visitor",
-          "width": 119,
+          "width": 116,
           "height": 24,
           "isUsable": true
         },
@@ -132,7 +132,7 @@
         {
           "tag": "button",
           "text": "Lihat Seluruh Layanan",
-          "width": 153,
+          "width": 145,
           "height": 32,
           "isUsable": true
         },
@@ -146,7 +146,7 @@
       ]
     },
     "screenshot": "public_home_375.png",
-    "fileSize": 47424,
+    "fileSize": 36698,
     "status": "PASS"
   },
   {

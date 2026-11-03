@@ -79,7 +79,7 @@ Pada `MemberSavingsPortalView.tsx`:
 ### 1. Savings Product Management
 - Tiga produk simpanan resmi diinisialisasi: Simpanan Pokok (SP), Simpanan Wajib (SW), dan Simpanan Sukarela (SS).
 - SP dan SW mengacu langsung pada `savingsConfig` dari `membershipStore`, memastikan sinkronisasi menyeluruh dengan pendaftaran anggota dan pengaturan platform.
-- SS memiliki parameter fleksibel (minimal setoran Rp 10.000, minimal penarikan Rp 20.000, saldo mengendap aman Rp 50.000, jasa/bagi hasil 3.5% p.a.).
+- SS memiliki parameter ilustrasi simulasi: minimal setoran Rp 10.000, minimal penarikan Rp 20.000, saldo mengendap minimum Rp 10.000, jasa/imbal hasil simulasi 2,0% p.a. (dapat dikonfigurasi dinamis). Seluruh parameter diberi label jelas sebagai simulasi demonstrasi frontend, bukan ketentuan resmi perbankan atau ketentuan final koperasi.
 
 ### 2. Savings Transaction Management
 - Mendukung metode pembayaran simulasi: Transfer Virtual Account, Loket/Kasir Tunai, dan QRIS Demo.
@@ -216,4 +216,67 @@ Status:     100% SUCCESS
 2. **Keterikatan SHU (Sisa Hasil Usaha)**:
    - Pada modul SHU mendatang, rekapitulasi total simpanan pokok dan wajib per anggota dari `savingsStore` akan menjadi dasar formula pembagian SHU atas jasa modal (Simpanan).
 3. **Penyempurnaan Code Splitting**:
-   - Bundler mencatat bundle ukuran ~677 KB (gzip 177 KB). Untuk optimalisasi performa masa depan, pertimbangkan lazy loading (`React.lazy`) pada modul administrasi besar seperti `/admin/simpanan`.
+   - Bundler mencatat bundle ukuran ~686 KB (gzip 179 KB). Untuk optimalisasi performa masa depan, pertimbangkan lazy loading (`React.lazy`) pada modul administrasi besar seperti `/admin/simpanan`.
+
+---
+
+## 9. Laporan Remediasi Final Phase 4.1: Savings Governance & Transaction Integrity Remediation
+
+**Tanggal Remediasi:** 2026-11-03  
+**Status:** SELESAI & TERTUTUP (Final Acceptance Passed)
+
+### A. Temuan Audit Independen & Tindakan Koreksi
+Audit independen terhadap rilis awal Phase 4 mengidentifikasi 5 area tata kelola dan integritas transaksi yang memerlukan penguatan ketat:
+
+1. **Otorisasi Pembatalan Transaksi (P0)**:
+   - *Temuan*: Sebelumnya belum ada pemisahan otorisasi pembatalan antara transaksi `submitted`, `under_review`, dan `approved`, serta pemeriksaan kepemilikan transaksi (*ownership check*) pada tingkat store belum ketat.
+   - *Remediasi*:
+     - Transaksi `submitted`: Member hanya dapat membatalkan pengajuan miliknya sendiri (`authUser.memberId === trx.memberDemoId` atau `authUser.id === trx.createdById`). Staf/pengurus yang ingin membatalkan transaksi harus memiliki izin `savings:adjust`.
+     - Transaksi `under_review`: Anggota dilarang keras membatalkan transaksi yang sudah masuk proses verifikasi. Pembatalan hanya dapat dilakukan oleh role berwenang secara administratif (`savings:adjust`) dengan alasan tercatat.
+     - Transaksi `approved`: Hanya dapat dibatalkan (dibalikkan) oleh aktor dengan hak `savings:adjust` (Bendahara/Pengurus) dengan alasan tertulis wajib dan identitas aktor tercatat.
+
+2. **Kewajiban Verifikasi Sebelum Persetujuan (P1)**:
+   - *Temuan*: `approveTransaction()` dan `rejectTransaction()` sebelumnya dapat mengeksekusi transaksi yang masih berstatus `submitted` secara langsung tanpa melalui tahap `reviewTransaction()`.
+   - *Remediasi*:
+     - Menegakkan *lifecycle* wajib: `submitted → under_review → approved / rejected`.
+     - `approveTransaction()` dan `rejectTransaction()` di level store menolak pemanggilan untuk transaksi berstatus `submitted` dengan pesan error yang jelas.
+     - Penegakan SoD: Pembuat transaksi dilarang keras memverifikasi berkas transaksinya sendiri (`reviewTransaction`) maupun menyetujui transaksinya sendiri (`approveTransaction`).
+     - Di antarmuka admin ([`AdminSavingsManagementView.tsx`](file:///c:/Users/ocitt/OneDrive/Dokumen/Finance/src/features/savings/pages/AdminSavingsManagementView.tsx)), transaksi `submitted` hanya menampilkan tombol *Verifikasi Berkas*, sedangkan transaksi `under_review` menampilkan tombol *Setujui* dan *Tolak* (dengan proteksi *disabled* bagi pembuat transaksi).
+
+3. **Validasi Konfigurasi di Tingkat Store & Audit History (P1)**:
+   - *Temuan*: `updateSukarelaConfig()` belum memvalidasi input secara ketat (dapat menerima nilai negatif, pecahan, atau string) dan belum menyimpan riwayat perubahan.
+   - *Remediasi*:
+     - Ditambahkan validator ketat `validateSukarelaConfigUpdate()` yang menolak angka negatif, pecahan desimal, NaN, Infinity, string kosong, dan nilai melampaui batas rasional Rp 1.000.000.000.
+     - Jika validasi gagal, konfigurasi tidak berubah dan tidak disimpan ke `localStorage`.
+     - Ditambahkan entitas `SukarelaConfigHistoryEntry` yang mencatat aktor, waktu ISO 8601, nilai sebelum, dan nilai sesudah modifikasi parameter ke dalam state dan `localStorage`.
+
+4. **Integritas Pembalikan Saldo & Pencegahan Saldo Negatif (P1)**:
+   - *Temuan*: `adjustMemberBalances()` sebelumnya menggunakan `Math.max(0, ...)` yang menutupi kekurangan saldo jika dana simpanan yang disetor telah ditarik/digunakan oleh anggota.
+   - *Remediasi*:
+     - Dihilangkan penggunaan `Math.max(0, ...)` pada mutasi saldo di `membershipStore.ts`.
+     - Sebelum pembalikan (*reversal*) transaksi setoran `approved`, sistem menghitung saldo akhir anggota. Jika saldo akhir bernilai negatif (< 0) akibat penarikan sebelumnya, pembalikan **DITOLAK** secara mutlak dan status transaksi tetap `approved` tanpa pemotongan paksa.
+     - Pembalikan transaksi penarikan mengembalikan saldo anggota tepat satu kali.
+     - Transaksi ditandai `isReversed: true` dan pembalikan berulang ditolak.
+
+5. **Rekonsiliasi Nilai Konfigurasi & Pelunakan Klaim Hukum (P1)**:
+   - *Temuan*: Terdapat ketidaksinkronan nilai antara teks laporan lama (3,5% p.a. & Rp 50.000) dan seed data aktual (2,0% p.a. & Rp 10.000), serta penggunaan klaim pasal UU yang terlalu kaku.
+   - *Remediasi*:
+     - Seluruh dokumentasi dan antarmuka diselaraskan dengan konfigurasi aktual seed: Bunga 2,0% p.a., setoran min. Rp 10.000, penarikan min. Rp 20.000, dan saldo mengendap min. Rp 10.000.
+     - Seluruh klaim hukum diperlunak dengan frasa tata kelola standar: *"Contoh kebijakan produk dalam demonstrasi; ketentuan final mengikuti AD/ART dan keputusan Rapat Anggota setelah ditetapkan."*
+
+### B. Metrik Kualitas & Hasil Pengujian Regresi Phase 4.1
+| Quality Gate | Hasil | Status |
+|---|---|---|
+| **TypeScript Typecheck** (`tsc --noEmit`) | 0 errors | **PASS** |
+| **ESLint Analysis** (`eslint`) | 0 errors, 0 warnings | **PASS** |
+| **Vitest Test Suite** (`vitest run`) | **8 files, 120 tests passed** (100%) | **PASS** |
+| **Responsive Verification** (`scripts/verify_responsive.js`) | 16/16 skenario viewport, 0 overflow, 0 clipping | **PASS** |
+| **Production Build** (`vite build`) | Bersih tanpa error (5.07s) | **PASS** |
+
+### C. Rincian Penambahan Tes Regresi (Total 120 Tests):
+- **Seksi 7: Transaction Cancellation Authorization (8 tests)**: Uji isolasi pembatalan Member A vs B, pembatalan mandiri `submitted`, penolakan pembatalan mandiri `under_review`, penolakan staf tanpa izin `savings:adjust`, otorisasi Bendahara/Pengurus, penolakan reversal ganda, dan penanganan transaksi tidak ditemukan.
+- **Seksi 8: Mandatory Verification Before Approval (7 tests)**: Uji penolakan persetujuan/penolakan langsung pada `submitted`, keberhasilan verifikasi ke `under_review`, otorisasi bertingkat, penolakan peran tanpa izin, dan penegakan SoD pembuat dilarang memverifikasi/menyetujui.
+- **Seksi 9: Store Configuration Validation & Audit History (7 tests)**: Uji penyimpanan nilai valid, penolakan nilai negatif, penolakan pecahan Rupiah, penolakan NaN/Infinity, penolakan nilai kosong, integritas storage saat validasi gagal, dan proteksi non-retroaktif pada saldo historis.
+- **Seksi 10: Balance Reversal & Ledger Integrity (3 tests)**: Uji pembalikan setoran utuh, penolakan mutlak pembalikan setoran yang dananya telah terpakai (pencegahan saldo negatif), integritas transaksi tetap `approved` saat gagal balik, dan pembalikan penarikan satu kali.
+
+

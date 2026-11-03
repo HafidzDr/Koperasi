@@ -36,29 +36,44 @@ describe("PHASE 4 — AdminSavingsManagementView Real DOM Component & SoD Tests"
   });
 
   it("2. Pembuat transaksi ditandai dengan peringatan SoD dan tombol Setujui berstatus disabled", () => {
+    let trxStaffId: string | undefined;
+    let trxFOId: string | undefined;
+
     // Dewi Lestari (staff) creates a transaction
     act(() => {
       useAuthStore.setState({ currentUser: demoUsers.staff });
-      useSavingsStore.getState().recordStaffTransaction({
+      const res1 = useSavingsStore.getState().recordStaffTransaction({
         memberDemoId: "DEMO-ID-0001",
         savingsType: "sukarela",
         transactionType: "deposit",
         amount: 500000,
       });
+      trxStaffId = res1.transactionId;
     });
 
     // Finance Officer (Ahmad Fauzi) creates another transaction
     act(() => {
       useAuthStore.setState({ currentUser: demoUsers.finance_officer });
-      useSavingsStore.getState().recordStaffTransaction({
+      const res2 = useSavingsStore.getState().recordStaffTransaction({
         memberDemoId: "DEMO-ID-0007",
         savingsType: "wajib",
         transactionType: "deposit",
         amount: 50000,
       });
+      trxFOId = res2.transactionId;
     });
 
-    // Render as Ahmad Fauzi
+    // Dewi Lestari verifies both transactions so they enter under_review stage
+    act(() => {
+      useAuthStore.setState({ currentUser: demoUsers.staff });
+      if (trxStaffId) useSavingsStore.getState().reviewTransaction(trxStaffId);
+      if (trxFOId) useSavingsStore.getState().reviewTransaction(trxFOId);
+    });
+
+    // Render as Ahmad Fauzi (FO)
+    act(() => {
+      useAuthStore.setState({ currentUser: demoUsers.finance_officer });
+    });
     render(<AdminSavingsManagementView />);
 
     // Warning SoD must be rendered for Ahmad Fauzi's own transaction
@@ -67,6 +82,7 @@ describe("PHASE 4 — AdminSavingsManagementView Real DOM Component & SoD Tests"
     // The approve button for his own transaction must be disabled
     const approveBtns = screen.getAllByRole("button", { name: /^Setujui$/i });
     expect(approveBtns.some((btn) => (btn as HTMLButtonElement).disabled)).toBe(true);
+    expect(approveBtns.some((btn) => !(btn as HTMLButtonElement).disabled)).toBe(true);
   });
 
   it("3. Filter pencarian pada Tab 2 memfilter daftar transaksi", () => {

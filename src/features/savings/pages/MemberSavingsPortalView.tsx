@@ -243,7 +243,7 @@ export const MemberSavingsPortalView: React.FC = () => {
             </Badge>
           </div>
           <p className="text-xs text-ink-600 mt-1">
-            Pemilik Rekening: <strong className="text-ink-900">{savingsAccount.memberName}</strong> ({savingsAccount.memberDemoId}) — Transparansi Penuh Sesuai UU Perkoperasian No. 25/1992
+            Pemilik Rekening: <strong className="text-ink-900">{savingsAccount.memberName}</strong> ({savingsAccount.memberDemoId}) — Transparansi Tata Kelola Simpanan Anggota
           </p>
         </div>
 
@@ -535,10 +535,10 @@ export const MemberSavingsPortalView: React.FC = () => {
           <div className="p-4 bg-ink-50 border border-ink-200 rounded-lg text-xs text-ink-600 space-y-1.5">
             <div className="flex items-center gap-2 font-bold text-ink-800">
               <ShieldCheck className="w-4 h-4 text-forest-700" />
-              <span>Prinsip Perlindungan Simpanan Koperasi (UU 25/1992)</span>
+              <span>Prinsip Tata Kelola dan Perlindungan Simpanan Anggota</span>
             </div>
             <p className="leading-relaxed">
-              Seluruh transaksi simpanan anggota dicatat secara akuntabel dalam buku kas demonstrasi KMB. Transaksi setoran maupun penarikan yang diajukan secara daring akan melalui tahapan verifikasi bukti transaksi oleh Staf Operasional dan otorisasi oleh Pengurus/Bendahara sebelum memengaruhi saldo buku simpanan.
+              Seluruh transaksi simpanan anggota dicatat secara akuntabel dalam buku kas demonstrasi KMB. Transaksi setoran maupun penarikan yang diajukan secara daring akan melalui tahapan verifikasi bukti transaksi oleh Staf Operasional dan otorisasi oleh Pengurus/Bendahara sebelum memengaruhi saldo buku simpanan. Contoh kebijakan produk dalam demonstrasi; ketentuan final mengenai simpanan, hak suara, dan alokasi SHU mengikuti AD/ART serta keputusan Rapat Anggota setelah ditetapkan secara resmi.
             </p>
           </div>
         </div>
@@ -723,13 +723,19 @@ export const MemberSavingsPortalView: React.FC = () => {
                         >
                           Lihat Log
                         </Button>
-                        <Button
-                          variant="danger"
-                          size="sm"
-                          onClick={() => handleCancelPending(trx.id)}
-                        >
-                          Batalkan Pengajuan
-                        </Button>
+                        {trx.status === "submitted" ? (
+                          <Button
+                            variant="danger"
+                            size="sm"
+                            onClick={() => handleCancelPending(trx.id)}
+                          >
+                            Batalkan Pengajuan
+                          </Button>
+                        ) : (
+                          <span className="text-[11px] text-ink-500 italic">
+                            Sedang diverifikasi (tidak dapat dibatalkan)
+                          </span>
+                        )}
                       </div>
                     </div>
                   </div>

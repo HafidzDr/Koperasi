@@ -5,6 +5,7 @@ import {
   SavingsType,
   SavingsTransactionType,
   SukarelaConfig,
+  SukarelaConfigHistoryEntry,
   SavingsReportSummary,
   SavingsTransactionStatus,
   PaymentMethod,
@@ -25,6 +26,7 @@ const STORAGE_KEY = "kmb_savings_store_v1";
 export interface SavingsState {
   products: SavingsProduct[];
   sukarelaConfig: SukarelaConfig;
+  configHistory: SukarelaConfigHistoryEntry[];
   transactions: SavingsTransaction[];
 
   // --- ACTIONS (Transaction Lifecycle & SoD) ---
@@ -98,6 +100,119 @@ export interface SavingsState {
   resetToSeed: () => void;
 }
 
+export function validateSukarelaConfigUpdate(
+  current: SukarelaConfig,
+  updates: unknown
+): { isValid: boolean; error?: string; validatedConfig?: SukarelaConfig } {
+  if (typeof updates !== "object" || updates === null) {
+    return { isValid: false, error: "Data pembaruan konfigurasi tidak valid." };
+  }
+
+  const u = updates as Record<string, unknown>;
+  const result: SukarelaConfig = { ...current };
+
+  // 1. Validate minDeposit if present
+  if ("minDeposit" in u) {
+    const raw = u.minDeposit;
+    if (raw === null || raw === undefined || raw === "" || typeof raw === "boolean") {
+      return { isValid: false, error: "Setoran minimum wajib diisi dan berupa angka bulat." };
+    }
+    const num = Number(raw);
+    if (!Number.isFinite(num) || isNaN(num)) {
+      return { isValid: false, error: "Setoran minimum harus berupa angka valid (bukan NaN atau Infinity)." };
+    }
+    if (!Number.isInteger(num)) {
+      return { isValid: false, error: "Setoran minimum harus berupa bilangan bulat Rupiah (tidak boleh pecahan/desimal)." };
+    }
+    if (num <= 0) {
+      return { isValid: false, error: "Setoran minimum harus berupa nominal positif lebih dari 0." };
+    }
+    if (num > 1_000_000_000) {
+      return { isValid: false, error: "Setoran minimum tidak boleh melebihi batas rasional Rp 1.000.000.000." };
+    }
+    result.minDeposit = num;
+  }
+
+  // 2. Validate minWithdrawal if present
+  if ("minWithdrawal" in u) {
+    const raw = u.minWithdrawal;
+    if (raw === null || raw === undefined || raw === "" || typeof raw === "boolean") {
+      return { isValid: false, error: "Penarikan minimum wajib diisi dan berupa angka bulat." };
+    }
+    const num = Number(raw);
+    if (!Number.isFinite(num) || isNaN(num)) {
+      return { isValid: false, error: "Penarikan minimum harus berupa angka valid (bukan NaN atau Infinity)." };
+    }
+    if (!Number.isInteger(num)) {
+      return { isValid: false, error: "Penarikan minimum harus berupa bilangan bulat Rupiah (tidak boleh pecahan/desimal)." };
+    }
+    if (num <= 0) {
+      return { isValid: false, error: "Penarikan minimum harus berupa nominal positif lebih dari 0." };
+    }
+    if (num > 1_000_000_000) {
+      return { isValid: false, error: "Penarikan minimum tidak boleh melebihi batas rasional Rp 1.000.000.000." };
+    }
+    result.minWithdrawal = num;
+  }
+
+  // 3. Validate minBalance if present
+  if ("minBalance" in u) {
+    const raw = u.minBalance;
+    if (raw === null || raw === undefined || raw === "" || typeof raw === "boolean") {
+      return { isValid: false, error: "Saldo mengendap minimum wajib diisi dan berupa angka bulat." };
+    }
+    const num = Number(raw);
+    if (!Number.isFinite(num) || isNaN(num)) {
+      return { isValid: false, error: "Saldo mengendap minimum harus berupa angka valid (bukan NaN atau Infinity)." };
+    }
+    if (!Number.isInteger(num)) {
+      return { isValid: false, error: "Saldo mengendap minimum harus berupa bilangan bulat Rupiah (tidak boleh pecahan/desimal)." };
+    }
+    if (num < 0) {
+      return { isValid: false, error: "Saldo mengendap minimum tidak boleh bernilai negatif." };
+    }
+    if (num > 1_000_000_000) {
+      return { isValid: false, error: "Saldo mengendap minimum tidak boleh melebihi batas rasional Rp 1.000.000.000." };
+    }
+    result.minBalance = num;
+  }
+
+  // 4. Validate interestRatePct if present
+  if ("interestRatePct" in u) {
+    const raw = u.interestRatePct;
+    if (raw === null || raw === undefined || raw === "" || typeof raw === "boolean") {
+      return { isValid: false, error: "Suku bunga simpanan sukarela wajib diisi." };
+    }
+    const num = Number(raw);
+    if (!Number.isFinite(num) || isNaN(num)) {
+      return { isValid: false, error: "Suku bunga simpanan sukarela harus berupa angka valid (bukan NaN atau Infinity)." };
+    }
+    if (num < 0) {
+      return { isValid: false, error: "Suku bunga simpanan sukarela tidak boleh bernilai negatif." };
+    }
+    if (num > 100) {
+      return { isValid: false, error: "Suku bunga simpanan sukarela tidak boleh melebihi 100% p.a." };
+    }
+    result.interestRatePct = num;
+  }
+
+  // 5. Status / Labels
+  if ("status" in u && (u.status === "active" || u.status === "inactive")) {
+    result.status = u.status;
+  }
+  if ("label" in u && typeof u.label === "string" && u.label.trim()) {
+    result.label = u.label.trim();
+  }
+  if ("badgeLabel" in u && typeof u.badgeLabel === "string" && u.badgeLabel.trim()) {
+    result.badgeLabel = u.badgeLabel.trim();
+  }
+  if ("disclaimer" in u && typeof u.disclaimer === "string" && u.disclaimer.trim()) {
+    result.disclaimer = u.disclaimer.trim();
+  }
+
+  return { isValid: true, validatedConfig: result };
+}
+
 export function validateSukarelaConfig(raw: unknown): SukarelaConfig {
   if (
     typeof raw === "object" &&
@@ -113,14 +228,15 @@ export function validateSukarelaConfig(raw: unknown): SukarelaConfig {
     const interest = Number(c.interestRatePct);
 
     if (
-      !isNaN(minDep) &&
-      minDep >= 0 &&
-      !isNaN(minWdl) &&
-      minWdl >= 0 &&
-      !isNaN(minBal) &&
+      Number.isInteger(minDep) &&
+      minDep > 0 &&
+      Number.isInteger(minWdl) &&
+      minWdl > 0 &&
+      Number.isInteger(minBal) &&
       minBal >= 0 &&
-      !isNaN(interest) &&
-      interest >= 0
+      Number.isFinite(interest) &&
+      interest >= 0 &&
+      interest <= 100
     ) {
       return {
         minDeposit: minDep,
@@ -142,12 +258,14 @@ export function validateSukarelaConfig(raw: unknown): SukarelaConfig {
 function getInitialState(): {
   products: SavingsProduct[];
   sukarelaConfig: SukarelaConfig;
+  configHistory: SukarelaConfigHistoryEntry[];
   transactions: SavingsTransaction[];
 } {
   if (typeof window === "undefined") {
     return {
       products: defaultSavingsProducts,
       sukarelaConfig: DEFAULT_SUKARELA_CONFIG,
+      configHistory: [],
       transactions: initialSavingsTransactions,
     };
   }
@@ -156,6 +274,7 @@ function getInitialState(): {
     if (saved) {
       const parsed = JSON.parse(saved);
       const sukarelaConfig = validateSukarelaConfig(parsed.sukarelaConfig);
+      const configHistory = Array.isArray(parsed.configHistory) ? parsed.configHistory : [];
       const transactions = Array.isArray(parsed.transactions)
         ? parsed.transactions
         : initialSavingsTransactions;
@@ -163,7 +282,7 @@ function getInitialState(): {
         ? parsed.products
         : defaultSavingsProducts;
 
-      return { products, sukarelaConfig, transactions };
+      return { products, sukarelaConfig, configHistory, transactions };
     }
   } catch {
     // fallback safe
@@ -171,6 +290,7 @@ function getInitialState(): {
   return {
     products: defaultSavingsProducts,
     sukarelaConfig: DEFAULT_SUKARELA_CONFIG,
+    configHistory: [],
     transactions: initialSavingsTransactions,
   };
 }
@@ -178,13 +298,14 @@ function getInitialState(): {
 function saveToStorage(
   products: SavingsProduct[],
   sukarelaConfig: SukarelaConfig,
-  transactions: SavingsTransaction[]
+  transactions: SavingsTransaction[],
+  configHistory: SukarelaConfigHistoryEntry[] = []
 ) {
   if (typeof window === "undefined") return;
   try {
     localStorage.setItem(
       STORAGE_KEY,
-      JSON.stringify({ products, sukarelaConfig, transactions })
+      JSON.stringify({ products, sukarelaConfig, transactions, configHistory })
     );
   } catch {
     // ignore
@@ -215,6 +336,7 @@ export const useSavingsStore = create<SavingsState>((set, get) => {
   return {
     products: initial.products,
     sukarelaConfig: initial.sukarelaConfig,
+    configHistory: initial.configHistory,
     transactions: initial.transactions,
 
     // ------------------------------------------------------------------------
@@ -296,7 +418,7 @@ export const useSavingsStore = create<SavingsState>((set, get) => {
 
       const updated = [newTrx, ...get().transactions];
       set({ transactions: updated });
-      saveToStorage(get().products, get().sukarelaConfig, updated);
+      saveToStorage(get().products, get().sukarelaConfig, updated, get().configHistory);
 
       return { success: true, transactionId };
     },
@@ -390,7 +512,7 @@ export const useSavingsStore = create<SavingsState>((set, get) => {
 
       const updated = [newTrx, ...get().transactions];
       set({ transactions: updated });
-      saveToStorage(get().products, get().sukarelaConfig, updated);
+      saveToStorage(get().products, get().sukarelaConfig, updated, get().configHistory);
 
       return { success: true, transactionId };
     },
@@ -453,7 +575,7 @@ export const useSavingsStore = create<SavingsState>((set, get) => {
         actorRole: authUser.role,
         actorName: authUser.name,
         fromStatus: "new" as const,
-        toStatus: "under_review" as const,
+        toStatus: "submitted" as const,
         action: `Pencatatan Operasional ${payload.transactionType === "deposit" ? "Setoran" : "Penarikan"} ${payload.savingsType.toUpperCase()}`,
         notes: payload.notes || "Pencatatan transaksi loket/teller oleh staf operasional.",
       };
@@ -467,23 +589,19 @@ export const useSavingsStore = create<SavingsState>((set, get) => {
         transactionType: payload.transactionType,
         amount: amt,
         date: timestamp,
-        status: "under_review",
+        status: "submitted",
         paymentMethod: payload.paymentMethod || "Kasir Tunai (Simulasi)",
         referenceNumber: payload.referenceNumber || `KSR-${Date.now()}`,
         notes: payload.notes,
         createdById: authUser.id,
         createdByRole: authUser.role,
         createdByName: authUser.name,
-        reviewedById: authUser.id,
-        reviewedByRole: authUser.role,
-        reviewedByName: authUser.name,
-        reviewedAt: timestamp,
         history: [logEntry],
       };
 
       const updated = [newTrx, ...get().transactions];
       set({ transactions: updated });
-      saveToStorage(get().products, get().sukarelaConfig, updated);
+      saveToStorage(get().products, get().sukarelaConfig, updated, get().configHistory);
 
       return { success: true, transactionId };
     },
@@ -509,7 +627,15 @@ export const useSavingsStore = create<SavingsState>((set, get) => {
       if (trx.status !== "submitted") {
         return {
           success: false,
-          error: `Transaksi berstatus "${trx.status}" tidak dapat diverifikasi ulang.`,
+          error: `Transaksi berstatus "${trx.status}" tidak dapat diverifikasi ulang. Hanya transaksi berstatus 'submitted' yang dapat diverifikasi.`,
+        };
+      }
+
+      // SoD on verification: Creator cannot verify their own transaction
+      if (trx.createdById === authUser.id) {
+        return {
+          success: false,
+          error: `Prinsip Pemisahan Tugas (SoD): Anda tercatat sebagai pembuat transaksi ini (${trx.createdByName}) dan tidak berwenang memverifikasinya sendiri.`,
         };
       }
 
@@ -537,7 +663,7 @@ export const useSavingsStore = create<SavingsState>((set, get) => {
 
       const updated = get().transactions.map((t) => (t.id === transactionId ? updatedTrx : t));
       set({ transactions: updated });
-      saveToStorage(get().products, get().sukarelaConfig, updated);
+      saveToStorage(get().products, get().sukarelaConfig, updated, get().configHistory);
 
       return { success: true };
     },
@@ -561,8 +687,15 @@ export const useSavingsStore = create<SavingsState>((set, get) => {
         return { success: false, error: "Transaksi simpanan tidak ditemukan." };
       }
 
-      // Check status: only submitted or under_review can be approved
-      if (trx.status !== "submitted" && trx.status !== "under_review") {
+      // MANDATORY VERIFICATION: submitted transactions MUST be verified first
+      if (trx.status === "submitted") {
+        return {
+          success: false,
+          error: "Persetujuan ditolak: Transaksi berstatus 'submitted' wajib diverifikasi terlebih dahulu oleh petugas pemeriksa (status harus under_review) sebelum dapat disetujui.",
+        };
+      }
+
+      if (trx.status !== "under_review") {
         return {
           success: false,
           error: `Transaksi berstatus "${trx.status}" tidak dapat disetujui.`,
@@ -597,6 +730,23 @@ export const useSavingsStore = create<SavingsState>((set, get) => {
         }
       }
 
+      // MUTATE BALANCE AT APPROVAL TIME (Atomically synchronized)
+      const isDeposit = trx.transactionType === "deposit";
+      const deltaAmount = isDeposit ? trx.amount : -trx.amount;
+      const delta = trx.savingsType === "pokok"
+        ? { pokok: deltaAmount }
+        : trx.savingsType === "wajib"
+        ? { wajib: deltaAmount }
+        : { sukarela: deltaAmount };
+
+      const adjustRes = useMembershipStore.getState().adjustMemberBalances(trx.memberDemoId, delta);
+      if (!adjustRes.success) {
+        return {
+          success: false,
+          error: adjustRes.error || "Gagal memutasi saldo simpanan anggota.",
+        };
+      }
+
       const timestamp = new Date().toISOString();
       const logEntry = {
         id: `LOG-${Date.now()}`,
@@ -619,21 +769,9 @@ export const useSavingsStore = create<SavingsState>((set, get) => {
         history: [...trx.history, logEntry],
       };
 
-      // MUTATE BALANCE AT APPROVAL TIME (Single authoritative sync)
-      const isDeposit = trx.transactionType === "deposit";
-      const deltaAmount = isDeposit ? trx.amount : -trx.amount;
-
-      if (trx.savingsType === "pokok") {
-        useMembershipStore.getState().adjustMemberBalances(trx.memberDemoId, { pokok: deltaAmount });
-      } else if (trx.savingsType === "wajib") {
-        useMembershipStore.getState().adjustMemberBalances(trx.memberDemoId, { wajib: deltaAmount });
-      } else if (trx.savingsType === "sukarela") {
-        useMembershipStore.getState().adjustMemberBalances(trx.memberDemoId, { sukarela: deltaAmount });
-      }
-
       const updated = get().transactions.map((t) => (t.id === transactionId ? updatedTrx : t));
       set({ transactions: updated });
-      saveToStorage(get().products, get().sukarelaConfig, updated);
+      saveToStorage(get().products, get().sukarelaConfig, updated, get().configHistory);
 
       return { success: true };
     },
@@ -664,10 +802,26 @@ export const useSavingsStore = create<SavingsState>((set, get) => {
         return { success: false, error: "Transaksi simpanan tidak ditemukan." };
       }
 
-      if (trx.status !== "submitted" && trx.status !== "under_review") {
+      // MANDATORY VERIFICATION: submitted transactions MUST be verified first before rejection
+      if (trx.status === "submitted") {
+        return {
+          success: false,
+          error: "Penolakan ditolak: Transaksi berstatus 'submitted' wajib melalui pemeriksaan berkas terlebih dahulu (status harus under_review) sebelum dapat diputuskan.",
+        };
+      }
+
+      if (trx.status !== "under_review") {
         return {
           success: false,
           error: `Transaksi berstatus "${trx.status}" tidak dapat ditolak.`,
+        };
+      }
+
+      // SoD on rejection
+      if (trx.createdById === authUser.id) {
+        return {
+          success: false,
+          error: `Prinsip Pemisahan Tugas (SoD): Anda tercatat sebagai pembuat transaksi ini (${trx.createdByName}) dan dilarang memutuskan penolakannya sendiri.`,
         };
       }
 
@@ -693,7 +847,7 @@ export const useSavingsStore = create<SavingsState>((set, get) => {
       // DOES NOT MUTATE BALANCE
       const updated = get().transactions.map((t) => (t.id === transactionId ? updatedTrx : t));
       set({ transactions: updated });
-      saveToStorage(get().products, get().sukarelaConfig, updated);
+      saveToStorage(get().products, get().sukarelaConfig, updated, get().configHistory);
 
       return { success: true };
     },
@@ -723,8 +877,44 @@ export const useSavingsStore = create<SavingsState>((set, get) => {
         };
       }
 
-      // If already approved, reversal requires savings:adjust authority (Treasurer / Manager)
-      if (trx.status === "approved") {
+      // CASE A: SUBMITTED TRANSACTIONS
+      if (trx.status === "submitted") {
+        if (authUser.role === "member") {
+          const isOwner = (authUser.memberId && authUser.memberId.toLowerCase() === trx.memberDemoId.toLowerCase()) || authUser.id === trx.createdById;
+          if (!isOwner) {
+            return {
+              success: false,
+              error: "Otorisasi Ditolak: Anda tidak memiliki hak membatalkan transaksi pengajuan anggota lain.",
+            };
+          }
+        } else {
+          if (!canPerformAction(authUser.role, "savings", "adjust")) {
+            return {
+              success: false,
+              error: `Peran "${authUser.roleName}" tidak memiliki izin pembatalan administratif simpanan (savings:adjust).`,
+            };
+          }
+        }
+      }
+
+      // CASE B: UNDER_REVIEW TRANSACTIONS
+      else if (trx.status === "under_review") {
+        if (authUser.role === "member") {
+          return {
+            success: false,
+            error: "Pengajuan simpanan yang sudah masuk tahap verifikasi (under_review) tidak dapat dibatalkan mandiri oleh anggota. Silakan hubungi staf/pengurus koperasi.",
+          };
+        }
+        if (!canPerformAction(authUser.role, "savings", "adjust")) {
+          return {
+            success: false,
+            error: `Peran "${authUser.roleName}" tidak memiliki izin pembatalan administratif simpanan (savings:adjust).`,
+          };
+        }
+      }
+
+      // CASE C: APPROVED TRANSACTIONS (REVERSAL WITH LEDGER INTEGRITY)
+      else if (trx.status === "approved") {
         if (!canPerformAction(authUser.role, "savings", "adjust")) {
           return {
             success: false,
@@ -732,16 +922,51 @@ export const useSavingsStore = create<SavingsState>((set, get) => {
           };
         }
 
+        if (trx.isReversed) {
+          return {
+            success: false,
+            error: "Pembalikan gagal: Transaksi ini sudah pernah dibalikkan sebelumnya.",
+          };
+        }
+
         // Reversal of previously applied balance
         const isDeposit = trx.transactionType === "deposit";
         const reverseDelta = isDeposit ? -trx.amount : trx.amount;
 
-        if (trx.savingsType === "pokok") {
-          useMembershipStore.getState().adjustMemberBalances(trx.memberDemoId, { pokok: reverseDelta });
-        } else if (trx.savingsType === "wajib") {
-          useMembershipStore.getState().adjustMemberBalances(trx.memberDemoId, { wajib: reverseDelta });
-        } else if (trx.savingsType === "sukarela") {
-          useMembershipStore.getState().adjustMemberBalances(trx.memberDemoId, { sukarela: reverseDelta });
+        const member = useMembershipStore.getState().getMemberByDemoId(trx.memberDemoId);
+        if (!member) {
+          return {
+            success: false,
+            error: "Anggota pemilik rekening tidak ditemukan dalam direktori.",
+          };
+        }
+
+        const currentSaldo = trx.savingsType === "pokok"
+          ? (member.saldoPokok || 0)
+          : trx.savingsType === "wajib"
+          ? (member.saldoWajib || 0)
+          : (member.saldoSukarela || 0);
+
+        // Pre-check: balance must NOT be negative after reversal
+        if (currentSaldo + reverseDelta < 0) {
+          return {
+            success: false,
+            error: `Pembalikan transaksi ditolak: Saldo simpanan ${trx.savingsType} anggota saat ini (Rp ${currentSaldo.toLocaleString("id-ID")}) tidak mencukupi untuk pembalikan penuh sebesar Rp ${trx.amount.toLocaleString("id-ID")} karena dana simpanan telah berkurang/digunakan. Diperlukan penyelesaian/rekonsiliasi saldo terlebih dahulu.`,
+          };
+        }
+
+        const delta = trx.savingsType === "pokok"
+          ? { pokok: reverseDelta }
+          : trx.savingsType === "wajib"
+          ? { wajib: reverseDelta }
+          : { sukarela: reverseDelta };
+
+        const adjustRes = useMembershipStore.getState().adjustMemberBalances(trx.memberDemoId, delta);
+        if (!adjustRes.success) {
+          return {
+            success: false,
+            error: adjustRes.error || "Pembalikan saldo simpanan gagal diproses.",
+          };
         }
       }
 
@@ -753,20 +978,25 @@ export const useSavingsStore = create<SavingsState>((set, get) => {
         actorName: authUser.name,
         fromStatus: trx.status,
         toStatus: "cancelled" as const,
-        action: "Pembatalan / Koreksi Transaksi Demonstrasi",
+        action: trx.status === "approved" ? "Pembalikan Transaksi (Reversal Approved)" : "Pembatalan Transaksi",
         notes: trimmedReason,
       };
 
       const updatedTrx: SavingsTransaction = {
         ...trx,
         status: "cancelled",
+        isReversed: trx.status === "approved" ? true : undefined,
+        cancelledById: authUser.id,
+        cancelledByRole: authUser.role,
+        cancelledByName: authUser.name,
+        cancelledAt: timestamp,
         cancellationReason: trimmedReason,
         history: [...trx.history, logEntry],
       };
 
       const updated = get().transactions.map((t) => (t.id === transactionId ? updatedTrx : t));
       set({ transactions: updated });
-      saveToStorage(get().products, get().sukarelaConfig, updated);
+      saveToStorage(get().products, get().sukarelaConfig, updated, get().configHistory);
 
       return { success: true };
     },
@@ -783,13 +1013,33 @@ export const useSavingsStore = create<SavingsState>((set, get) => {
         };
       }
 
-      const updatedConfig: SukarelaConfig = {
-        ...get().sukarelaConfig,
-        ...newCfg,
+      // Strictly validate updates at store level
+      const validation = validateSukarelaConfigUpdate(get().sukarelaConfig, newCfg);
+      if (!validation.isValid || !validation.validatedConfig) {
+        return {
+          success: false,
+          error: validation.error || "Konfigurasi tidak valid.",
+        };
+      }
+
+      const historyEntry: SukarelaConfigHistoryEntry = {
+        id: `CFG-HIST-${Date.now()}`,
+        timestamp: new Date().toISOString(),
+        actorId: authUser.id,
+        actorRole: authUser.role,
+        actorName: authUser.name,
+        previousConfig: { ...get().sukarelaConfig },
+        newConfig: { ...validation.validatedConfig },
       };
 
-      set({ sukarelaConfig: updatedConfig });
-      saveToStorage(get().products, updatedConfig, get().transactions);
+      const updatedConfig = validation.validatedConfig;
+      const updatedHistory = [historyEntry, ...get().configHistory];
+
+      set({
+        sukarelaConfig: updatedConfig,
+        configHistory: updatedHistory,
+      });
+      saveToStorage(get().products, updatedConfig, get().transactions, updatedHistory);
 
       return { success: true };
     },
@@ -922,12 +1172,14 @@ export const useSavingsStore = create<SavingsState>((set, get) => {
       set({
         products: defaultSavingsProducts,
         sukarelaConfig: DEFAULT_SUKARELA_CONFIG,
+        configHistory: [],
         transactions: initialSavingsTransactions,
       });
       saveToStorage(
         defaultSavingsProducts,
         DEFAULT_SUKARELA_CONFIG,
-        initialSavingsTransactions
+        initialSavingsTransactions,
+        []
       );
     },
   };

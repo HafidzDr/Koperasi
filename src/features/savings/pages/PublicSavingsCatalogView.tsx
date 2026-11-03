@@ -37,7 +37,7 @@ export const PublicSavingsCatalogView: React.FC = () => {
           Pemupukan Modal Bersama yang Aman, Berkeadilan, dan Berkah
         </h1>
         <p className="text-sm text-ink-600 leading-relaxed">
-          Sesuai jati diri koperasi Indonesia (UU No. 25/1992), simpanan anggota merupakan pilar utama kemandirian finansial bersama. Setiap rupiah simpanan dikelola secara transparan dan berorientasi pada kesejahteraan anggota.
+          Sebagai wujud tata kelola koperasi yang transparan dan akuntabel, simpanan anggota merupakan pilar utama kemandirian finansial bersama. Seluruh simulasi produk berikut merupakan contoh ilustrasi dalam demonstrasi; ketentuan final mengikuti AD/ART dan keputusan Rapat Anggota setelah ditetapkan.
         </p>
       </div>
 
@@ -246,6 +246,9 @@ export const PublicSavingsCatalogView: React.FC = () => {
                 </TableRow>
               </TableBody>
             </Table>
+          </div>
+          <div className="p-3 bg-ink-50 border-t border-ink-100 text-[11px] text-ink-600">
+            * <strong>Catatan Kebijakan:</strong> Karakteristik dan hak anggota dalam tabel di atas merupakan contoh ilustrasi produk dalam demonstrasi; ketentuan final mengenai simpanan, hak suara, alokasi SHU, dan pengembalian simpanan saat keluar keanggotaan mengikuti AD/ART dan ketetapan resmi Rapat Anggota setelah disahkan.
           </div>
         </CardContent>
       </Card>

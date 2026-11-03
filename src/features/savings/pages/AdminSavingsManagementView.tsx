@@ -47,6 +47,7 @@ export const AdminSavingsManagementView: React.FC = () => {
   const { members, savingsConfig } = useMembershipStore();
   const {
     sukarelaConfig,
+    configHistory,
     transactions,
     getPendingTransactions,
     getSavingsReportSummary,
@@ -543,7 +544,7 @@ export const AdminSavingsManagementView: React.FC = () => {
                         {isCreator && (
                           <div className="text-[11px] text-warning-800 font-semibold flex items-center gap-1 mt-1">
                             <Lock className="w-3.5 h-3.5" />
-                            <span>Peringatan SoD: Anda tercatat sebagai pembuat transaksi ini (Tidak berwenang menyetujui sendiri).</span>
+                            <span>Peringatan SoD: Anda tercatat sebagai pembuat transaksi ini (Tidak berwenang memverifikasi atau menyetujui sendiri).</span>
                           </div>
                         )}
                       </div>
@@ -565,36 +566,46 @@ export const AdminSavingsManagementView: React.FC = () => {
                             Detail
                           </Button>
 
-                          {/* Staff Verification Button */}
-                          {canVerify && trx.status === "submitted" && (
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => handleReview(trx.id)}
-                            >
-                              Verifikasi Berkas
-                            </Button>
-                          )}
-
-                          {/* Approval / Rejection Buttons (Finance Officer / Treasurer / Manager) */}
-                          {canApprove && (
-                            <>
+                          {/* 1. Transaksi SUBMITTED: Hanya tombol Verifikasi yang aktif bagi pemeriksa berkas */}
+                          {trx.status === "submitted" && (
+                            canVerify ? (
                               <Button
-                                variant="danger"
-                                size="sm"
-                                onClick={() => handleOpenRejectModal(trx)}
-                              >
-                                Tolak
-                              </Button>
-                              <Button
-                                variant="primary"
+                                variant="outline"
                                 size="sm"
                                 disabled={isCreator}
-                                onClick={() => handleApprove(trx.id)}
+                                onClick={() => handleReview(trx.id)}
                               >
-                                Setujui
+                                Verifikasi Berkas
                               </Button>
-                            </>
+                            ) : (
+                              <span className="text-[11px] text-ink-500 italic">Menunggu Verifikasi</span>
+                            )
+                          )}
+
+                          {/* 2. Transaksi UNDER_REVIEW: Hanya tombol Setujui dan Tolak yang aktif bagi pejabat otorisasi */}
+                          {trx.status === "under_review" && (
+                            canApprove ? (
+                              <>
+                                <Button
+                                  variant="danger"
+                                  size="sm"
+                                  disabled={isCreator}
+                                  onClick={() => handleOpenRejectModal(trx)}
+                                >
+                                  Tolak
+                                </Button>
+                                <Button
+                                  variant="primary"
+                                  size="sm"
+                                  disabled={isCreator}
+                                  onClick={() => handleApprove(trx.id)}
+                                >
+                                  Setujui
+                                </Button>
+                              </>
+                            ) : (
+                              <span className="text-[11px] text-ink-500 italic">Menunggu Otorisasi</span>
+                            )
                           )}
                         </div>
                       </div>
@@ -1188,6 +1199,53 @@ export const AdminSavingsManagementView: React.FC = () => {
               </form>
             </CardContent>
           </Card>
+
+          {/* Riwayat Perubahan Parameter Konfigurasi */}
+          {configHistory && configHistory.length > 0 && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base">Riwayat Perubahan Parameter Produk (Audit Trail)</CardTitle>
+                <CardDescription>
+                  Catatan historis modifikasi parameter simpanan sukarela oleh pejabat berwenang.
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="p-0">
+                <div className="overflow-x-auto">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Waktu</TableHead>
+                        <TableHead>Aktor / Peran</TableHead>
+                        <TableHead>Setoran Min. (Sebelum → Sesudah)</TableHead>
+                        <TableHead>Tarik Min. (Sebelum → Sesudah)</TableHead>
+                        <TableHead>Bunga (% p.a.)</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {configHistory.map((hist) => (
+                        <TableRow key={hist.id}>
+                          <TableCell className="font-mono text-xs text-ink-600">{formatDate(hist.timestamp)}</TableCell>
+                          <TableCell className="text-xs">
+                            <strong className="text-ink-900">{hist.actorName}</strong>
+                            <span className="block text-[10px] text-ink-500">{hist.actorRole}</span>
+                          </TableCell>
+                          <TableCell className="text-xs font-mono">
+                            {formatIDR(hist.previousConfig.minDeposit || 0)} → {formatIDR(hist.newConfig.minDeposit || 0)}
+                          </TableCell>
+                          <TableCell className="text-xs font-mono">
+                            {formatIDR(hist.previousConfig.minWithdrawal || 0)} → {formatIDR(hist.newConfig.minWithdrawal || 0)}
+                          </TableCell>
+                          <TableCell className="text-xs font-mono">
+                            {hist.previousConfig.interestRatePct}% → {hist.newConfig.interestRatePct}%
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              </CardContent>
+            </Card>
+          )}
         </div>
       )}
 
