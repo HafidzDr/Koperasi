@@ -85,7 +85,7 @@ Mengacu pada `DEMO_SIMULATION_SPEC.md` Seksi 3.2:
 |---|---|:---:|---|
 | **QG-1** | Typecheck (`tsc --noEmit`) | **PASS** | 0 TypeScript errors |
 | **QG-2** | Linter (`eslint --max-warnings 0`) | **PASS** | 0 warnings, 0 errors |
-| **QG-3** | Unit, Store, & DOM Tests (`vitest run`) | **PASS** | **206 tests passed** (13 test files, 0 failure) |
+| **QG-3** | Unit, Store, & DOM Tests (`vitest run`) | **PASS** | **213 tests passed** (13 test files, 0 failure) |
 | **QG-4** | Production Build (`vite build`) | **PASS** | `dist/` bundle created cleanly |
 | **QG-5** | Responsive & Overflow (`verify_responsive.js`) | **PASS** | **16 skenario viewport PASS** (0 overflow, 0 clipping) |
 | **QG-6** | Separation of Duties (SoD) & RBAC Threshold | **PASS** | Terverifikasi pada level store & UI |
@@ -156,3 +156,24 @@ Berdasarkan audit independen terhadap Phase 5, perbaikan terintegrasi telah dite
    - Nominal denda baru tidak boleh bernilai negatif dan tidak boleh lebih rendah dari nominal denda yang telah dibayar anggota.
 8. **Pengujian Regresi Menyeluruh (H)**:
    - 17 skenario regresi audit telah diimplementasikan dan diverifikasi 100% lulus pada `loanLifecycle.test.ts`, `loanDisbursementAndInstallments.test.ts`, dan `loanRbacAndPrivacy.test.ts`. Total test suite bertambah menjadi 206 tests lulus (100%).
+
+---
+
+## 6. CATATAN REMEDIASI PHASE 5.2 (FINAL APPROVAL WORKFLOW AUTHORITY FIX)
+
+Audit independen lanjutan menetapkan pengetatan batas kewenangan transisi status pengajuan:
+1. **Pengetatan `reviewApplication()`**:
+   - Eksklusif untuk peran `staff`. Peran Finance Officer, Manager, Treasurer, Auditor, Admin, Super Admin, dan Member ditolak secara ketat.
+   - Wajib memiliki izin `loans:review`.
+   - Hanya status `submitted` yang dapat diverifikasi; penolakan tidak memutasi state maupun localStorage.
+2. **Pengetatan `recommendApplication()`**:
+   - Eksklusif untuk peran `finance_officer`. Peran Staff, Manager, Treasurer, Auditor, Admin, Super Admin, dan Member ditolak secara ketat.
+   - Wajib memiliki izin `loans:review`.
+   - Hanya status `under_review` yang dapat direkomendasikan; penolakan tidak memutasi state maupun localStorage.
+3. **Penyelarasan UI Modal Antrean Pinjaman**:
+   - Tombol verifikasi hanya dirender untuk Staf pada pengajuan `submitted`.
+   - Tombol rekomendasi hanya dirender untuk Finance Officer pada pengajuan `under_review`.
+   - Tombol persetujuan hanya aktif untuk FO (status `under_review`, nominal $\le$ 10M) dan Manajer (status `recommended`).
+4. **Verifikasi Quality Gates**:
+   - Total test suite bertambah menjadi **213 tests passed** (100% lulus).
+   - Seluruh quality gates (Typecheck, Lint, Test, Build, Responsive 16 viewports) berstatus PASS.

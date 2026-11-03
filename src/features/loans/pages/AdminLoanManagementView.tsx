@@ -1499,7 +1499,7 @@ export const AdminLoanManagementView: React.FC = () => {
               </Button>
 
               {/* Action Staf: Verifikasi */}
-              {selectedApp.status === "submitted" && canReview && (
+              {selectedApp.status === "submitted" && currentUser?.role === "staff" && canReview && (
                 <Button
                   variant="primary"
                   size="sm"
@@ -1512,7 +1512,7 @@ export const AdminLoanManagementView: React.FC = () => {
 
               {/* Action FO: Rekomendasikan ke Pengurus */}
               {selectedApp.status === "under_review" &&
-                selectedApp.amount > systemConfig.approvalThresholdFoMax &&
+                currentUser?.role === "finance_officer" &&
                 canReview && (
                   <Button
                     variant="primary"
@@ -1520,14 +1520,13 @@ export const AdminLoanManagementView: React.FC = () => {
                     onClick={() => handleRecommend(selectedApp.id)}
                   >
                     <Send className="w-4 h-4 mr-1.5" />
-                    Rekomendasikan ke Pengurus (&gt;10M)
+                    Rekomendasikan ke Pengurus
                   </Button>
                 )}
 
-              {/* Action Approval: FO (<=10M) atau Manajer (Semua nominal) */}
-              {(selectedApp.status === "under_review" ||
-                selectedApp.status === "recommended" ||
-                selectedApp.status === "submitted") &&
+              {/* Action Approval: FO (<=10M pada under_review) atau Manajer (pada recommended) */}
+              {((selectedApp.status === "under_review" && currentUser?.role === "finance_officer") ||
+                (selectedApp.status === "recommended" && currentUser?.role === "manager")) &&
                 canApprove && (
                   <Button
                     variant="primary"

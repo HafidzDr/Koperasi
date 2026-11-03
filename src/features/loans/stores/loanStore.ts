@@ -382,8 +382,12 @@ export const useLoanStore = create<LoanState>((set, get) => {
         return { success: false, error: "Sesi pengguna tidak valid." };
       }
 
-      if (!hasPermission(currentUser.role, "loans:review")) {
-        return { success: false, error: "Peran Anda tidak memiliki kewenangan memeriksa pengajuan pinjaman." };
+      // Eksplisit: Hanya peran Staff dengan izin loans:review yang berwenang verifikasi administratif
+      if (currentUser.role !== "staff" || !hasPermission(currentUser.role, "loans:review")) {
+        return {
+          success: false,
+          error: "Otoritas Ditolak: Hanya Staf (staff) yang berwenang melakukan verifikasi administratif berkas pengajuan.",
+        };
       }
 
       const { applications } = get();
@@ -447,8 +451,12 @@ export const useLoanStore = create<LoanState>((set, get) => {
         return { success: false, error: "Sesi pengguna tidak valid." };
       }
 
-      if (!hasPermission(currentUser.role, "loans:review")) {
-        return { success: false, error: "Peran Anda tidak memiliki kewenangan memberikan rekomendasi pinjaman." };
+      // Eksplisit: Hanya peran Finance Officer dengan izin loans:review yang berwenang memberikan rekomendasi
+      if (currentUser.role !== "finance_officer" || !hasPermission(currentUser.role, "loans:review")) {
+        return {
+          success: false,
+          error: "Otoritas Ditolak: Hanya Petugas Keuangan (Finance Officer) yang berwenang memberikan rekomendasi pengajuan pinjaman.",
+        };
       }
 
       const { applications } = get();
@@ -468,7 +476,7 @@ export const useLoanStore = create<LoanState>((set, get) => {
       if (target.createdById === currentUser.id) {
         return {
           success: false,
-          error: "Prinsip SoD: Anda tidak dapat merekomendasikan pengajuan yang Anda buat sendiri.",
+          error: "Prinsip Separation of Duties (SoD): Anda tidak dapat merekomendasikan pengajuan yang Anda buat sendiri.",
         };
       }
 

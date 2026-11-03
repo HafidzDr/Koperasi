@@ -252,8 +252,8 @@ describe("Loan Lifecycle & Multi-Tier Approval Tests (BR-03.1, BR-03.6)", () => 
     });
   });
 
-  describe("2. Review & Recommendation Lifecycle with SoD", () => {
-    it("2.1. Staf dapat memverifikasi berkas sehingga status berubah menjadi 'under_review'", () => {
+  describe("2. Review & Recommendation Workflow Role Boundaries (BR-03.6)", () => {
+    it("2.1. Staf berhasil memverifikasi berkas sehingga status berubah menjadi 'under_review'", () => {
       // Login sebagai Staf Dewi Lestari
       useAuthStore.setState({ currentUser: demoUsers.staff });
 
@@ -270,7 +270,58 @@ describe("Loan Lifecycle & Multi-Tier Approval Tests (BR-03.1, BR-03.6)", () => 
       expect(app?.reviewNotes).toBe("Dokumen slip gaji lengkap dan terverifikasi valid.");
     });
 
-    it("2.2. Menolak review jika pengguna berusaha memverifikasi pengajuannya sendiri (SoD)", () => {
+    it("2.2. Finance Officer DITOLAK ketika mencoba melakukan verifikasi administratif (state & storage tidak berubah)", () => {
+      const initialStoreState = JSON.stringify(useLoanStore.getState().applications);
+      const initialStorage = localStorage.getItem("kmb_loans_store_v1");
+
+      useAuthStore.setState({ currentUser: demoUsers.finance_officer });
+
+      const res = useLoanStore.getState().reviewApplication("PJ-2026-0026");
+      expect(res.success).toBe(false);
+      expect(res.error).toContain("Hanya Staf (staff)");
+
+      // Verifikasi state dan storage tidak berubah sama sekali
+      const app = useLoanStore.getState().getApplicationById("PJ-2026-0026");
+      expect(app?.status).toBe("submitted");
+      expect(JSON.stringify(useLoanStore.getState().applications)).toBe(initialStoreState);
+      expect(localStorage.getItem("kmb_loans_store_v1")).toBe(initialStorage);
+    });
+
+    it("2.3. Manager DITOLAK ketika mencoba melakukan verifikasi administratif (state & storage tidak berubah)", () => {
+      const initialStoreState = JSON.stringify(useLoanStore.getState().applications);
+      const initialStorage = localStorage.getItem("kmb_loans_store_v1");
+
+      useAuthStore.setState({ currentUser: demoUsers.manager });
+
+      const res = useLoanStore.getState().reviewApplication("PJ-2026-0026");
+      expect(res.success).toBe(false);
+      expect(res.error).toContain("Hanya Staf (staff)");
+
+      // Verifikasi state dan storage tidak berubah sama sekali
+      const app = useLoanStore.getState().getApplicationById("PJ-2026-0026");
+      expect(app?.status).toBe("submitted");
+      expect(JSON.stringify(useLoanStore.getState().applications)).toBe(initialStoreState);
+      expect(localStorage.getItem("kmb_loans_store_v1")).toBe(initialStorage);
+    });
+
+    it("2.4. Peran non-staf lainnya (Auditor, Treasurer, Admin, Member) DITOLAK dari verifikasi", () => {
+      const otherRoles = [
+        demoUsers.auditor,
+        demoUsers.treasurer,
+        demoUsers.admin,
+        demoUsers.super_admin,
+        demoUsers.member,
+      ];
+
+      for (const u of otherRoles) {
+        useAuthStore.setState({ currentUser: u });
+        const res = useLoanStore.getState().reviewApplication("PJ-2026-0026");
+        expect(res.success).toBe(false);
+        expect(res.error).toContain("Hanya Staf (staff)");
+      }
+    });
+
+    it("2.5. Menolak verifikasi jika Staf berusaha memverifikasi pengajuannya sendiri (SoD)", () => {
       // Misalkan Staf membuat pengajuan sendiri
       useAuthStore.setState({
         currentUser: {
@@ -294,7 +345,7 @@ describe("Loan Lifecycle & Multi-Tier Approval Tests (BR-03.1, BR-03.6)", () => 
       expect(res.error).toContain("Separation of Duties (SoD)");
     });
 
-    it("2.3. Rekomendasi ke Pengurus mengubah status menjadi 'recommended'", () => {
+    it("2.6. Finance Officer berhasil memberikan rekomendasi pengajuan berstatus 'under_review'", () => {
       useAuthStore.setState({ currentUser: demoUsers.finance_officer });
 
       // Target PJ-2026-0027 (status under_review)
@@ -307,6 +358,71 @@ describe("Loan Lifecycle & Multi-Tier Approval Tests (BR-03.1, BR-03.6)", () => 
       const app = useLoanStore.getState().getApplicationById("PJ-2026-0027");
       expect(app?.status).toBe("recommended");
       expect(app?.recommendedByName).toBe("Ahmad Fauzi");
+    });
+
+    it("2.7. Staf DITOLAK ketika mencoba memberikan rekomendasi pinjaman (state & storage tidak berubah)", () => {
+      const initialStoreState = JSON.stringify(useLoanStore.getState().applications);
+      const initialStorage = localStorage.getItem("kmb_loans_store_v1");
+
+      useAuthStore.setState({ currentUser: demoUsers.staff });
+
+      const res = useLoanStore.getState().recommendApplication("PJ-2026-0027");
+      expect(res.success).toBe(false);
+      expect(res.error).toContain("Hanya Petugas Keuangan (Finance Officer)");
+
+      // Verifikasi state dan storage tidak berubah
+      const app = useLoanStore.getState().getApplicationById("PJ-2026-0027");
+      expect(app?.status).toBe("under_review");
+      expect(JSON.stringify(useLoanStore.getState().applications)).toBe(initialStoreState);
+      expect(localStorage.getItem("kmb_loans_store_v1")).toBe(initialStorage);
+    });
+
+    it("2.8. Manager DITOLAK ketika mencoba memberikan rekomendasi pinjaman (state & storage tidak berubah)", () => {
+      const initialStoreState = JSON.stringify(useLoanStore.getState().applications);
+      const initialStorage = localStorage.getItem("kmb_loans_store_v1");
+
+      useAuthStore.setState({ currentUser: demoUsers.manager });
+
+      const res = useLoanStore.getState().recommendApplication("PJ-2026-0027");
+      expect(res.success).toBe(false);
+      expect(res.error).toContain("Hanya Petugas Keuangan (Finance Officer)");
+
+      // Verifikasi state dan storage tidak berubah
+      const app = useLoanStore.getState().getApplicationById("PJ-2026-0027");
+      expect(app?.status).toBe("under_review");
+      expect(JSON.stringify(useLoanStore.getState().applications)).toBe(initialStoreState);
+      expect(localStorage.getItem("kmb_loans_store_v1")).toBe(initialStorage);
+    });
+
+    it("2.9. Peran non-FO lainnya (Auditor, Treasurer, Admin, Member) DITOLAK dari memberikan rekomendasi", () => {
+      const otherRoles = [
+        demoUsers.auditor,
+        demoUsers.treasurer,
+        demoUsers.admin,
+        demoUsers.super_admin,
+        demoUsers.member,
+      ];
+
+      for (const u of otherRoles) {
+        useAuthStore.setState({ currentUser: u });
+        const res = useLoanStore.getState().recommendApplication("PJ-2026-0027");
+        expect(res.success).toBe(false);
+        expect(res.error).toContain("Hanya Petugas Keuangan (Finance Officer)");
+      }
+    });
+
+    it("2.10. Menolak rekomendasi jika Finance Officer berusaha merekomendasikan pengajuannya sendiri (SoD)", () => {
+      useAuthStore.setState({ currentUser: demoUsers.finance_officer });
+
+      useLoanStore.setState((state) => ({
+        applications: state.applications.map((a) =>
+          a.id === "PJ-2026-0027" ? { ...a, createdById: "user-fo-01" } : a
+        ),
+      }));
+
+      const res = useLoanStore.getState().recommendApplication("PJ-2026-0027");
+      expect(res.success).toBe(false);
+      expect(res.error).toContain("Separation of Duties (SoD)");
     });
   });
 

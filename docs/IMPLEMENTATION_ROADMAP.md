@@ -272,15 +272,15 @@ Sesuai G-02 Dependency Matrix di `.agent/rules/global.md`:
 - [x] `src/features/loans/pages/MemberLoanPortalView.tsx`
 - [x] `src/features/loans/pages/AdminLoanManagementView.tsx`
 - [x] Integrasi route di `src/app/routes.tsx`
-- [x] Unit, Store, & Component DOM Tests (57 loan tests, 206 tests passing total)
-- [x] `docs/PHASE_5_IMPLEMENTATION_REPORT.md` (Termasuk laporan remediasi Phase 5.1)
+- [x] Unit, Store, & Component DOM Tests (64 loan tests, 213 tests passing total)
+- [x] `docs/PHASE_5_IMPLEMENTATION_REPORT.md` (Termasuk laporan remediasi Phase 5.1 & Phase 5.2)
 
-**Quality Gates Phase 5 (Termasuk Remediasi 5.1):**
+**Quality Gates Phase 5 (Termasuk Remediasi 5.1 & 5.2):**
 | # | Kriteria | Status | Bukti |
 |---|----------|--------|-------|
 | QG5-1 | Typecheck (`tsc --noEmit`) lulus tanpa error | PASS | Exit code 0 |
 | QG5-2 | Linting (`eslint`) 0 errors, 0 warnings | PASS | Exit code 0 |
-| QG5-3 | Vitest unit, store, & DOM tests lulus 100% (206 tests) | PASS | Exit code 0 |
+| QG5-3 | Vitest unit, store, & DOM tests lulus 100% (213 tests) | PASS | Exit code 0 |
 | QG5-4 | Production build (`vite build`) bersih tanpa error | PASS | Exit code 0 |
 | QG5-5 | Responsive verification (16 skenario viewport) 0 overflow/clipping | PASS | Exit code 0 |
 | QG5-6 | Penegakan Separation of Duties (SoD) & approval thresholds | PASS | Exit code 0 |
