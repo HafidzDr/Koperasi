@@ -72,10 +72,12 @@ export const setSavingsTransactionResolver = (
 const resolveSavingsTransaction = (
   trxId: string
 ): SavingsTransactionLookupSnapshot | undefined => {
-  if (savingsTransactionResolver) {
-    const found = savingsTransactionResolver(trxId);
-    if (found) return found;
+  // Fail-closed: If resolver is registered, strictly use its result and do not fallback to localStorage
+  if (savingsTransactionResolver !== null) {
+    return savingsTransactionResolver(trxId);
   }
+
+  // Fallback to localStorage ONLY when resolver is not registered
   if (typeof window !== "undefined") {
     try {
       const raw = localStorage.getItem("kmb_savings_store_v1");

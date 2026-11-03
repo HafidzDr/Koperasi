@@ -1,8 +1,11 @@
 // @vitest-environment jsdom
-import { describe, it, expect, beforeEach, vi } from "vitest";
+import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { useSavingsStore } from "../features/savings/stores/savingsStore";
 import { SukarelaConfig } from "../features/savings/types";
-import { useMembershipStore } from "../features/membership/stores/membershipStore";
+import {
+  useMembershipStore,
+  setSavingsTransactionResolver,
+} from "../features/membership/stores/membershipStore";
 import { useAuthStore } from "../stores/authStore";
 import { demoUsers } from "../mocks/seedData";
 
@@ -1717,6 +1720,141 @@ describe("PHASE 4 — Savings Management Business Logic, SoD & Persistence Tests
       ]);
       expect(useMembershipStore.getState().reversedSavingsTransactions).toEqual([]);
       expect(useMembershipStore.getState().processedSavingsTransactions).not.toContain(submitRes.transactionId!);
+    });
+  });
+
+  describe("13. Phase 4.4 — Fail-Closed Transaction Resolver", () => {
+    beforeEach(() => {
+      useSavingsStore.getState().resetToSeed();
+      useMembershipStore.getState().resetToSeed();
+      // Ensure default resolver is active
+      setSavingsTransactionResolver((trxId: string) => {
+        return useSavingsStore.getState().transactions.find((t) => t.id === trxId);
+      });
+    });
+
+    afterEach(() => {
+      // Restore default resolver
+      setSavingsTransactionResolver((trxId: string) => {
+        return useSavingsStore.getState().transactions.find((t) => t.id === trxId);
+      });
+    });
+
+    it("13.1. Resolver terdaftar dan menemukan transaksi: transaksi dapat divalidasi sesuai aturan yang berlaku", () => {
+      useAuthStore.setState({ currentUser: demoUsers.member });
+      const submitRes = useSavingsStore.getState().submitDeposit({
+        memberDemoId: "DEMO-ID-0001",
+        savingsType: "sukarela",
+        amount: 250000,
+      });
+
+      useAuthStore.setState({ currentUser: demoUsers.staff });
+      useSavingsStore.getState().reviewTransaction(submitRes.transactionId!);
+
+      useAuthStore.setState({ currentUser: demoUsers.finance_officer });
+      const res = useMembershipStore.getState().adjustMemberBalances(
+        "DEMO-ID-0001",
+        { sukarela: 250000 },
+        { transactionId: submitRes.transactionId!, isReversal: false }
+      );
+      expect(res.success).toBe(true);
+      expect(useMembershipStore.getState().getMemberByDemoId("DEMO-ID-0001")!.saldoSukarela).toBeGreaterThan(0);
+    });
+
+    it("13.2. Resolver terdaftar tetapi mengembalikan undefined, sementara localStorage masih memiliki transaksi dengan ID yang sama: mutasi ditolak (Fail-Closed)", () => {
+      // Mock transaction saved in localStorage
+      const mockTrxId = "TRX-ORPHAN-001";
+      localStorage.setItem(
+        "kmb_savings_store_v1",
+        JSON.stringify({
+          transactions: [
+            {
+              id: mockTrxId,
+              memberDemoId: "DEMO-ID-0001",
+              transactionType: "deposit",
+              savingsType: "sukarela",
+              amount: 100000,
+              status: "under_review",
+              createdById: "user-member-01",
+            },
+          ],
+        })
+      );
+
+      // Resolver is registered, but returns undefined for mockTrxId (e.g. transaction deleted from memory store)
+      setSavingsTransactionResolver((_id: string) => undefined);
+
+      useAuthStore.setState({ currentUser: demoUsers.finance_officer });
+      const res = useMembershipStore.getState().adjustMemberBalances(
+        "DEMO-ID-0001",
+        { sukarela: 100000 },
+        { transactionId: mockTrxId, isReversal: false }
+      );
+
+      // Must be FAIL-CLOSED: do not fallback to localStorage when resolver is registered
+      expect(res.success).toBe(false);
+      expect(res.error).toContain("tidak ditemukan");
+    });
+
+    it("13.3. Transaksi yang tidak ditemukan tidak mengubah saldo, state, catatan idempotensi, maupun localStorage", () => {
+      useAuthStore.setState({ currentUser: demoUsers.treasurer });
+      const memberBefore = useMembershipStore.getState().getMemberByDemoId("DEMO-ID-0001")!;
+      const balanceBefore = memberBefore.saldoSukarela;
+      const processedBefore = [...useMembershipStore.getState().processedSavingsTransactions];
+      const storageBefore = localStorage.getItem("kmb_membership_store_v1");
+
+      // Set mock resolver returning undefined
+      setSavingsTransactionResolver((_id: string) => undefined);
+
+      const res = useMembershipStore.getState().adjustMemberBalances(
+        "DEMO-ID-0001",
+        { sukarela: 100000 },
+        { transactionId: "TRX-NONEXISTENT", isReversal: false }
+      );
+      expect(res.success).toBe(false);
+
+      const memberAfter = useMembershipStore.getState().getMemberByDemoId("DEMO-ID-0001")!;
+      expect(memberAfter.saldoSukarela).toBe(balanceBefore);
+      expect(useMembershipStore.getState().processedSavingsTransactions).toEqual(processedBefore);
+      expect(localStorage.getItem("kmb_membership_store_v1")).toBe(storageBefore);
+    });
+
+    it("13.4. Resolver belum terdaftar (null): perilaku fallback ke localStorage tetap berjalan", () => {
+      // Un-register resolver
+      setSavingsTransactionResolver(null);
+
+      const fallbackTrxId = "TRX-FALLBACK-STORAGE-99";
+      localStorage.setItem(
+        "kmb_savings_store_v1",
+        JSON.stringify({
+          transactions: [
+            {
+              id: fallbackTrxId,
+              memberDemoId: "DEMO-ID-0001",
+              transactionType: "deposit",
+              savingsType: "sukarela",
+              amount: 150000,
+              status: "under_review",
+              createdById: "user-member-01",
+            },
+          ],
+        })
+      );
+
+      const balanceBefore = useMembershipStore.getState().getMemberByDemoId("DEMO-ID-0001")!.saldoSukarela;
+
+      useAuthStore.setState({ currentUser: demoUsers.finance_officer });
+      const res = useMembershipStore.getState().adjustMemberBalances(
+        "DEMO-ID-0001",
+        { sukarela: 150000 },
+        { transactionId: fallbackTrxId, isReversal: false }
+      );
+
+      // Fallback succeeds because resolver is null
+      expect(res.success).toBe(true);
+      const balanceAfter = useMembershipStore.getState().getMemberByDemoId("DEMO-ID-0001")!.saldoSukarela;
+      expect(balanceAfter).toBe(balanceBefore + 150000);
+      expect(useMembershipStore.getState().processedSavingsTransactions).toContain(fallbackTrxId);
     });
   });
 });

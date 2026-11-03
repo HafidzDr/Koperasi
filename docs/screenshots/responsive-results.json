@@ -104,7 +104,7 @@
         {
           "tag": "button",
           "text": "Public_visitor",
-          "width": 116,
+          "width": 119,
           "height": 24,
           "isUsable": true
         },
@@ -132,7 +132,7 @@
         {
           "tag": "button",
           "text": "Lihat Seluruh Layanan",
-          "width": 145,
+          "width": 153,
           "height": 32,
           "isUsable": true
         },
@@ -146,7 +146,7 @@
       ]
     },
     "screenshot": "public_home_375.png",
-    "fileSize": 36698,
+    "fileSize": 47424,
     "status": "PASS"
   },
   {
@@ -179,7 +179,7 @@
         {
           "tag": "button",
           "text": "Public_visitor",
-          "width": 116,
+          "width": 119,
           "height": 24,
           "isUsable": true
         },
@@ -207,7 +207,7 @@
         {
           "tag": "button",
           "text": "Lihat Seluruh Layanan",
-          "width": 145,
+          "width": 153,
           "height": 32,
           "isUsable": true
         },
@@ -221,7 +221,7 @@
       ]
     },
     "screenshot": "public_home_390.png",
-    "fileSize": 38233,
+    "fileSize": 49439,
     "status": "PASS"
   },
   {
@@ -254,21 +254,21 @@
         {
           "tag": "button",
           "text": "Peran:\nPublic_visitor",
-          "width": 163,
+          "width": 170,
           "height": 24,
           "isUsable": true
         },
         {
           "tag": "button",
           "text": "Masuk Portal",
-          "width": 97,
+          "width": 101,
           "height": 32,
           "isUsable": true
         },
         {
           "tag": "button",
           "text": "Daftar Anggota",
-          "width": 131,
+          "width": 133,
           "height": 32,
           "isUsable": true
         },
@@ -282,21 +282,21 @@
         {
           "tag": "button",
           "text": "Daftar Menjadi Anggota",
-          "width": 245,
+          "width": 249,
           "height": 48,
           "isUsable": true
         },
         {
           "tag": "button",
           "text": "Buka Portal Anggota",
-          "width": 193,
+          "width": 199,
           "height": 48,
           "isUsable": true
         }
       ]
     },
     "screenshot": "public_home_768.png",
-    "fileSize": 77378,
+    "fileSize": 101176,
     "status": "PASS"
   },
   {
