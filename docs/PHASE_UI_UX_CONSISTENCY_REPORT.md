@@ -238,3 +238,4 @@ Tangkapan layar hasil implementasi tersimpan pada folder `public/screenshots/` d
 3. **Business Logic & Financial Formulas:** Seluruh formula bunga simpanan/pinjaman, denda keterlambatan, jadwal angsuran, mutasi saldo, dan penomoran ID demonstrasi tetap 100% konsisten.
 4. **RBAC & Segregation of Duties:** Matriks hak akses 7 peran internal tetap ditegakkan secara ketat pada store dan antarmuka pengguna.
 5. **Integritas Penanda DEMO:** Tidak ada data simulasi yang disajikan seolah-olah data legal atau transaksi nyata. Seluruh legalitas dan nomor registrasi tetap berlabel demonstrasi.
+

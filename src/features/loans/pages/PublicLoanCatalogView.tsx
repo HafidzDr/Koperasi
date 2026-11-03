@@ -334,22 +334,22 @@ export const PublicLoanCatalogView: React.FC = () => {
             <div className="pt-6 flex flex-col sm:flex-row gap-3">
               <Button
                 variant="outline"
-                size="sm"
+                size="md"
                 onClick={() => setShowScheduleModal(!showScheduleModal)}
-                className="bg-transparent border-forest-600 text-white hover:bg-forest-800 text-xs font-medium justify-center"
+                leftIcon={<FileText className="w-4 h-4 shrink-0" />}
+                className="bg-transparent border-forest-500/80 text-white hover:bg-forest-800 text-xs font-medium justify-center whitespace-nowrap"
               >
-                <FileText className="w-4 h-4 mr-1.5" />
                 {showScheduleModal ? "Tutup Rincian Jadwal" : "Lihat Jadwal Angsuran"}
               </Button>
 
               <Link to="/portal/pinjaman" className="flex-1">
                 <Button
-                  variant="secondary"
-                  size="sm"
-                  className="w-full bg-forest-100 text-forest-900 hover:bg-forest-200 text-xs font-semibold justify-center"
+                  variant="primary"
+                  size="md"
+                  rightIcon={<ArrowRight className="w-4 h-4 shrink-0" />}
+                  className="w-full bg-forest-100 text-forest-900 hover:bg-white text-xs font-semibold justify-center whitespace-nowrap shadow-sm"
                 >
                   Ajukan di Portal Anggota
-                  <ArrowRight className="w-4 h-4 ml-1.5" />
                 </Button>
               </Link>
             </div>
