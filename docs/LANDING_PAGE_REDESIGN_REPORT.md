@@ -121,18 +121,18 @@ Seluruh gambar disimpan secara lokal di folder `public/images/landing/` dengan l
 
 | Nama File | Ukuran | Resolusi / Karakteristik | Deskripsi Kontekstual |
 | :--- | :--- | :--- | :--- |
-| `hero-bg.jpg` | 348 KB | High-res fajar berkabut | Lanskap agraris Indonesia fajar berkabut untuk hero |
-| `about-soil.jpg` | 55 KB | Close-up benih bertunas | Tunas tanaman muda di tanah gembur bernutrisi |
-| `about-field.jpg` | 118 KB | Lanskap perkebunan | Lahan kebun binaan koperasi yang asri |
-| `feature-wide.jpg` | 262 KB | Panorama operasional | Aktivitas pengolahan lahan modern terpadu |
-| `feature-soil.jpg` | 130 KB | Tekstur tanah organik | Pengolahan pupuk organik dan tanah kaya nutrisi |
-| `service-tablet.jpg` | 106 KB | Anggota & gadget | Akses buku simpanan digital mandiri lewat tablet |
-| `service-greenhouse.jpg` | 130 KB | Green house hidroponik | Usaha agribisnis produktif penerima pembiayaan |
-| `service-inspection.jpg` | 114 KB | Inspeksi & audit mutu | Pemeriksaan standar mutu operasional dan transparansi |
-| `testimonial-member-1.jpg`| 69 KB | Foto petani Indonesia | Budi Santoso, anggota pengelola hasil bumi |
-| `testimonial-member-2.jpg`| 28 KB | Foto pengusaha kuliner | Siti Rahmawati, anggota pengrajin makanan olahan |
-| `faq-meeting.jpg` | 74 KB | Musyawarah warga | Suasana rapat anggota dan musyawarah kekeluargaan |
-| `cta-officer.jpg` | 169 KB | Petugas & hasil panen | Petugas ramah menyambut pendaftaran anggota baru |
+| `hero-kmb.jpg` / `hero-bg.jpg` | 349 KB | Foto nyata anggota di sawah | Pengurus dan anggota koperasi berdiskusi dengan tablet di persawahan Indonesia |
+| `about-soil.jpg` | 142 KB | Pedagang pasar UMKM binaan | Pelaku usaha mikro dan pedagang pasar anggota binaan Koperasi KMB |
+| `about-field.jpg` | 218 KB | Gerai sembako & konsumsi | Distribusi pangan dan gerai sembako unit usaha konsumsi anggota KMB |
+| `feature-wide.jpg` | 315 KB | Gotong royong panen sawah | Aktivitas gotong royong anggota tani memanen padi di hamparan sawah |
+| `feature-soil.jpg` | 156 KB | Meja layanan pendampingan | Petugas koperasi memberikan pendampingan pendaftaran dan konsultasi anggota |
+| `service-tablet.jpg` | 108 KB | Anggota & buku digital | Anggota memantau mutasi buku simpanan digital mandiri lewat tablet |
+| `service-greenhouse.jpg` | 132 KB | Greenhouse hidroponik | Usaha produktif agribisnis dan UMKM anggota penerima pembiayaan |
+| `service-inspection.jpg` | 113 KB | Musyawarah & evaluasi RAT | Musyawarah Rapat Anggota Tahunan (RAT) dan pertanggungjawaban terbuka |
+| `testimonial-member-1.jpg`| 70 KB | Foto petani hortikultura | Budi Santoso, anggota aktif & petani hortikultura (profil simulasi) |
+| `testimonial-member-2.jpg`| 28 KB | Foto pengusaha kuliner | Siti Rahmawati, anggota aktif & pemilik usaha kuliner (profil simulasi) |
+| `faq-meeting.jpg` | 76 KB | Musyawarah kekeluargaan | Musyawarah mufakat dan konsultasi keanggotaan dalam suasana kekeluargaan |
+| `cta-officer.jpg` | 172 KB | Petugas & hasil panen | Petugas ramah menyambut pendaftaran anggota baru keluarga besar KMB |
 
 ---
 

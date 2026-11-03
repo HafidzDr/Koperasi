@@ -63,23 +63,23 @@ export const HomeView: React.FC = () => {
   const stats = [
     {
       value: "30+",
-      label: "Portofolio Pinjaman",
-      desc: "Pembiayaan produktif sektor riil UMKM",
+      label: "Portofolio Pinjaman (Demo)",
+      desc: "Rekord pembiayaan produktif & konsumtif sintetis",
     },
     {
       value: "Rp 4,5M+",
-      label: "Simpanan Terkelola",
-      desc: "Akumulasi saldo pokok, wajib & sukarela",
+      label: "Simpanan Terkelola (Sintetis)",
+      desc: "Akumulasi saldo pokok, wajib & sukarela demonstrasi",
     },
     {
       value: "100%",
-      label: "Transparansi Digital",
-      desc: "Mutasi real-time terverifikasi sistem",
+      label: "Validasi Digital (Prosedural)",
+      desc: "Mutasi fail-closed terverifikasi sistem",
     },
     {
       value: "24/7",
-      label: "Akses Portal Mandiri",
-      desc: "Pantau saldo dan transaksi dari mana saja",
+      label: "Akses Portal Mandiri (Demo)",
+      desc: "Simulasi portal anggota dan multi-peran",
     },
   ];
 
@@ -87,30 +87,30 @@ export const HomeView: React.FC = () => {
     {
       question: "Apa saja persyaratan untuk mendaftar sebagai anggota KMB?",
       answer:
-        "Warga Negara Indonesia, memiliki KTP yang sah, menyetujui Anggaran Dasar/Anggaran Rumah Tangga (AD/ART), serta menyetorkan Simpanan Pokok awal yang terkonfirmasi oleh staf koperasi.",
+        "Warga Negara Indonesia, memiliki KTP yang sah, menyetujui Anggaran Dasar/Anggaran Rumah Tangga (AD/ART), serta menyetorkan Simpanan Pokok awal yang terkonfirmasi oleh staf koperasi (alur verifikasi administrasi simulatif).",
     },
     {
       question: "Berapa nominal Simpanan Pokok dan Simpanan Wajib?",
-      answer: `Simpanan Pokok ditetapkan sebesar ${formatIDR(
+      answer: `Berdasarkan konfigurasi sistem aktif: Simpanan Pokok ditetapkan sebesar ${formatIDR(
         savingsConfig.simpananPokokNominal
-      )} (disetor satu kali saat mendaftar). Simpanan Wajib ditetapkan sebesar ${formatIDR(
+      )} (disetor 1 kali saat pendaftaran disetujui). Simpanan Wajib ditetapkan sebesar ${formatIDR(
         savingsConfig.simpananWajibBulanan
-      )} per bulan, keduanya menjadi modal kepemilikan Anda di koperasi.`,
+      )} per bulan buku berjalan. Keduanya menjadi modal kepemilikan Anda di koperasi.`,
     },
     {
-      question: "Bagaimana cara dan alur pengajuan pinjaman modal usaha?",
+      question: "Bagaimana ketentuan suku bunga, denda, dan plafon pinjaman?",
       answer:
-        "Anggota aktif dapat mengajukan pembiayaan secara mandiri melalui Portal Anggota, menentukan tenor dan nominal, mengunggah dokumen usaha, lalu melalui proses verifikasi 3 tingkat (Staff Verifier, Finance Officer, dan Manager Approval).",
+        "Pada simulasi sistem KMB: Pinjaman Modal Usaha Produktif memiliki bunga flat 10,0% p.a. (tenor 6–36 bulan, plafon s.d. Rp 100 Jt), sedangkan Pinjaman Konsumtif memiliki bunga flat 12,0% p.a. (tenor 3–36 bulan, plafon s.d. Rp 50 Jt). Denda keterlambatan disimulasikan sebesar 0,5% per hari setelah grace period 3 hari. Syarat pengajuan: telah menjadi anggota aktif minimal 3 bulan.",
     },
     {
       question: "Kapan dan bagaimana Sisa Hasil Usaha (SHU) dibagikan?",
       answer:
-        "SHU dibagikan setahun sekali setelah disahkan dalam Rapat Anggota Tahunan (RAT). Keuntungan dialokasikan secara adil berdasarkan jasa modal (saldo simpanan) dan jasa anggota (aktivitas transaksi/usaha).",
+        "SHU dibagikan setahun sekali setelah disahkan dalam Rapat Anggota Tahunan (RAT). Keuntungan dialokasikan secara adil berdasarkan porsi jasa modal (saldo simpanan) dan jasa usaha/transaksi anggota secara proporsional.",
     },
     {
       question: "Bagaimana keamanan saldo dan integritas data anggota dijamin?",
       answer:
-        "KMB menerapkan arsitektur fail-closed dengan Segregation of Duties (SoD), validasi mutasi saldo ganda, audit log digital, dan otorisasi bertingkat sehingga saldo anggota terlindungi penuh.",
+        "KMB menerapkan arsitektur fail-closed dengan Segregation of Duties (SoD) 3-tingkat (Staff Verifier, Finance Officer, Manager Approval), pencegahan mutasi saldo ganda, audit trail digital, dan otorisasi berbasis peran (RBAC).",
     },
   ];
 
@@ -139,7 +139,10 @@ export const HomeView: React.FC = () => {
             <h1 className="text-3xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-white leading-[1.12] sm:leading-[1.08] break-words mb-5">
               {/* Top Pill from Image 2 */}
               <span className="inline-flex items-center gap-2 px-3.5 py-1 sm:px-4 sm:py-1.5 rounded-full border border-white/35 bg-black/30 text-white/95 text-xs sm:text-sm font-medium tracking-wide mb-5 sm:mb-6 backdrop-blur-md shadow-sm block w-fit">
-                Koperasi Digital KMB
+                <span>Koperasi Digital KMB</span>
+                <span className="text-[10px] font-mono font-semibold px-1.5 py-0.2 rounded bg-white/20 text-[#A3E635]">
+                  SIMULASI
+                </span>
               </span>
               <span className="block">
                 Tumbuh Bersama,<br />
@@ -228,29 +231,37 @@ export const HomeView: React.FC = () => {
          ========================================================================= */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
-          {/* Left Column (5 Cols): Metric + Soil Image + Quote */}
+          {/* Left Column (5 Cols): Metric + Local Producer Image + Quote */}
           <div className="lg:col-span-5 space-y-6">
-            {/* Metric Display */}
+            {/* Metric Display with Demo Label */}
             <div className="p-6 rounded-2xl bg-forest-50 border border-forest-100 shadow-subtle">
-              <span className="text-3xl sm:text-4xl font-extrabold text-forest-900 tracking-tight font-mono">
-                100%
-              </span>
+              <div className="flex items-center justify-between mb-1">
+                <span className="text-3xl sm:text-4xl font-extrabold text-forest-900 tracking-tight font-mono">
+                  100%*
+                </span>
+                <Badge variant="neutral" size="sm">
+                  Simulasi Prototipe
+                </Badge>
+              </div>
               <h4 className="text-sm font-semibold text-ink-900 mt-1">Transparansi Digital & Akuntabilitas Anggota</h4>
               <p className="text-xs text-ink-600 mt-1 leading-relaxed">
-                Setiap mutasi saldo dan pembiayaan tercatat secara real-time pada buku simpanan digital mandiri.
+                Setiap mutasi saldo dan alur persetujuan tercatat pada audit trail digital simulatif.
               </p>
+              <span className="block text-[10px] text-ink-500 mt-2 italic">
+                *Indikator pencatatan mutasi otomatis pada sistem demonstrasi KMB.
+              </span>
             </div>
 
-            {/* Contextual Image */}
+            {/* Contextual Image: Member local market vendor */}
             <div className="relative rounded-2xl overflow-hidden border border-ink-200 shadow-sm aspect-[4/3]">
               <img
                 src="/images/landing/about-soil.jpg"
-                alt="Bibit tanaman tumbuh subur di tanah gembur bernutrisi"
+                alt="Pelaku UMKM dan pedagang pasar anggota binaan Koperasi KMB"
                 className="w-full h-full object-cover"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-ink-900/60 via-transparent to-transparent" />
-              <span className="absolute bottom-3 left-4 right-4 text-[11px] text-white/90 font-medium">
-                Pondasi kokoh berakar pada nilai kejujuran dan saling menopang antar-anggota.
+              <span className="absolute bottom-3 left-4 right-4 text-[11px] text-white/95 font-medium">
+                Pemberdayaan sektor riil berakar pada gotong royong dan kemitraan anggota.
               </span>
             </div>
 
@@ -258,7 +269,7 @@ export const HomeView: React.FC = () => {
             <div className="p-5 rounded-2xl bg-white border border-ink-200 shadow-subtle flex items-start gap-3">
               <Quote className="w-5 h-5 text-forest-600 shrink-0 mt-0.5" />
               <p className="text-xs text-ink-700 italic leading-relaxed">
-                "Koperasi bukan sekadar lembaga simpan pinjam, melainkan rumah bersama untuk membangun ketahanan ekonomi keluarga Indonesia."
+                "Koperasi bukan sekadar lembaga simpan pinjam, melainkan wadah gotong royong untuk membangun ketahanan ekonomi keluarga Indonesia."
               </p>
             </div>
           </div>
@@ -275,19 +286,22 @@ export const HomeView: React.FC = () => {
             </div>
 
             <p className="text-sm sm:text-base text-ink-600 leading-relaxed">
-              Koperasi Konsumen Makmur Bersama Nusantara (KMB) didirikan untuk menjawab kebutuhan layanan keuangan inklusif bagi pelaku usaha mikro, keluarga, dan masyarakat luas. Kami memadukan kearifan gotong royong dengan sistem administrasi digital modern agar setiap rupiah yang diamanahkan dikelola secara akuntabel dan transparan.
+              Koperasi Konsumen Makmur Bersama Nusantara (KMB) didesain untuk menjawab kebutuhan layanan keuangan inklusif bagi pelaku usaha mikro, keluarga, dan masyarakat luas. Kami memadukan kearifan gotong royong dengan sistem administrasi digital modern agar setiap rupiah yang diamanahkan dikelola secara akuntabel dan transparan.
             </p>
 
-            {/* 3 Value Pillars */}
+            {/* 3 Value Pillars with Demo Compliance Notice */}
             <div className="space-y-3 pt-2">
               <div className="flex items-start gap-3">
                 <div className="w-5 h-5 rounded-full bg-forest-100 flex items-center justify-center text-forest-700 shrink-0 mt-0.5">
                   <CheckCircle2 className="w-3.5 h-3.5" />
                 </div>
                 <div>
-                  <h4 className="text-xs sm:text-sm font-semibold text-ink-900">Legalitas & Kepatuhan Regulasi Nasional</h4>
+                  <h4 className="text-xs sm:text-sm font-semibold text-ink-900">
+                    Tata Kelola & Identitas Lembaga{" "}
+                    <span className="text-[11px] text-forest-700 font-normal">(Data Simulasi)</span>
+                  </h4>
                   <p className="text-xs text-ink-600 leading-relaxed">
-                    Terdaftar resmi di Kementerian Koperasi dan UKM dengan nomor legalitas sah dan kepatuhan Anggaran Dasar yang ketat.
+                    Identitas badan hukum ({config.legalNumber}) dan NIKOP ({config.cooperativeRegistrationNumber}) merupakan data simulasi untuk keperluan demonstrasi fungsional platform.
                   </p>
                 </div>
               </div>
@@ -299,7 +313,7 @@ export const HomeView: React.FC = () => {
                 <div>
                   <h4 className="text-xs sm:text-sm font-semibold text-ink-900">Bebas Potongan Tersembunyi</h4>
                   <p className="text-xs text-ink-600 leading-relaxed">
-                    Simpanan pokok, wajib, dan sukarela dikelola tanpa biaya administrasi bulanan yang menggerus simpanan anggota.
+                    Simpanan pokok ({formatIDR(savingsConfig.simpananPokokNominal)}) dan simpanan wajib ({formatIDR(savingsConfig.simpananWajibBulanan)}/bln) dikelola tanpa biaya administrasi bulanan yang menggerus saldo anggota.
                   </p>
                 </div>
               </div>
@@ -311,28 +325,28 @@ export const HomeView: React.FC = () => {
                 <div>
                   <h4 className="text-xs sm:text-sm font-semibold text-ink-900">Bagi Hasil SHU yang Proporsional</h4>
                   <p className="text-xs text-ink-600 leading-relaxed">
-                    Keuntungan usaha tahunan dibagikan kembali kepada anggota berdasarkan jasa modal dan keaktifan transaksi secara adil.
+                    Keuntungan usaha tahunan dibagikan kembali kepada anggota berdasarkan porsi jasa modal dan aktivitas transaksi secara transparan sesuai AD/ART.
                   </p>
                 </div>
               </div>
             </div>
 
-            {/* Secondary Field Photo + Action Button */}
+            {/* Secondary Image (Store / Distribution) + Action Button */}
             <div className="pt-2 flex flex-col sm:flex-row items-stretch sm:items-center gap-4">
               <div className="relative rounded-xl overflow-hidden border border-ink-200 h-28 sm:w-48 shrink-0">
                 <img
                   src="/images/landing/about-field.jpg"
-                  alt="Hamparan perkebunan binaan koperasi"
+                  alt="Distribusi produk dan gerai unit usaha konsumsi anggota KMB"
                   className="w-full h-full object-cover"
                 />
               </div>
               <div className="flex-1 space-y-2">
                 <p className="text-xs text-ink-600">
-                  Ingin mengetahui lebih dalam mengenai visi, misi, dan struktur pengurus koperasi kami?
+                  Ingin mengetahui lebih dalam mengenai profil pengurus, pengawas, dan struktur tata kelola koperasi kami?
                 </p>
                 <Link to="/tentang">
                   <Button variant="outline" size="sm" rightIcon={<ArrowUpRight className="w-3.5 h-3.5" />}>
-                    Pelajari Selengkapnya
+                    Profil & Tata Kelola
                   </Button>
                 </Link>
               </div>
@@ -348,21 +362,21 @@ export const HomeView: React.FC = () => {
         <div className="space-y-6">
           <div className="max-w-2xl">
             <span className="inline-block text-xs font-bold text-forest-700 tracking-wider uppercase mb-1">
-              KEMANDIRIAN & TATA KELOLA
+              KEMANDIRIAN & TATA KELOLA (ALUR SIMULASI)
             </span>
             <h2 className="text-2xl sm:text-3xl font-bold text-ink-900 tracking-tight">
               Pengelolaan Koperasi Lebih Terarah, Efisien & Akuntabel
             </h2>
             <p className="text-xs sm:text-sm text-ink-600 mt-2">
-              Sistem verifikasi bertingkat dan buku kas digital menjamin setiap pengajuan dan transaksi keuangan berlangsung aman sesuai amanat Rapat Anggota.
+              Sistem verifikasi bertingkat dan buku kas digital menjamin setiap pengajuan dan transaksi keuangan berlangsung aman sesuai mandat Rapat Anggota.
             </p>
           </div>
 
-          {/* Panoramic Image Container with Floating Badge */}
+          {/* Panoramic Image Container with Floating Badge (Gotong royong panen bersama) */}
           <div className="relative rounded-2xl sm:rounded-3xl overflow-hidden border border-ink-200 shadow-md h-64 sm:h-96">
             <img
               src="/images/landing/feature-wide.jpg"
-              alt="Aktivitas lapangan pertanian modern dan pengelolaan terpadu"
+              alt="Aktivitas gotong royong anggota tani koperasi memanen hasil bumi bersama"
               className="w-full h-full object-cover object-center"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-forest-950/80 via-forest-950/30 to-transparent" />
@@ -371,10 +385,10 @@ export const HomeView: React.FC = () => {
             <div className="absolute bottom-6 left-6 right-6 sm:right-auto bg-white/95 backdrop-blur-md rounded-xl p-4 sm:p-5 border border-white/60 shadow-md max-w-md">
               <div className="flex items-center gap-2.5 text-forest-800 font-semibold text-xs sm:text-sm mb-1">
                 <ShieldCheck className="w-4 h-4 text-forest-700" />
-                <span>Verifikasi 3 Tingkat — Segregation of Duties</span>
+                <span>Verifikasi 3 Tingkat — Segregation of Duties (Alur Simulasi)</span>
               </div>
               <p className="text-[11px] sm:text-xs text-ink-600 leading-snug">
-                Pemisahan tegas antara staf verifikator administrasi, peninjau keuangan (Finance), dan persetujuan manajerial untuk menjamin integritas finansial.
+                Pemisahan tegas wewenang: Staff Verifier memeriksa kelengkapan berkas, Finance Officer meninjau kemampuan angsuran, dan Manager memberikan persetujuan final.
               </p>
             </div>
           </div>
@@ -387,7 +401,7 @@ export const HomeView: React.FC = () => {
               </div>
               <h3 className="text-sm font-semibold text-ink-900 mb-1">Buku Simpanan Digital</h3>
               <p className="text-xs text-ink-600 leading-relaxed">
-                Pencatatan Simpanan Pokok, Wajib, dan Sukarela otomatis terhubung ke sistem pembukuan anggota secara transparan.
+                Pencatatan Simpanan Pokok ({formatIDR(savingsConfig.simpananPokokNominal)}), Wajib ({formatIDR(savingsConfig.simpananWajibBulanan)}/bln), dan Sukarela terhubung ke buku kas digital.
               </p>
             </div>
 
@@ -395,9 +409,9 @@ export const HomeView: React.FC = () => {
               <div className="w-9 h-9 rounded-lg bg-forest-100 flex items-center justify-center text-forest-700 mb-3">
                 <Scale className="w-4 h-4" />
               </div>
-              <h3 className="text-sm font-semibold text-ink-900 mb-1">Kalkulator Pinjaman Adil</h3>
+              <h3 className="text-sm font-semibold text-ink-900 mb-1">Kalkulator Pinjaman Transparan</h3>
               <p className="text-xs text-ink-600 leading-relaxed">
-                Perhitungan angsuran pokok dan jasa bunga yang jelas sejak awal tanpa denda tersembunyi atau biaya siluman.
+                Simulasi flat 10,0% p.a. (modal usaha) dan 12,0% p.a. (konsumtif) dengan denda 0,5%/hari setelah grace period 3 hari (simulasi sistem).
               </p>
             </div>
 
@@ -405,9 +419,9 @@ export const HomeView: React.FC = () => {
               <div className="w-9 h-9 rounded-lg bg-forest-100 flex items-center justify-center text-forest-700 mb-3">
                 <Users className="w-4 h-4" />
               </div>
-              <h3 className="text-sm font-semibold text-ink-900 mb-1">RAT & Hak Suara Anggota</h3>
+              <h3 className="text-sm font-semibold text-ink-900 mb-1">RAT & Hak Suara Demokratis</h3>
               <p className="text-xs text-ink-600 leading-relaxed">
-                Forum musyawarah tertinggi koperasi dengan pembuktian kuorum dan hak suara demokratis 1 anggota 1 suara.
+                Penyelenggaraan Rapat Anggota Tahunan dengan prinsip 1 Anggota 1 Suara dan rekapitulasi hak SHU tahunan transparan.
               </p>
             </div>
           </div>
@@ -415,10 +429,19 @@ export const HomeView: React.FC = () => {
       </section>
 
       {/* =========================================================================
-          5. STATISTICS STRIP (4-Column Modern Tabular Metric Display)
+          5. STATISTICS STRIP (4-Column Modern Tabular Metric Display - DEMO)
          ========================================================================= */}
       <section className="bg-ink-100/70 border-y border-ink-200 py-10 sm:py-14">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center max-w-xl mx-auto mb-8">
+            <span className="inline-block text-xs font-bold text-forest-700 tracking-wider uppercase mb-1">
+              METRIK SISTEM DEMONSTRASI
+            </span>
+            <h3 className="text-lg sm:text-xl font-bold text-ink-900">
+              Indikator Kinerja & Portofolio Simulatif
+            </h3>
+          </div>
+
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8">
             {stats.map((s, idx) => (
               <div
@@ -434,8 +457,8 @@ export const HomeView: React.FC = () => {
             ))}
           </div>
           <div className="mt-6 text-center">
-            <span className="inline-flex items-center gap-1.5 text-[11px] text-ink-500 bg-ink-200/50 px-3 py-1 rounded-full">
-              <span>* Data metrik di atas merupakan data demonstrasi sistem KMB.</span>
+            <span className="inline-flex items-center gap-1.5 text-[11px] text-ink-600 bg-ink-200/60 px-3.5 py-1.5 rounded-full font-medium">
+              <span>* Seluruh metrik, portofolio, dan nominal di atas merupakan data sintetis simulasi demonstrasi Koperasi KMB.</span>
             </span>
           </div>
         </div>
@@ -454,7 +477,7 @@ export const HomeView: React.FC = () => {
               Solusi Keuangan Berkeadilan untuk Anggota
             </h2>
             <p className="text-xs sm:text-sm text-ink-600 mt-1 max-w-xl">
-              Didesain khusus untuk memenuhi kebutuhan permodalan produktif dan penyimpanan dana yang aman serta menguntungkan.
+              Didesain khusus untuk memenuhi kebutuhan permodalan produktif dan penyimpanan dana yang aman serta terkelola.
             </p>
           </div>
           <Link to="/cara-bergabung">
@@ -479,19 +502,19 @@ export const HomeView: React.FC = () => {
                 </Badge>
               </div>
               <div className="absolute bottom-3 right-3 bg-white/95 backdrop-blur-sm px-2.5 py-1 rounded text-[11px] font-semibold text-forest-800 shadow-sm">
-                Imbal Hasil s.d. 5.5%
+                Bunga Sukarela 2,0% p.a.*
               </div>
             </div>
             <div className="p-6 flex-1 flex flex-col justify-between space-y-4">
               <div>
                 <h3 className="text-base font-bold text-ink-900 mb-1">Simpanan Anggota</h3>
                 <p className="text-xs text-ink-600 leading-relaxed mb-3">
-                  Simpanan Pokok ({formatIDR(savingsConfig.simpananPokokNominal)}), Simpanan Wajib ({formatIDR(savingsConfig.simpananWajibBulanan)}/bln), dan Simpanan Sukarela yang fleksibel ditarik sewaktu-waktu.
+                  Simpanan Pokok ({formatIDR(savingsConfig.simpananPokokNominal)}), Simpanan Wajib ({formatIDR(savingsConfig.simpananWajibBulanan)}/bln), serta Simpanan Sukarela yang fleksibel disetor & ditarik mulai Rp 10.000.
                 </p>
                 <ul className="text-xs text-ink-600 space-y-1.5">
                   <li className="flex items-center gap-2">
                     <CheckCircle2 className="w-3.5 h-3.5 text-forest-700 shrink-0" />
-                    <span>Buku simpanan digital transparan real-time</span>
+                    <span>Buku simpanan digital mandiri real-time</span>
                   </li>
                   <li className="flex items-center gap-2">
                     <CheckCircle2 className="w-3.5 h-3.5 text-forest-700 shrink-0" />
@@ -499,7 +522,7 @@ export const HomeView: React.FC = () => {
                   </li>
                   <li className="flex items-center gap-2">
                     <CheckCircle2 className="w-3.5 h-3.5 text-forest-700 shrink-0" />
-                    <span>Imbal bagi hasil SHU tahunan kompetitif</span>
+                    <span>Perhitungan jasa modal SHU tahunan proporsional</span>
                   </li>
                 </ul>
               </div>
@@ -528,14 +551,14 @@ export const HomeView: React.FC = () => {
                 </Badge>
               </div>
               <div className="absolute bottom-3 right-3 bg-white/95 backdrop-blur-sm px-2.5 py-1 rounded text-[11px] font-semibold text-forest-800 shadow-sm">
-                Plafon s.d. Rp 50 Jt
+                Bunga Flat 10,0% p.a.*
               </div>
             </div>
             <div className="p-6 flex-1 flex flex-col justify-between space-y-4">
               <div>
                 <h3 className="text-base font-bold text-ink-900 mb-1">Pinjaman Modal Usaha</h3>
                 <p className="text-xs text-ink-600 leading-relaxed mb-3">
-                  Pembiayaan produktif untuk pelaku UMKM dan kebutuhan usaha anggota koperasi dengan skema angsuran tetap dan syarat wajar.
+                  Pembiayaan produktif UMKM anggota (Plafon s.d. Rp 100 Jt) & konsumtif (s.d. Rp 50 Jt) dengan skema angsuran flat dan denda 0,5%/hari setelah grace period 3 hari.
                 </p>
                 <ul className="text-xs text-ink-600 space-y-1.5">
                   <li className="flex items-center gap-2">
@@ -544,11 +567,11 @@ export const HomeView: React.FC = () => {
                   </li>
                   <li className="flex items-center gap-2">
                     <CheckCircle2 className="w-3.5 h-3.5 text-forest-700 shrink-0" />
-                    <span>Tenor fleksibel 3 hingga 24 bulan</span>
+                    <span>Tenor fleksibel 3 hingga 36 bulan</span>
                   </li>
                   <li className="flex items-center gap-2">
                     <CheckCircle2 className="w-3.5 h-3.5 text-forest-700 shrink-0" />
-                    <span>Proses verifikasi berkeadilan dan transparan</span>
+                    <span>Syarat keanggotaan aktif minimal 3 bulan</span>
                   </li>
                 </ul>
               </div>
@@ -568,7 +591,7 @@ export const HomeView: React.FC = () => {
             <div className="relative h-48 overflow-hidden bg-ink-100">
               <img
                 src="/images/landing/service-inspection.jpg"
-                alt="Audit laporan operasional dan inspeksi mutu usaha anggota"
+                alt="Musyawarah Rapat Anggota Tahunan (RAT) dan pertanggungjawaban terbuka"
                 className="w-full h-full object-cover"
               />
               <div className="absolute top-3 left-3 flex gap-2">
@@ -577,14 +600,14 @@ export const HomeView: React.FC = () => {
                 </Badge>
               </div>
               <div className="absolute bottom-3 right-3 bg-white/95 backdrop-blur-sm px-2.5 py-1 rounded text-[11px] font-semibold text-forest-800 shadow-sm">
-                1 Member 1 Vote
+                1 Anggota 1 Suara
               </div>
             </div>
             <div className="p-6 flex-1 flex flex-col justify-between space-y-4">
               <div>
                 <h3 className="text-base font-bold text-ink-900 mb-1">Sisa Hasil Usaha (SHU)</h3>
                 <p className="text-xs text-ink-600 leading-relaxed mb-3">
-                  Pembagian keuntungan tahunan berprinsip gotong royong: jasa modal dan jasa transaksi anggota dibagikan secara adil dan terbuka.
+                  Pembagian keuntungan tahunan berprinsip gotong royong: jasa modal dan jasa transaksi anggota dibagikan secara adil dan terbuka melalui RAT.
                 </p>
                 <ul className="text-xs text-ink-600 space-y-1.5">
                   <li className="flex items-center gap-2">
@@ -642,7 +665,7 @@ export const HomeView: React.FC = () => {
                 <div>
                   <h3 className="text-sm font-semibold text-ink-900">Registrasi Identitas & Simpanan Pokok</h3>
                   <p className="text-xs text-ink-600 mt-0.5 leading-relaxed">
-                    Daftar mandiri melalui formulir online dengan mengisi identitas KTP dan menyetorkan simpanan pokok awal.
+                    Daftar mandiri melalui formulir online dengan mengisi identitas KTP dan menyetorkan simpanan pokok awal ({formatIDR(savingsConfig.simpananPokokNominal)}).
                   </p>
                 </div>
               </div>
@@ -675,21 +698,21 @@ export const HomeView: React.FC = () => {
             </div>
           </div>
 
-          {/* Right Column: Visual Photo Card */}
+          {/* Right Column: Visual Photo Card (Customer Service Consultation) */}
           <div className="lg:col-span-5">
             <div className="relative rounded-2xl overflow-hidden border border-ink-200 shadow-md">
               <img
                 src="/images/landing/feature-soil.jpg"
-                alt="Pengolahan lahan dan pupuk organik kaya nutrisi"
+                alt="Petugas koperasi memberikan pendampingan pendaftaran dan konsultasi anggota"
                 className="w-full h-80 sm:h-96 object-cover"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-forest-950/80 via-transparent to-transparent" />
               <div className="absolute bottom-4 left-4 right-4 text-white">
                 <span className="block text-xs font-semibold uppercase tracking-wider text-forest-300">
-                  Prinsip Keberlanjutan
+                  Layanan Pendampingan Anggota
                 </span>
                 <p className="text-xs text-white/90 mt-1 leading-relaxed">
-                  Menumbuhkan ekonomi anggota dari akar, dengan transparansi dan kejujuran sebagai nutrisi utama kemajuan bersama.
+                  Petugas koperasi siap mendampingi proses administrasi, konsultasi pinjaman, dan aktivasi keanggotaan Anda dengan ramah dan transparan.
                 </p>
               </div>
             </div>
@@ -698,19 +721,19 @@ export const HomeView: React.FC = () => {
       </section>
 
       {/* =========================================================================
-          8. FOREST GREEN MEMBER TESTIMONIALS (Deep Contrast Green Container)
+          8. FOREST GREEN MEMBER TESTIMONIALS (Deep Contrast Green Container - DEMO)
          ========================================================================= */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="bg-forest-900 text-white rounded-2xl sm:rounded-3xl p-6 sm:p-12 lg:p-14 shadow-lg border border-forest-800">
           <div className="max-w-2xl mb-10">
             <span className="inline-block text-xs font-bold text-forest-300 tracking-wider uppercase mb-1">
-              SUARA ANGGOTA KOPERASI
+              SUARA ANGGOTA (TESTIMONI SIMULASI DEMO)
             </span>
             <h2 className="text-2xl sm:text-3xl font-bold text-white tracking-tight">
-              Dipercaya oleh Ratusan Anggota & Pelaku Usaha Mikro
+              Aspirasi Anggota & Pelaku Usaha Mikro Binaan
             </h2>
             <p className="text-xs sm:text-sm text-forest-100/90 mt-2">
-              Kisah nyata bagaimana keterbukaan dan kemudahan akses pembiayaan KMB membantu usaha mereka terus bertumbuh.
+              Kutipan pengalaman anggota dalam memanfaatkan keterbukaan informasi dan kemudahan pembiayaan di Koperasi KMB.
             </p>
           </div>
 
@@ -731,7 +754,9 @@ export const HomeView: React.FC = () => {
                   className="w-12 h-12 rounded-full object-cover border-2 border-forest-500 shrink-0"
                 />
                 <div>
-                  <h3 className="text-sm font-semibold text-white">Budi Santoso</h3>
+                  <h3 className="text-sm font-semibold text-white">
+                    Budi Santoso <span className="text-[11px] text-forest-300 font-normal">(Profil Simulasi)</span>
+                  </h3>
                   <p className="text-xs text-forest-200">Anggota Aktif & Petani Hortikultura</p>
                 </div>
               </div>
@@ -752,7 +777,9 @@ export const HomeView: React.FC = () => {
                   className="w-12 h-12 rounded-full object-cover border-2 border-forest-500 shrink-0"
                 />
                 <div>
-                  <h3 className="text-sm font-semibold text-white">Siti Rahmawati</h3>
+                  <h3 className="text-sm font-semibold text-white">
+                    Siti Rahmawati <span className="text-[11px] text-forest-300 font-normal">(Profil Simulasi)</span>
+                  </h3>
                   <p className="text-xs text-forest-200">Anggota Aktif & Pemilik Usaha Kuliner</p>
                 </div>
               </div>
@@ -760,7 +787,7 @@ export const HomeView: React.FC = () => {
           </div>
 
           <div className="mt-8 text-center sm:text-left text-[11px] text-forest-300">
-            * Profil dan testimoni anggota di atas merupakan representasi ilustratif demonstrasi sistem KMB.
+            * Seluruh kutipan dan profil di atas merupakan data sintetis simulasi untuk ilustrasi demonstrasi platform Koperasi KMB.
           </div>
         </div>
       </section>
@@ -799,13 +826,13 @@ export const HomeView: React.FC = () => {
             <div className="p-4 rounded-xl bg-ink-50 border border-ink-200 flex items-center justify-between">
               <div>
                 <span className="text-xs font-semibold text-ink-900 block">Butuh bantuan lebih lanjut?</span>
-                <span className="text-[11px] text-ink-600">Hubungi pengurus melalui sekretariat kami.</span>
+                <span className="text-[11px] text-ink-600">Pelajari profil dan kontak sekretariat kami.</span>
               </div>
-              <a href={`mailto:${config.contact.email}`}>
+              <Link to="/tentang">
                 <Button variant="outline" size="sm">
-                  Kirim Email
+                  Hubungi Sekretariat
                 </Button>
-              </a>
+              </Link>
             </div>
           </div>
 

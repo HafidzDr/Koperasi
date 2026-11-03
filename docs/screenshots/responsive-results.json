@@ -7,13 +7,13 @@
     "domReady": true,
     "domValidation": {
       "isValid": true,
-      "h1Text": "Koperasi Digital KMB\nTumbuh Bersama,\nSejahtera Bersama.",
+      "h1Text": "Koperasi Digital KMB\nSIMULASI\nTumbuh Bersama,\nSejahtera Bersama.",
       "h1Size": {
         "w": 273,
         "h": 123
       },
       "visibleButtonCount": 17,
-      "bodyTextLength": 7765,
+      "bodyTextLength": 8445,
       "reason": "OK"
     },
     "metrics": {
@@ -56,8 +56,8 @@
         },
         {
           "tag": "button",
-          "text": "Pelajari Selengkapnya",
-          "width": 172,
+          "text": "Profil & Tata Kelola",
+          "width": 153,
           "height": 32,
           "isUsable": true
         },
@@ -71,7 +71,7 @@
       ]
     },
     "screenshot": "public_home_320.png",
-    "fileSize": 279595,
+    "fileSize": 278261,
     "status": "PASS"
   },
   {
@@ -82,13 +82,13 @@
     "domReady": true,
     "domValidation": {
       "isValid": true,
-      "h1Text": "Koperasi Digital KMB\nTumbuh Bersama,\nSejahtera Bersama.",
+      "h1Text": "Koperasi Digital KMB\nSIMULASI\nTumbuh Bersama,\nSejahtera Bersama.",
       "h1Size": {
         "w": 328,
         "h": 123
       },
       "visibleButtonCount": 17,
-      "bodyTextLength": 7765,
+      "bodyTextLength": 8445,
       "reason": "OK"
     },
     "metrics": {
@@ -131,8 +131,8 @@
         },
         {
           "tag": "button",
-          "text": "Pelajari Selengkapnya",
-          "width": 172,
+          "text": "Profil & Tata Kelola",
+          "width": 153,
           "height": 32,
           "isUsable": true
         },
@@ -146,7 +146,7 @@
       ]
     },
     "screenshot": "public_home_375.png",
-    "fileSize": 342269,
+    "fileSize": 340834,
     "status": "PASS"
   },
   {
@@ -157,13 +157,13 @@
     "domReady": true,
     "domValidation": {
       "isValid": true,
-      "h1Text": "Koperasi Digital KMB\nTumbuh Bersama,\nSejahtera Bersama.",
+      "h1Text": "Koperasi Digital KMB\nSIMULASI\nTumbuh Bersama,\nSejahtera Bersama.",
       "h1Size": {
         "w": 343,
         "h": 123
       },
       "visibleButtonCount": 17,
-      "bodyTextLength": 7765,
+      "bodyTextLength": 8445,
       "reason": "OK"
     },
     "metrics": {
@@ -206,8 +206,8 @@
         },
         {
           "tag": "button",
-          "text": "Pelajari Selengkapnya",
-          "width": 172,
+          "text": "Profil & Tata Kelola",
+          "width": 153,
           "height": 32,
           "isUsable": true
         },
@@ -221,7 +221,7 @@
       ]
     },
     "screenshot": "public_home_390.png",
-    "fileSize": 409101,
+    "fileSize": 407861,
     "status": "PASS"
   },
   {
@@ -232,13 +232,13 @@
     "domReady": true,
     "domValidation": {
       "isValid": true,
-      "h1Text": "Koperasi Digital KMB\nTumbuh Bersama,\nSejahtera Bersama.",
+      "h1Text": "Koperasi Digital KMB\nSIMULASI\nTumbuh Bersama,\nSejahtera Bersama.",
       "h1Size": {
         "w": 576,
         "h": 183
       },
       "visibleButtonCount": 19,
-      "bodyTextLength": 7828,
+      "bodyTextLength": 8508,
       "reason": "OK"
     },
     "metrics": {
@@ -296,7 +296,7 @@
       ]
     },
     "screenshot": "public_home_768.png",
-    "fileSize": 824772,
+    "fileSize": 824604,
     "status": "PASS"
   },
   {
@@ -307,13 +307,13 @@
     "domReady": true,
     "domValidation": {
       "isValid": true,
-      "h1Text": "Koperasi Digital KMB\nTumbuh Bersama,\nSejahtera Bersama.",
+      "h1Text": "Koperasi Digital KMB\nSIMULASI\nTumbuh Bersama,\nSejahtera Bersama.",
       "h1Size": {
         "w": 672,
         "h": 208
       },
       "visibleButtonCount": 19,
-      "bodyTextLength": 7828,
+      "bodyTextLength": 8508,
       "reason": "OK"
     },
     "metrics": {
@@ -371,7 +371,7 @@
       ]
     },
     "screenshot": "public_home_1024.png",
-    "fileSize": 982252,
+    "fileSize": 982586,
     "status": "PASS"
   },
   {
@@ -382,13 +382,13 @@
     "domReady": true,
     "domValidation": {
       "isValid": true,
-      "h1Text": "Koperasi Digital KMB\nTumbuh Bersama,\nSejahtera Bersama.",
+      "h1Text": "Koperasi Digital KMB\nSIMULASI\nTumbuh Bersama,\nSejahtera Bersama.",
       "h1Size": {
         "w": 672,
         "h": 208
       },
       "visibleButtonCount": 18,
-      "bodyTextLength": 7912,
+      "bodyTextLength": 8592,
       "reason": "OK"
     },
     "metrics": {
@@ -438,15 +438,15 @@
         },
         {
           "tag": "button",
-          "text": "Pelajari Selengkapnya",
-          "width": 172,
+          "text": "Profil & Tata Kelola",
+          "width": 153,
           "height": 32,
           "isUsable": true
         }
       ]
     },
     "screenshot": "public_home_1280.png",
-    "fileSize": 1282654,
+    "fileSize": 1281988,
     "status": "PASS"
   },
   {
@@ -457,13 +457,13 @@
     "domReady": true,
     "domValidation": {
       "isValid": true,
-      "h1Text": "Koperasi Digital KMB\nTumbuh Bersama,\nSejahtera Bersama.",
+      "h1Text": "Koperasi Digital KMB\nSIMULASI\nTumbuh Bersama,\nSejahtera Bersama.",
       "h1Size": {
         "w": 672,
         "h": 208
       },
       "visibleButtonCount": 18,
-      "bodyTextLength": 7912,
+      "bodyTextLength": 8592,
       "reason": "OK"
     },
     "metrics": {
@@ -513,15 +513,15 @@
         },
         {
           "tag": "button",
-          "text": "Pelajari Selengkapnya",
-          "width": 172,
+          "text": "Profil & Tata Kelola",
+          "width": 153,
           "height": 32,
           "isUsable": true
         }
       ]
     },
     "screenshot": "public_home_1440.png",
-    "fileSize": 1567680,
+    "fileSize": 1566704,
     "status": "PASS"
   },
   {
@@ -532,13 +532,13 @@
     "domReady": true,
     "domValidation": {
       "isValid": true,
-      "h1Text": "Koperasi Digital KMB\nTumbuh Bersama,\nSejahtera Bersama.",
+      "h1Text": "Koperasi Digital KMB\nSIMULASI\nTumbuh Bersama,\nSejahtera Bersama.",
       "h1Size": {
         "w": 672,
         "h": 208
       },
       "visibleButtonCount": 18,
-      "bodyTextLength": 7912,
+      "bodyTextLength": 8592,
       "reason": "OK"
     },
     "metrics": {
@@ -588,15 +588,15 @@
         },
         {
           "tag": "button",
-          "text": "Pelajari Selengkapnya",
-          "width": 172,
+          "text": "Profil & Tata Kelola",
+          "width": 153,
           "height": 32,
           "isUsable": true
         }
       ]
     },
     "screenshot": "public_home_1920.png",
-    "fileSize": 1839775,
+    "fileSize": 1838872,
     "status": "PASS"
   },
   {
