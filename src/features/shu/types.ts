@@ -136,6 +136,8 @@ export interface ShuCalculationSnapshot {
     appliedToMemberId?: string;
   };
   isBalanced: boolean;
+  unbalancedReason?: string;
+  undistributedAmount?: number;
   memberDistributions: MemberShuDistributionItem[];
   status: ShuSnapshotStatus;
   statusHistory: {

@@ -1,10 +1,11 @@
 import { create } from "zustand";
-import { Role } from "@/types";
+import { canPerformAction } from "@/lib/rbac";
 import { useMembershipStore } from "@/features/membership/stores/membershipStore";
 import { useSavingsStore } from "@/features/savings/stores/savingsStore";
 import { useBusinessUnitStore } from "@/features/business-units/stores/businessUnitStore";
 import {
   ShuPeriod,
+  ShuPeriodStatus,
   ShuPolicyConfig,
   ShuCalculationSnapshot,
   ShuActor,
@@ -53,9 +54,9 @@ export interface ShuStoreState {
   updatePolicyConfig: (
     periodId: string,
     categories: Record<ShuAllocationCategoryKey, { percentage: number }>,
-    capitalSources?: Partial<ShuCapitalSourcesConfig>,
-    weights?: Partial<ShuBusinessParticipationWeights>,
-    actor?: ShuActor
+    capitalSources: Partial<ShuCapitalSourcesConfig> | undefined,
+    weights: Partial<ShuBusinessParticipationWeights> | undefined,
+    actor: ShuActor
   ) => ShuPolicyConfig;
   updateFinancialInput: (
     periodId: string,
@@ -114,6 +115,91 @@ export interface ShuStoreState {
   resetToSeed: () => void;
 }
 
+function isValidPeriod(p: unknown): boolean {
+  if (!p || typeof p !== "object") return false;
+  const period = p as Record<string, unknown>;
+  if (typeof period.id !== "string" || !period.id.startsWith("SHU-")) return false;
+  if (typeof period.fiscalYear !== "number" || !Number.isInteger(period.fiscalYear) || period.fiscalYear < 2000 || period.fiscalYear > 2100) return false;
+  if (typeof period.name !== "string" || period.name.trim().length === 0) return false;
+  if (typeof period.startDate !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(period.startDate)) return false;
+  if (typeof period.endDate !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(period.endDate)) return false;
+  const validStatuses: ShuPeriodStatus[] = [
+    "draft",
+    "data_collection",
+    "calculation_ready",
+    "calculated",
+    "under_review",
+    "approved",
+    "published",
+    "closed",
+    "rejected",
+  ];
+  if (!validStatuses.includes(period.status as ShuPeriodStatus)) return false;
+  if (!period.financialInput || typeof period.financialInput !== "object") return false;
+  const fin = period.financialInput as Record<string, unknown>;
+  if (
+    typeof fin.totalRevenue !== "number" ||
+    fin.totalRevenue < 0 ||
+    typeof fin.totalExpense !== "number" ||
+    fin.totalExpense < 0 ||
+    typeof fin.netIncome !== "number" ||
+    typeof fin.distributableShu !== "number" ||
+    fin.distributableShu < 0
+  ) {
+    return false;
+  }
+  if (!period.activePolicyConfig || typeof period.activePolicyConfig !== "object") return false;
+  const pol = period.activePolicyConfig as Record<string, unknown>;
+  if (!pol.categories || typeof pol.categories !== "object") return false;
+  const cats = pol.categories as Record<string, { percentage?: unknown }>;
+  const requiredCategories: ShuAllocationCategoryKey[] = [
+    "cadangan",
+    "jasa_modal",
+    "jasa_usaha",
+    "dana_pengurus",
+    "dana_pendidikan",
+    "dana_sosial",
+  ];
+  let catSum = 0;
+  for (const rc of requiredCategories) {
+    const c = cats[rc];
+    if (!c || typeof c.percentage !== "number" || c.percentage < 0) return false;
+    catSum += c.percentage;
+  }
+  if (Math.round(catSum * 100) / 100 !== 100) return false;
+
+  if (!Array.isArray(period.snapshots)) return false;
+  for (const s of period.snapshots) {
+    if (!s || typeof s !== "object") return false;
+    const snap = s as Record<string, unknown>;
+    if (typeof snap.id !== "string" || typeof snap.version !== "number" || snap.version < 1) return false;
+    if (typeof snap.isBalanced !== "boolean") return false;
+    if (typeof snap.totalDistributableShu !== "number" || typeof snap.totalMemberDistribution !== "number") return false;
+    if (!Array.isArray(snap.memberDistributions)) return false;
+  }
+
+  if (period.activeSnapshotId) {
+    if (!period.snapshots.some((s: { id?: unknown }) => s.id === period.activeSnapshotId)) return false;
+  }
+
+  return true;
+}
+
+function validateStoragePayload(parsed: unknown): parsed is StoragePayload {
+  if (!parsed || typeof parsed !== "object") return false;
+  const payload = parsed as Record<string, unknown>;
+  if (!Array.isArray(payload.periods) || payload.periods.length === 0) return false;
+  for (const period of payload.periods) {
+    if (!isValidPeriod(period)) return false;
+  }
+  if (payload.policyConfig) {
+    if (typeof payload.policyConfig !== "object") return false;
+    const pol = payload.policyConfig as Record<string, unknown>;
+    if (typeof pol.categories !== "object") return false;
+  }
+  return true;
+}
+
 function loadFromStorage(): StoragePayload {
   if (typeof window === "undefined") {
     return {
@@ -129,8 +215,8 @@ function loadFromStorage(): StoragePayload {
         policyConfig: defaultShuPolicyConfig,
       };
     }
-    const parsed = JSON.parse(raw) as Partial<StoragePayload>;
-    if (!parsed || !Array.isArray(parsed.periods) || parsed.periods.length === 0) {
+    const parsed = JSON.parse(raw);
+    if (!validateStoragePayload(parsed)) {
       return {
         periods: initialSeedShuPeriods,
         policyConfig: defaultShuPolicyConfig,
@@ -271,11 +357,14 @@ export const useShuStore = create<ShuStoreState>((set, get) => ({
     return updated;
   },
   updatePolicyConfig: (periodId, categoriesInput, capitalSources, weights, actor) => {
-    if (actor && (actor.role === "admin" || actor.role === "super_admin")) {
-      throw new Error("Pemisahan Tugas (SoD): Administrator dilarang menetapkan kebijakan finansial SHU.");
+    if (!actor || !actor.id || !actor.role) {
+      throw new Error("Akses ditolak: Identitas aktor (actor) wajib disertakan untuk mengubah konfigurasi kebijakan SHU.");
     }
-    if (actor && (actor.role === "member" || actor.role === "auditor" || actor.role === "staff")) {
-      throw new Error("Akses ditolak: Hanya pengurus dan bendahara yang berwenang menetapkan kebijakan alokasi SHU.");
+    if (actor.role === "admin" || actor.role === "super_admin") {
+      throw new Error("Pemisahan Tugas (SoD): Administrator teknis dan Super Admin dilarang menetapkan atau mengubah kebijakan finansial SHU.");
+    }
+    if (actor.role !== "manager" && actor.role !== "treasurer") {
+      throw new Error(`Akses ditolak: Peran "${actor.role}" tidak memiliki kewenangan mengubah kebijakan alokasi SHU.`);
     }
 
     const target = get().periods.find((p) => p.id === periodId);
@@ -312,18 +401,18 @@ export const useShuStore = create<ShuStoreState>((set, get) => ({
     const historyEntry = {
       id: `POL-HIST-${Date.now()}`,
       timestamp: now,
-      actorId: actor?.id || "demo_actor",
-      actorName: actor?.name || "Pengurus",
-      actorRole: (actor?.role || "manager") as Role,
-      changeSummary: `Alokasi diperbarui (Cadangan: ${newCategories.cadangan.percentage}%, Modal: ${newCategories.jasa_modal.percentage}%, Usaha: ${newCategories.jasa_usaha.percentage}%).`,
+      actorId: actor.id,
+      actorName: actor.name,
+      actorRole: actor.role,
+      changeSummary: `Alokasi diperbarui oleh ${actor.name} (${actor.role}): (Cadangan: ${newCategories.cadangan.percentage}%, Modal: ${newCategories.jasa_modal.percentage}%, Usaha: ${newCategories.jasa_usaha.percentage}%).`,
     };
 
     const updatedConfig: ShuPolicyConfig = {
       version: currentConfig.version + 1,
       updatedAt: now,
-      updatedById: actor?.id || "demo_actor",
-      updatedByName: actor?.name || "Pengurus",
-      updatedByRole: (actor?.role || "manager") as Role,
+      updatedById: actor.id,
+      updatedByName: actor.name,
+      updatedByRole: actor.role,
       categories: newCategories,
       capitalSources: newCapitalSources,
       businessParticipationWeights: newWeights,
@@ -339,11 +428,11 @@ export const useShuStore = create<ShuStoreState>((set, get) => ({
         {
           id: `AUD-${periodId}-${target.auditLogs.length + 1}`,
           timestamp: now,
-          actorId: actor?.id || "demo_actor",
-          actorName: actor?.name || "Pengurus",
-          actorRole: (actor?.role || "manager") as Role,
+          actorId: actor.id,
+          actorName: actor.name,
+          actorRole: actor.role,
           action: "policy_updated",
-          details: `Kebijakan alokasi SHU versi ${updatedConfig.version} disimpan.`,
+          details: `Kebijakan alokasi SHU versi ${updatedConfig.version} disimpan oleh ${actor.name} (${actor.role}).`,
         },
       ],
     };
@@ -354,11 +443,20 @@ export const useShuStore = create<ShuStoreState>((set, get) => ({
     return updatedConfig;
   },
   updateFinancialInput: (periodId, input, actor) => {
+    if (!actor || !actor.id || !actor.role) {
+      throw new Error("Akses ditolak: Identitas aktor (actor) diperlukan.");
+    }
     if (actor.role === "admin" || actor.role === "super_admin") {
-      throw new Error("Pemisahan Tugas (SoD): Administrator teknis tidak berwenang menginput data finansial koperasi.");
+      throw new Error("Pemisahan Tugas (SoD): Administrator teknis dan Super Admin tidak berwenang menginput data finansial koperasi.");
+    }
+    if (actor.role === "staff") {
+      throw new Error("Akses ditolak: Staf operasional hanya berwenang dalam persiapan dan pengumpulan data, bukan penetapan input finansial.");
     }
     if (actor.role === "member" || actor.role === "auditor") {
-      throw new Error("Akses ditolak: Anda tidak memiliki izin menginput kinerja finansial koperasi.");
+      throw new Error(`Akses ditolak: Peran ${actor.role} tidak memiliki izin menginput kinerja finansial koperasi.`);
+    }
+    if (actor.role !== "finance_officer" && actor.role !== "treasurer" && actor.role !== "manager") {
+      throw new Error(`Akses ditolak: Peran ${actor.role} tidak berwenang menginput data finansial.`);
     }
 
     const validated = updateFinancialInputSchema.parse(input);
@@ -543,6 +641,10 @@ export const useShuStore = create<ShuStoreState>((set, get) => ({
       totalMemberDistribution: memberCalc.totalDistributed,
       roundingCorrection: memberCalc.roundingCorrection,
       isBalanced: memberCalc.isBalanced,
+      unbalancedReason: memberCalc.unbalancedReason,
+      undistributedAmount:
+        (memberCalc.undistributedModalPool || 0) +
+        (memberCalc.undistributedUsahaPool || 0),
       memberDistributions: memberCalc.distributions,
       status: "calculated",
       statusHistory: [
@@ -604,6 +706,13 @@ export const useShuStore = create<ShuStoreState>((set, get) => ({
 
     if (snap.status !== "calculated" && snap.status !== "rejected") {
       throw new Error(`Snapshot dalam status "${snap.status}" tidak dapat diajukan untuk peninjauan.`);
+    }
+
+    // Invariant check: Unbalanced calculation cannot be submitted for review
+    if (!snap.isBalanced) {
+      throw new Error(
+        `Kalkulasi tidak seimbang (${snap.unbalancedReason || "terdapat dana SHU yang belum terdistribusi"}) dan dilarang diajukan untuk peninjauan.`
+      );
     }
 
     const now = new Date().toISOString();
@@ -673,6 +782,11 @@ export const useShuStore = create<ShuStoreState>((set, get) => ({
 
     if (snap.status !== "under_review") {
       throw new Error(`Hanya kalkulasi berstatus "under_review" yang dapat disetujui. Status saat ini: "${snap.status}".`);
+    }
+
+    // Invariant check: Unbalanced calculation cannot be approved
+    if (!snap.isBalanced) {
+      throw new Error("Kalkulasi tidak seimbang dilarang disetujui.");
     }
 
     const now = new Date().toISOString();
@@ -809,6 +923,11 @@ export const useShuStore = create<ShuStoreState>((set, get) => ({
       throw new Error(`Hanya kalkulasi yang telah disetujui resmi yang dapat dipublikasikan. Status saat ini: "${snap.status}".`);
     }
 
+    // Invariant check: Unbalanced calculation cannot be published
+    if (!snap.isBalanced) {
+      throw new Error("Kalkulasi tidak seimbang dilarang dipublikasikan.");
+    }
+
     const now = new Date().toISOString();
     const updatedSnap: ShuCalculationSnapshot = {
       ...snap,
@@ -897,14 +1016,34 @@ export const useShuStore = create<ShuStoreState>((set, get) => ({
   },
 
   adjustPublishedShu: (periodId, snapshotId, adjustmentSummary, reason, actor) => {
+    if (!actor || !actor.id || !actor.role) {
+      throw new Error("Akses ditolak: Identitas aktor diperlukan untuk mencatat penyesuaian audit.");
+    }
     if (actor.role !== "manager" && actor.role !== "treasurer") {
       throw new Error("Akses ditolak: Hanya pengurus dan bendahara yang berwenang mencatat penyesuaian audit SHU.");
+    }
+    if (!adjustmentSummary || adjustmentSummary.trim().length < 3) {
+      throw new Error("Ringkasan penyesuaian audit wajib diisi minimal 3 karakter.");
     }
     if (!reason || reason.trim().length < 3) {
       throw new Error("Alasan penyesuaian audit wajib diisi minimal 3 karakter.");
     }
+
     const target = get().periods.find((p) => p.id === periodId);
     if (!target) throw new Error(`Periode dengan ID "${periodId}" tidak ditemukan.`);
+
+    if (target.status !== "published" && target.status !== "closed") {
+      throw new Error("Penyesuaian audit hanya dapat dicatat pada periode yang telah dipublikasikan atau ditutup.");
+    }
+
+    const targetSnap = target.snapshots.find((s) => s.id === snapshotId);
+    if (!targetSnap) {
+      throw new Error(`Snapshot kalkulasi dengan ID "${snapshotId}" tidak ditemukan pada periode "${periodId}".`);
+    }
+
+    if (targetSnap.status !== "published") {
+      throw new Error("Penyesuaian audit hanya dapat dicatat pada snapshot yang telah dipublikasikan.");
+    }
 
     const now = new Date().toISOString();
     const newAdjustmentLog: ShuPeriodAdjustmentLog = {
@@ -931,7 +1070,7 @@ export const useShuStore = create<ShuStoreState>((set, get) => ({
           actorName: actor.name,
           actorRole: actor.role,
           action: "audit_adjustment_recorded",
-          details: `Koreksi audit dicatat: ${adjustmentSummary.trim()} (${reason.trim()}).`,
+          details: `Koreksi audit dicatat untuk snapshot ${snapshotId}: ${adjustmentSummary.trim()} (${reason.trim()}).`,
         },
       ],
     };
@@ -952,16 +1091,46 @@ export const useShuStore = create<ShuStoreState>((set, get) => ({
   },
 
   getMemberPublishedShu: (memberId, actor) => {
-    if (!actor || !memberId || memberId.trim() === "") return [];
+    // 1. Strict Actor validation
+    if (!actor || !actor.id || !actor.role) {
+      throw new Error("Akses ditolak: Autentikasi sesi pengguna diperlukan.");
+    }
 
-    // Privacy rule: Member can only view own SHU!
+    const cleanMemberId = (memberId || "").trim();
+    if (!cleanMemberId) {
+      throw new Error("Akses ditolak: Identitas anggota (memberId) tidak valid atau kosong.");
+    }
+
+    // 2. Public Contexts: Strictly Denied
+    if (actor.role === "public_visitor" || actor.role === "applicant") {
+      throw new Error(
+        "Akses ditolak: Pengunjung publik dan calon anggota tidak memiliki hak akses ke data finansial SHU anggota."
+      );
+    }
+
+    // 3. Admin & Super Admin: Strictly Denied by SoD
+    if (actor.role === "admin" || actor.role === "super_admin") {
+      throw new Error(
+        "Pemisahan Tugas (SoD): Administrator teknis dan Super Admin tidak memiliki hak akses data finansial perorangan anggota."
+      );
+    }
+
+    // 4. Member Role: Only own memberId, must have memberId
     if (actor.role === "member") {
-      if (!actor.memberId || actor.memberId.trim() !== memberId.trim()) {
+      if (!actor.memberId || actor.memberId.trim() === "") {
+        throw new Error("Akses ditolak: Identitas keanggotaan (memberId) tidak ditemukan pada akun Anda.");
+      }
+      if (actor.memberId.trim() !== cleanMemberId) {
         throw new Error("Akses ditolak: Anggota hanya dapat melihat rincian SHU miliknya sendiri.");
+      }
+    } else {
+      // 5. Non-member Role: Must have shu:view permission!
+      if (!canPerformAction(actor.role, "shu", "view")) {
+        throw new Error(`Akses ditolak: Peran "${actor.role}" tidak memiliki izin melihat data SHU anggota (shu:view).`);
       }
     }
 
-    // Only published or closed periods can be viewed as final member SHU
+    // 6. Only published or closed periods can be viewed as final member SHU
     const publishedPeriods = get().periods.filter(
       (p) => p.status === "published" || p.status === "closed"
     );
@@ -973,17 +1142,19 @@ export const useShuStore = create<ShuStoreState>((set, get) => ({
     }[] = [];
 
     for (const period of publishedPeriods) {
-      const activeSnapshot =
-        period.snapshots.find((s) => s.id === period.activeSnapshotId) ||
-        period.snapshots.find((s) => s.status === "published");
-      if (activeSnapshot) {
-        const dist = activeSnapshot.memberDistributions.find(
-          (d) => d.memberId === memberId.trim()
+      const targetSnapshot =
+        period.snapshots.find(
+          (s) => s.id === period.activeSnapshotId && s.status === "published"
+        ) || period.snapshots.find((s) => s.status === "published");
+
+      if (targetSnapshot) {
+        const dist = targetSnapshot.memberDistributions.find(
+          (d) => d.memberId === cleanMemberId
         );
         if (dist) {
           results.push({
             period,
-            snapshot: activeSnapshot,
+            snapshot: targetSnapshot,
             distribution: dist,
           });
         }

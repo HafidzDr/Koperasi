@@ -12,7 +12,8 @@ export type Domain =
   | "platform_config"
   | "product_config"
   | "audit"
-  | "demo_tools";
+  | "demo_tools"
+  | "shu";
 
 export type Action =
   | "view"
@@ -75,6 +76,7 @@ export const ROLE_PERMISSIONS: Record<Role, readonly Permission[]> = {
     "business_units:view",
     "reports:view",
     "reports:export",
+    "shu:view",
   ],
 
   // 2. Staff: Operational administration (Verifikasi & Rekomendasi, Pencatatan Lapangan)
@@ -124,6 +126,9 @@ export const ROLE_PERMISSIONS: Record<Role, readonly Permission[]> = {
     "reports:view",
     "reports:export",
     "product_config:view",
+    "shu:view",
+    "shu:record",
+    "shu:verify",
   ],
 
   // 4. Treasurer: Financial Authority & Liquidity Oversight (Buku Kas, Koreksi Saldo/Denda)
@@ -147,6 +152,9 @@ export const ROLE_PERMISSIONS: Record<Role, readonly Permission[]> = {
     "platform_config:view",
     "product_config:view",
     "product_config:update",
+    "shu:view",
+    "shu:review",
+    "shu:adjust",
   ],
 
   // 5. Manager: Governance & Board Authority (Persetujuan Final Keanggotaan, Level 3 Pinjaman, Otorisasi Kas)
@@ -178,6 +186,9 @@ export const ROLE_PERMISSIONS: Record<Role, readonly Permission[]> = {
     "product_config:update",
     "product_config:approve",
     "audit:view",
+    "shu:view",
+    "shu:approve",
+    "shu:reject",
   ],
 
   // 6. Auditor: Governance / Oversight (MURNI READ-ONLY & EXPORT, Tanpa Hak Tulis/Ubah/Persetujuan)
@@ -193,6 +204,8 @@ export const ROLE_PERMISSIONS: Record<Role, readonly Permission[]> = {
     "reports:export",
     "audit:view",
     "audit:export",
+    "shu:view",
+    "shu:export",
   ],
 
   // 7. Administrator: System Maintenance & Technical Management (TANPA KEWENANGAN TRANSAKSI KEUANGAN)

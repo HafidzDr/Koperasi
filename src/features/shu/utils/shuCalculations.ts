@@ -138,14 +138,8 @@ export function computeAllocations(
 
   return result;
 }
-export function computeMemberDistributions(
-  candidates: MemberCandidate[],
-  savingsMap: Map<string, MemberSavingsData>,
-  participationMap: Map<string, MemberParticipationData>,
-  jasaModalPool: number,
-  jasaUsahaPool: number,
-  policy: ShuPolicyConfig
-): {
+
+export interface MemberDistributionResult {
   distributions: MemberShuDistributionItem[];
   roundingCorrection: {
     modalResidual: number;
@@ -154,12 +148,65 @@ export function computeMemberDistributions(
     appliedToMemberId?: string;
   };
   totalDistributed: number;
+  allocatedJasaModal: number;
+  allocatedJasaUsaha: number;
+  undistributedModalPool: number;
+  undistributedUsahaPool: number;
+  totalEligibleCapitalMembers: number;
+  totalEligibleParticipationMembers: number;
   isBalanced: boolean;
-} {
+  unbalancedReason?: string;
+}
+
+export function computeMemberDistributions(
+  candidates: MemberCandidate[],
+  savingsMap: Map<string, MemberSavingsData>,
+  participationMap: Map<string, MemberParticipationData>,
+  jasaModalPool: number,
+  jasaUsahaPool: number,
+  policy: ShuPolicyConfig
+): MemberDistributionResult {
   const distributions: MemberShuDistributionItem[] = [];
   const eligibleCandidates = candidates.filter((c) => c.isActive);
 
-  if (eligibleCandidates.length === 0 || (jasaModalPool <= 0 && jasaUsahaPool <= 0)) {
+  const targetModalPool = jasaModalPool > 0 ? jasaModalPool : 0;
+  const targetUsahaPool = jasaUsahaPool > 0 ? jasaUsahaPool : 0;
+  const totalTargetPool = targetModalPool + targetUsahaPool;
+
+  if (eligibleCandidates.length === 0) {
+    for (const c of candidates) {
+      distributions.push({
+        memberId: c.id,
+        memberName: c.name,
+        memberNumber: c.memberNumber,
+        qualifyingCapital: 0,
+        jasaModalRaw: 0,
+        jasaModalFinal: 0,
+        verifiedParticipation: 0,
+        jasaUsahaRaw: 0,
+        jasaUsahaFinal: 0,
+        totalShu: 0,
+        status: "excluded",
+        exclusionReason: "Keanggotaan tidak aktif.",
+      });
+    }
+    const isZeroPool = totalTargetPool === 0;
+    return {
+      distributions,
+      roundingCorrection: { modalResidual: 0, usahaResidual: 0, totalResidual: 0 },
+      totalDistributed: 0,
+      allocatedJasaModal: targetModalPool,
+      allocatedJasaUsaha: targetUsahaPool,
+      undistributedModalPool: targetModalPool,
+      undistributedUsahaPool: targetUsahaPool,
+      totalEligibleCapitalMembers: 0,
+      totalEligibleParticipationMembers: 0,
+      isBalanced: isZeroPool,
+      unbalancedReason: isZeroPool ? undefined : "Tidak ada anggota aktif yang berhak menerima alokasi SHU.",
+    };
+  }
+
+  if (totalTargetPool === 0) {
     for (const c of candidates) {
       distributions.push({
         memberId: c.id,
@@ -180,6 +227,12 @@ export function computeMemberDistributions(
       distributions,
       roundingCorrection: { modalResidual: 0, usahaResidual: 0, totalResidual: 0 },
       totalDistributed: 0,
+      allocatedJasaModal: 0,
+      allocatedJasaUsaha: 0,
+      undistributedModalPool: 0,
+      undistributedUsahaPool: 0,
+      totalEligibleCapitalMembers: 0,
+      totalEligibleParticipationMembers: 0,
       isBalanced: true,
     };
   }
@@ -206,20 +259,23 @@ export function computeMemberDistributions(
     return { candidate: c, capital, participation };
   });
 
+  const totalEligibleCapitalMembers = intermediate.filter((it) => it.capital > 0).length;
+  const totalEligibleParticipationMembers = intermediate.filter((it) => it.participation > 0).length;
+
   let sumModalFloor = 0;
   let sumUsahaFloor = 0;
 
   const items = intermediate.map(({ candidate, capital, participation }) => {
     const rawModal =
-      totalQualifyingCapital > 0 && jasaModalPool > 0
-        ? (jasaModalPool * capital) / totalQualifyingCapital
+      totalQualifyingCapital > 0 && targetModalPool > 0
+        ? (targetModalPool * capital) / totalQualifyingCapital
         : 0;
     const floorModal = Math.floor(rawModal);
     const fracModal = rawModal - floorModal;
 
     const rawUsaha =
-      totalVerifiedParticipation > 0 && jasaUsahaPool > 0
-        ? (jasaUsahaPool * participation) / totalVerifiedParticipation
+      totalVerifiedParticipation > 0 && targetUsahaPool > 0
+        ? (targetUsahaPool * participation) / totalVerifiedParticipation
         : 0;
     const floorUsaha = Math.floor(rawUsaha);
     const fracUsaha = rawUsaha - floorUsaha;
@@ -240,7 +296,8 @@ export function computeMemberDistributions(
     };
   });
 
-  let modalResidual = jasaModalPool - sumModalFloor;
+  // Largest remainder rounding for Jasa Modal
+  let modalResidual = targetModalPool - sumModalFloor;
   if (modalResidual > 0 && totalQualifyingCapital > 0) {
     items.sort((a, b) => b.fracModal - a.fracModal || b.capital - a.capital);
     for (let i = 0; i < items.length && modalResidual > 0; i++) {
@@ -249,7 +306,8 @@ export function computeMemberDistributions(
     }
   }
 
-  let usahaResidual = jasaUsahaPool - sumUsahaFloor;
+  // Largest remainder rounding for Jasa Usaha
+  let usahaResidual = targetUsahaPool - sumUsahaFloor;
   if (usahaResidual > 0 && totalVerifiedParticipation > 0) {
     items.sort((a, b) => b.fracUsaha - a.fracUsaha || b.participation - a.participation);
     for (let i = 0; i < items.length && usahaResidual > 0; i++) {
@@ -300,10 +358,36 @@ export function computeMemberDistributions(
     }
   }
 
-  const expectedTotal =
-    (totalQualifyingCapital > 0 ? jasaModalPool : 0) +
-    (totalVerifiedParticipation > 0 ? jasaUsahaPool : 0);
-  const isBalanced = totalDistributed === expectedTotal;
+  // Undistributed pool detection
+  let undistributedModalPool = 0;
+  let undistributedUsahaPool = 0;
+  const unbalancedReasons: string[] = [];
+
+  if (targetModalPool > 0 && totalQualifyingCapital === 0) {
+    undistributedModalPool = targetModalPool;
+    unbalancedReasons.push(
+      `Alokasi Jasa Modal sebesar Rp${targetModalPool.toLocaleString("id-ID")} tidak dapat didistribusikan karena tidak ada simpanan anggota yang memenuhi syarat kualifikasi.`
+    );
+  }
+
+  if (targetUsahaPool > 0 && totalVerifiedParticipation === 0) {
+    undistributedUsahaPool = targetUsahaPool;
+    unbalancedReasons.push(
+      `Alokasi Jasa Usaha sebesar Rp${targetUsahaPool.toLocaleString("id-ID")} tidak dapat didistribusikan karena tidak ada transaksi partisipasi unit usaha berstatus verified.`
+    );
+  }
+
+  // Invariant: totalDistributed must exactly equal allocatedJasaModal + allocatedJasaUsaha with 0 undistributed pool
+  const isBalanced =
+    totalDistributed === totalTargetPool &&
+    undistributedModalPool === 0 &&
+    undistributedUsahaPool === 0;
+
+  if (!isBalanced && unbalancedReasons.length === 0) {
+    unbalancedReasons.push(
+      `Total distribusi anggota (Rp${totalDistributed.toLocaleString("id-ID")}) tidak seimbang dengan alokasi pool yang disyaratkan (Rp${totalTargetPool.toLocaleString("id-ID")}).`
+    );
+  }
 
   return {
     distributions,
@@ -314,7 +398,14 @@ export function computeMemberDistributions(
       appliedToMemberId: items[0]?.candidate.id,
     },
     totalDistributed,
+    allocatedJasaModal: targetModalPool,
+    allocatedJasaUsaha: targetUsahaPool,
+    undistributedModalPool,
+    undistributedUsahaPool,
+    totalEligibleCapitalMembers,
+    totalEligibleParticipationMembers,
     isBalanced,
+    unbalancedReason: unbalancedReasons.length > 0 ? unbalancedReasons.join(" ") : undefined,
   };
 }
 
