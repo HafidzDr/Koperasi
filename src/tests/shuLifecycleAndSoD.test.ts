@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from "vitest";
 import { useShuStore } from "../features/shu/stores/shuStore";
-import { ShuActor } from "../features/shu/types";
+import { ShuActor, ShuCalculationSnapshot } from "../features/shu/types";
 
 describe("PHASE 7 — SHU Lifecycle State Machine & Segregation of Duties (SoD) Tests", () => {
   beforeEach(() => {
@@ -130,6 +130,8 @@ describe("PHASE 7 — SHU Lifecycle State Machine & Segregation of Duties (SoD) 
       expect(rejected.rejectionReason).toBe("Periksa kembali data alokasi dana pendidikan");
       expect(store.getPeriodById("SHU-2025")?.status).toBe("rejected");
     });
+  });
+
   describe("2. Penegakan Pemisahan Tugas (SoD) & Pembatasan Peran", () => {
     it("2.1. STRICT SoD: Pembuat kalkulasi dilarang menyetujui kalkulasi buatan sendiri", () => {
       const store = useShuStore.getState();
@@ -237,25 +239,329 @@ describe("PHASE 7 — SHU Lifecycle State Machine & Segregation of Duties (SoD) 
       }).toThrow(/Anggota hanya dapat melihat rincian SHU miliknya sendiri/i);
     });
 
-    it("3.3. Anggota dengan memberId kosong/tidak valid menghasilkan list kosong yang aman", () => {
+    it("3.3. Member tanpa memberId wajib ditolak secara fail-closed", () => {
       const store = useShuStore.getState();
       const invalidActor: ShuActor = { id: "user-anon", name: "Anon", role: "member", memberId: undefined };
 
-      const res = store.getMemberPublishedShu("", invalidActor);
-      expect(res).toEqual([]);
+      expect(() => {
+        store.getMemberPublishedShu("DEMO-ID-0001", invalidActor);
+      }).toThrow(/Identitas keanggotaan \(memberId\) tidak ditemukan/i);
     });
 
-    it("3.4. Anggota tidak dapat melihat snapshot draft atau under_review sebagai hasil final", () => {
+    it("3.4. Public visitor dan applicant ditolak dari akses SHU anggota", () => {
+      const store = useShuStore.getState();
+      const visitorActor: ShuActor = { id: "user-public", name: "Tamu", role: "public_visitor" };
+      const applicantActor: ShuActor = { id: "user-applicant", name: "Pelamar", role: "applicant" };
+
+      expect(() => {
+        store.getMemberPublishedShu("DEMO-ID-0001", visitorActor);
+      }).toThrow(/Pengunjung publik dan calon anggota tidak memiliki hak akses/i);
+
+      expect(() => {
+        store.getMemberPublishedShu("DEMO-ID-0001", applicantActor);
+      }).toThrow(/Pengunjung publik dan calon anggota tidak memiliki hak akses/i);
+    });
+
+    it("3.5. Staff tanpa permission ditolak dari membaca SHU anggota", () => {
+      const store = useShuStore.getState();
+      expect(() => {
+        store.getMemberPublishedShu("DEMO-ID-0001", staffActor);
+      }).toThrow(/tidak memiliki izin melihat data SHU anggota/i);
+    });
+
+    it("3.6. Admin dan Super Admin ditolak dari hak finansial SHU anggota (SoD)", () => {
+      const store = useShuStore.getState();
+      expect(() => {
+        store.getMemberPublishedShu("DEMO-ID-0001", adminActor);
+      }).toThrow(/Administrator teknis dan Super Admin tidak memiliki hak akses/i);
+
+      expect(() => {
+        store.getMemberPublishedShu("DEMO-ID-0001", superAdminActor);
+      }).toThrow(/Administrator teknis dan Super Admin tidak memiliki hak akses/i);
+    });
+
+    it("3.7. Auditor dapat membaca SHU anggota (read-only)", () => {
+      const store = useShuStore.getState();
+      const res = store.getMemberPublishedShu("DEMO-ID-0001", auditorActor);
+      expect(res.length).toBeGreaterThan(0);
+      expect(res[0].distribution.memberId).toBe("DEMO-ID-0001");
+    });
+
+    it("3.8. Periode draft, calculated, under_review, rejected tidak dapat dikembalikan sebagai SHU final", () => {
       const store = useShuStore.getState();
 
-      // SHU-2025 status is under_review, SHU-2024 is published
       const sitiShu = store.getMemberPublishedShu("DEMO-ID-0001", memberActor1);
-
-      // Hanya SHU-2024 yang muncul, SHU-2025 TIDAK boleh muncul ke anggota
       const periodIds = sitiShu.map((s) => s.period.id);
       expect(periodIds).toContain("SHU-2024");
       expect(periodIds).not.toContain("SHU-2025");
       expect(periodIds).not.toContain("SHU-2026");
+    });
+  });
+
+  describe("4. Otorisasi updatePolicyConfig & updateFinancialInput", () => {
+    it("4.1. updatePolicyConfig tanpa actor atau actor tidak valid ditolak", () => {
+      const store = useShuStore.getState();
+      expect(() => {
+        store.updatePolicyConfig(
+          "SHU-2025",
+          {
+            cadangan: { percentage: 30 },
+            jasa_modal: { percentage: 30 },
+            jasa_usaha: { percentage: 25 },
+            dana_pengurus: { percentage: 5 },
+            dana_pendidikan: { percentage: 5 },
+            dana_sosial: { percentage: 5 },
+          },
+          undefined,
+          undefined,
+          null as unknown as ShuActor
+        );
+      }).toThrow(/Identitas aktor \(actor\) wajib disertakan/i);
+    });
+
+    it("4.2. updatePolicyConfig ditolak untuk Admin, Super Admin, Member, Staff, dan Auditor", () => {
+      const store = useShuStore.getState();
+      const unauthorizedRoles = [adminActor, superAdminActor, memberActor1, staffActor, auditorActor];
+
+      for (const unauthorized of unauthorizedRoles) {
+        expect(() => {
+          store.updatePolicyConfig(
+            "SHU-2025",
+            {
+              cadangan: { percentage: 30 },
+              jasa_modal: { percentage: 30 },
+              jasa_usaha: { percentage: 25 },
+              dana_pengurus: { percentage: 5 },
+              dana_pendidikan: { percentage: 5 },
+              dana_sosial: { percentage: 5 },
+            },
+            undefined,
+            undefined,
+            unauthorized
+          );
+        }).toThrow();
+      }
+    });
+
+    it("4.3. Manager dan Treasurer yang sah dapat mengubah kebijakan alokasi", () => {
+      const store = useShuStore.getState();
+
+      const updatedByManager = store.updatePolicyConfig(
+        "SHU-2025",
+        {
+          cadangan: { percentage: 35 },
+          jasa_modal: { percentage: 25 },
+          jasa_usaha: { percentage: 25 },
+          dana_pengurus: { percentage: 5 },
+          dana_pendidikan: { percentage: 5 },
+          dana_sosial: { percentage: 5 },
+        },
+        undefined,
+        undefined,
+        managerActor
+      );
+      expect(updatedByManager.categories.cadangan.percentage).toBe(35);
+
+      const treasurerActor: ShuActor = { id: "user-treasurer-01", name: "Sri Mulyani", role: "treasurer" };
+      const updatedByTreasurer = store.updatePolicyConfig(
+        "SHU-2025",
+        {
+          cadangan: { percentage: 30 },
+          jasa_modal: { percentage: 30 },
+          jasa_usaha: { percentage: 25 },
+          dana_pengurus: { percentage: 5 },
+          dana_pendidikan: { percentage: 5 },
+          dana_sosial: { percentage: 5 },
+        },
+        undefined,
+        undefined,
+        treasurerActor
+      );
+      expect(updatedByTreasurer.categories.cadangan.percentage).toBe(30);
+    });
+
+    it("4.4. updateFinancialInput menolak Staff, Member, Auditor, Admin, dan Super Admin", () => {
+      const store = useShuStore.getState();
+      const unauthorized = [staffActor, memberActor1, auditorActor, adminActor, superAdminActor];
+
+      for (const actor of unauthorized) {
+        expect(() => {
+          store.updateFinancialInput(
+            "SHU-2025",
+            { totalRevenue: 100000000, totalExpense: 70000000, adjustmentAmount: 0 },
+            actor
+          );
+        }).toThrow();
+      }
+    });
+
+    it("4.5. updateFinancialInput diterima untuk Finance Officer, Treasurer, dan Manager", () => {
+      const store = useShuStore.getState();
+      const treasurerActor: ShuActor = { id: "user-treasurer-01", name: "Sri Mulyani", role: "treasurer" };
+
+      const foRes = store.updateFinancialInput(
+        "SHU-2025",
+        { totalRevenue: 200000000, totalExpense: 150000000, adjustmentAmount: 0 },
+        foActor
+      );
+      expect(foRes.financialInput.netIncome).toBe(50000000);
+
+      const trRes = store.updateFinancialInput(
+        "SHU-2025",
+        { totalRevenue: 220000000, totalExpense: 150000000, adjustmentAmount: 0 },
+        treasurerActor
+      );
+      expect(trRes.financialInput.netIncome).toBe(70000000);
+    });
+
+  describe("5. Validasi Adjustment Audit & Invariant Lifecycle", () => {
+    it("5.1. adjustPublishedShu menolak jika snapshotId tidak ditemukan atau milik periode lain", () => {
+      const store = useShuStore.getState();
+
+      expect(() => {
+        store.adjustPublishedShu(
+          "SHU-2024",
+          "SNAP-NON-EXISTENT",
+          "Koreksi omzet",
+          "Hasil audit",
+          managerActor
+        );
+      }).toThrow(/tidak ditemukan/i);
+
+      expect(() => {
+        store.adjustPublishedShu(
+          "SHU-2024",
+          "SNAP-2025-v1",
+          "Koreksi omzet",
+          "Hasil audit",
+          managerActor
+        );
+      }).toThrow(/tidak ditemukan/i);
+    });
+
+    it("5.2. adjustPublishedShu menolak jika alasan atau ringkasan kosong", () => {
+      const store = useShuStore.getState();
+
+      expect(() => {
+        store.adjustPublishedShu("SHU-2024", "SNAP-2024-v1", "   ", "Alasan valid", managerActor);
+      }).toThrow(/Ringkasan penyesuaian audit wajib diisi/i);
+
+      expect(() => {
+        store.adjustPublishedShu("SHU-2024", "SNAP-2024-v1", "Ringkasan valid", "  ", managerActor);
+      }).toThrow(/Alasan penyesuaian audit wajib diisi/i);
+    });
+
+    it("5.3. adjustPublishedShu menolak role tidak berwenang (Staff, Member, Auditor, Admin, Super Admin)", () => {
+      const store = useShuStore.getState();
+      const unauthorized = [staffActor, memberActor1, auditorActor, adminActor, superAdminActor];
+
+      for (const u of unauthorized) {
+        expect(() => {
+          store.adjustPublishedShu("SHU-2024", "SNAP-2024-v1", "Ringkasan valid", "Alasan valid", u);
+        }).toThrow(/Hanya pengurus dan bendahara/i);
+      }
+    });
+
+    it("5.4. adjustPublishedShu berhasil mencatat log tanpa mengubah snapshot historis lama", () => {
+      const store = useShuStore.getState();
+      const snapBefore = store.getSnapshotById("SHU-2024", "SNAP-2024-v1")!;
+      const totalMemberDistBefore = snapBefore.totalMemberDistribution;
+
+      const log = store.adjustPublishedShu(
+        "SHU-2024",
+        "SNAP-2024-v1",
+        "Penyesuaian rekonsiliasi kas Waserda",
+        "Berita Acara Pengurus No. 04/BA/2025",
+        managerActor
+      );
+
+      expect(log.id).toBeDefined();
+      expect(log.snapshotId).toBe("SNAP-2024-v1");
+
+      const period = store.getPeriodById("SHU-2024")!;
+      expect(period.adjustmentLogs.some((l) => l.id === log.id)).toBe(true);
+
+      const snapAfter = store.getSnapshotById("SHU-2024", "SNAP-2024-v1")!;
+      expect(snapAfter.totalMemberDistribution).toBe(totalMemberDistBefore);
+    });
+
+    it("5.5. Invariant: Kalkulasi tidak seimbang dilarang diajukan, disetujui, maupun dipublikasikan", () => {
+      const store = useShuStore.getState();
+      const p = store.createPeriod(
+        { fiscalYear: 2033, name: "Tahun Buku 2033", startDate: "2033-01-01", endDate: "2033-12-31" },
+        managerActor
+      );
+      store.collectPeriodData(p.id, staffActor);
+
+      useShuStore.setState({
+        periods: useShuStore.getState().periods.map((item) => {
+          if (item.id === p.id) {
+            const fakeUnbalancedSnap = {
+              id: `SNAP-2033-v1`,
+              periodId: p.id,
+              version: 1,
+              calculatedAt: new Date().toISOString(),
+              calculatedById: "user-fo-01",
+              calculatedByName: "Ahmad Fauzi",
+              calculatedByRole: "finance_officer" as const,
+              financialInput: item.financialInput,
+              policyConfigSnapshot: item.activePolicyConfig,
+              allocationBreakdown: {} as ShuCalculationSnapshot["allocationBreakdown"],
+              totalDistributableShu: 100000000,
+              totalMemberDistribution: 50000000,
+              roundingCorrection: { modalResidual: 0, usahaResidual: 0, totalResidual: 0 },
+              isBalanced: false,
+              unbalancedReason: "Alokasi Jasa Modal tidak dapat didistribusikan",
+              memberDistributions: [],
+              status: "calculated" as const,
+              statusHistory: [],
+            };
+            return {
+              ...item,
+              status: "calculated" as const,
+              activeSnapshotId: fakeUnbalancedSnap.id,
+              snapshots: [fakeUnbalancedSnap],
+            };
+          }
+          return item;
+        }),
+      });
+
+      expect(() => {
+        useShuStore.getState().submitForReview(p.id, "SNAP-2033-v1", foActor);
+      }).toThrow(/Kalkulasi tidak seimbang .* dilarang diajukan/i);
+
+      useShuStore.setState({
+        periods: useShuStore.getState().periods.map((item) => {
+          if (item.id === p.id) {
+            return {
+              ...item,
+              snapshots: item.snapshots.map((s) => ({ ...s, status: "under_review" as const })),
+            };
+          }
+          return item;
+        }),
+      });
+
+      expect(() => {
+        useShuStore.getState().approveCalculation(p.id, "SNAP-2033-v1", managerActor);
+      }).toThrow(/Kalkulasi tidak seimbang dilarang disetujui/i);
+
+      useShuStore.setState({
+        periods: useShuStore.getState().periods.map((item) => {
+          if (item.id === p.id) {
+            return {
+              ...item,
+              snapshots: item.snapshots.map((s) => ({ ...s, status: "approved" as const })),
+            };
+          }
+          return item;
+        }),
+      });
+
+      expect(() => {
+        useShuStore.getState().publishCalculation(p.id, "SNAP-2033-v1", managerActor);
+      }).toThrow(/Kalkulasi tidak seimbang dilarang dipublikasikan/i);
     });
   });
 

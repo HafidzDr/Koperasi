@@ -95,4 +95,69 @@ describe("PHASE 7 — SHU Persistence, Recovery & Idempotency Tests", () => {
       );
     }).toThrow(/sudah terdaftar/i);
   });
+
+  it("6. Corrupt recovery: JSON valid tetapi struktur data periode tidak valid (persentase bukan 100%) otomatis fallback ke seed", () => {
+    const corruptPayload = {
+      periods: [
+        {
+          id: "SHU-2025",
+          fiscalYear: 2025,
+          name: "Periode Rusak",
+          startDate: "2025-01-01",
+          endDate: "2025-12-31",
+          status: "draft",
+          financialInput: { totalRevenue: 100, totalExpense: 50, netIncome: 50, distributableShu: 50 },
+          activePolicyConfig: {
+            version: 1,
+            categories: {
+              cadangan: { percentage: 20 }, // Total hanya 20% != 100%!
+              jasa_modal: { percentage: 0 },
+              jasa_usaha: { percentage: 0 },
+              dana_pengurus: { percentage: 0 },
+              dana_pendidikan: { percentage: 0 },
+              dana_sosial: { percentage: 0 },
+            },
+          },
+          snapshots: [],
+        },
+      ],
+      policyConfig: null,
+    };
+
+    localStorage.setItem(SHU_STORAGE_KEY, JSON.stringify(corruptPayload));
+
+    useShuStore.getState().resetToSeed();
+
+    const periods = useShuStore.getState().periods;
+    // Berhasil memulihkan default seed yang valid
+    expect(periods.some((p) => p.id === "SHU-2024")).toBe(true);
+    expect(periods.some((p) => p.id === "SHU-2025")).toBe(true);
+    expect(useShuStore.getState().policyConfig.categories.cadangan.percentage).toBe(30);
+  });
+
+  it("7. Corrupt recovery: Periode dengan nominal negatif atau activeSnapshotId fiktif otomatis fallback ke seed", () => {
+    const corruptNegativePayload = {
+      periods: [
+        {
+          id: "SHU-2025",
+          fiscalYear: 2025,
+          name: "Periode Negatif",
+          startDate: "2025-01-01",
+          endDate: "2025-12-31",
+          status: "published",
+          financialInput: { totalRevenue: -999999, totalExpense: 100, netIncome: -1000099, distributableShu: -500 },
+          activeSnapshotId: "SNAP-GHOST-NOT-EXIST", // Fiktif!
+          snapshots: [],
+        },
+      ],
+    };
+
+    localStorage.setItem(SHU_STORAGE_KEY, JSON.stringify(corruptNegativePayload));
+
+    useShuStore.getState().resetToSeed();
+
+    const periods = useShuStore.getState().periods;
+    expect(periods.some((p) => p.name === "Periode Negatif")).toBe(false);
+    expect(periods.some((p) => p.id === "SHU-2024")).toBe(true);
+  });
 });

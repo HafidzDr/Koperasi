@@ -115,6 +115,8 @@ describe("PHASE 7 — SHU Calculation Engine & Data Source Integrity Tests", () 
       expect(alloc.jasa_modal.allocatedAmount).toBe(0);
       expect(alloc.jasa_usaha.allocatedAmount).toBe(0);
     });
+  });
+
   describe("3. Distribusi Anggota, Pembulatan Rupiah & Sumber Partisipasi", () => {
     const mockCandidates: MemberCandidate[] = [
       { id: "DEMO-ID-0001", name: "Siti Rahma", memberNumber: "KMB-2026-0001", isActive: true },
@@ -242,7 +244,7 @@ describe("PHASE 7 — SHU Calculation Engine & Data Source Integrity Tests", () 
       }
     });
 
-    it("3.6. Nol partisipasi ekonomi seluruh anggota ditangani secara aman (jasa usaha = 0, tidak membagi sembarang)", () => {
+    it("3.6. Pool jasa usaha positif tanpa partisipasi verified menghasilkan isBalanced = false dan dana tidak hilang", () => {
       const zeroPartMap = new Map<string, MemberParticipationData>([
         ["DEMO-ID-0001", { spending: 0, commoditySupply: 0 }],
         ["DEMO-ID-0002", { spending: 0, commoditySupply: 0 }],
@@ -262,8 +264,74 @@ describe("PHASE 7 — SHU Calculation Engine & Data Source Integrity Tests", () 
         expect(d.jasaUsahaFinal).toBe(0);
         expect(d.verifiedParticipation).toBe(0);
       }
+      expect(result.isBalanced).toBe(false);
+      expect(result.undistributedUsahaPool).toBe(10000000);
+      expect(result.unbalancedReason).toContain("Jasa Usaha");
+    });
+
+    it("3.7. Pool jasa modal positif tanpa modal yang memenuhi syarat menghasilkan isBalanced = false", () => {
+      const zeroSavingsMap = new Map<string, MemberSavingsData>([
+        ["DEMO-ID-0001", { saldoPokok: 0, saldoWajib: 0, saldoSukarela: 0 }],
+        ["DEMO-ID-0002", { saldoPokok: 0, saldoWajib: 0, saldoSukarela: 0 }],
+        ["DEMO-ID-0003", { saldoPokok: 0, saldoWajib: 0, saldoSukarela: 0 }],
+      ]);
+
+      const result = computeMemberDistributions(
+        mockCandidates,
+        zeroSavingsMap,
+        mockParticipationMap,
+        10000000,
+        10000000,
+        policy
+      );
+
+      for (const d of result.distributions) {
+        expect(d.jasaModalFinal).toBe(0);
+        expect(d.qualifyingCapital).toBe(0);
+      }
+      expect(result.isBalanced).toBe(false);
+      expect(result.undistributedModalPool).toBe(10000000);
+      expect(result.unbalancedReason).toContain("Jasa Modal");
+    });
+
+    it("3.8. Kedua pool positif tanpa penerima aktif yang memenuhi syarat menghasilkan isBalanced = false", () => {
+      const allInactiveCandidates: MemberCandidate[] = [
+        { id: "DEMO-ID-0001", name: "Siti Rahma", memberNumber: "KMB-2026-0001", isActive: false },
+        { id: "DEMO-ID-0002", name: "Dian Pratama", memberNumber: "KMB-2026-0002", isActive: false },
+      ];
+
+      const result = computeMemberDistributions(
+        allInactiveCandidates,
+        mockSavingsMap,
+        mockParticipationMap,
+        10000000,
+        10000000,
+        policy
+      );
+
+      expect(result.isBalanced).toBe(false);
+      expect(result.totalDistributed).toBe(0);
+      expect(result.undistributedModalPool).toBe(10000000);
+      expect(result.undistributedUsahaPool).toBe(10000000);
+      expect(result.unbalancedReason).toContain("Tidak ada anggota aktif");
+    });
+
+    it("3.9. Salah satu pool bernilai 0 dan pool lain valid menghasilkan isBalanced = true", () => {
+      // Jasa modal 0, Jasa usaha 10.000.000
+      const result = computeMemberDistributions(
+        mockCandidates,
+        mockSavingsMap,
+        mockParticipationMap,
+        0,
+        10000000,
+        policy
+      );
+
+      expect(result.isBalanced).toBe(true);
+      expect(result.totalDistributed).toBe(10000000);
+      expect(result.undistributedModalPool).toBe(0);
+      expect(result.undistributedUsahaPool).toBe(0);
     });
   });
-
-  });
 });
+
