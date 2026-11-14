@@ -9,7 +9,12 @@ import {
   MemberCandidate,
 } from "../features/shu/utils/shuCalculations";
 import { defaultShuPolicyConfig } from "../features/shu/mocks/shuSeedData";
-import { ShuAllocationCategoryKey, AllocationCategoryConfig, ShuPolicyConfig } from "../features/shu/types";
+import {
+  ShuAllocationCategoryKey,
+  AllocationCategoryConfig,
+  ShuPolicyConfig,
+  updatePolicyCategoriesSchema,
+} from "../features/shu/types";
 
 describe("PHASE 7 — SHU Calculation Engine & Data Source Integrity Tests", () => {
   const policy: ShuPolicyConfig = defaultShuPolicyConfig;
@@ -53,6 +58,138 @@ describe("PHASE 7 — SHU Calculation Engine & Data Source Integrity Tests", () 
       expect(result.isValid).toBe(false);
       expect(result.error).toContain("tidak boleh negatif");
     });
+    it("1.5. Menolak total 100.004% (presisi lebih dari 2 desimal)", () => {
+      const modified: Record<ShuAllocationCategoryKey, AllocationCategoryConfig> = {
+        ...policy.categories,
+        cadangan: { ...policy.categories.cadangan, percentage: 30.004 },
+      };
+      const result = validatePolicyPercentages(modified);
+      expect(result.isValid).toBe(false);
+      expect(result.error).toContain("presisi lebih dari 2 desimal");
+    });
+
+    it("1.6. Menolak total 99.996% (presisi lebih dari 2 desimal)", () => {
+      const modified: Record<ShuAllocationCategoryKey, AllocationCategoryConfig> = {
+        ...policy.categories,
+        cadangan: { ...policy.categories.cadangan, percentage: 29.996 },
+      };
+      const result = validatePolicyPercentages(modified);
+      expect(result.isValid).toBe(false);
+      expect(result.error).toContain("presisi lebih dari 2 desimal");
+    });
+
+    it("1.7. Menolak total 100.01% dan 99.99%", () => {
+      const plusOne: Record<ShuAllocationCategoryKey, AllocationCategoryConfig> = {
+        ...policy.categories,
+        cadangan: { ...policy.categories.cadangan, percentage: 30.01 },
+      };
+      const resPlus = validatePolicyPercentages(plusOne);
+      expect(resPlus.isValid).toBe(false);
+      expect(resPlus.error).toContain("harus tepat 100");
+
+      const minusOne: Record<ShuAllocationCategoryKey, AllocationCategoryConfig> = {
+        ...policy.categories,
+        cadangan: { ...policy.categories.cadangan, percentage: 29.99 },
+      };
+      const resMinus = validatePolicyPercentages(minusOne);
+      expect(resMinus.isValid).toBe(false);
+      expect(resMinus.error).toContain("harus tepat 100");
+    });
+
+    it("1.8. Zod schema updatePolicyCategoriesSchema menolak nilai tidak tepat 100.00% atau presisi > 2 desimal", () => {
+      // 100.004
+      expect(
+        updatePolicyCategoriesSchema.safeParse({
+          cadangan: 30.004,
+          jasa_modal: 30,
+          jasa_usaha: 25,
+          dana_pengurus: 5,
+          dana_pendidikan: 5,
+          dana_sosial: 5,
+        }).success
+      ).toBe(false);
+
+      // 99.996
+      expect(
+        updatePolicyCategoriesSchema.safeParse({
+          cadangan: 29.996,
+          jasa_modal: 30,
+          jasa_usaha: 25,
+          dana_pengurus: 5,
+          dana_pendidikan: 5,
+          dana_sosial: 5,
+        }).success
+      ).toBe(false);
+
+      // 100.01
+      expect(
+        updatePolicyCategoriesSchema.safeParse({
+          cadangan: 30.01,
+          jasa_modal: 30,
+          jasa_usaha: 25,
+          dana_pengurus: 5,
+          dana_pendidikan: 5,
+          dana_sosial: 5,
+        }).success
+      ).toBe(false);
+
+      // 99.99
+      expect(
+        updatePolicyCategoriesSchema.safeParse({
+          cadangan: 29.99,
+          jasa_modal: 30,
+          jasa_usaha: 25,
+          dana_pengurus: 5,
+          dana_pendidikan: 5,
+          dana_sosial: 5,
+        }).success
+      ).toBe(false);
+
+      // Tepat 100.00
+      expect(
+        updatePolicyCategoriesSchema.safeParse({
+          cadangan: 30,
+          jasa_modal: 30,
+          jasa_usaha: 25,
+          dana_pengurus: 5,
+          dana_pendidikan: 5,
+          dana_sosial: 5,
+        }).success
+      ).toBe(true);
+    });
+
+    it("1.9. computeAllocations: Invariant sum(allocatedAmount) === distributableShu selalu terpenuhi untuk berbagai nominal", () => {
+      const testAmounts = [1, 7, 99, 1000, 33333, 70000000, 1000000000, 987654321];
+
+      for (const amount of testAmounts) {
+        const alloc = computeAllocations(amount, policy.categories);
+        const sum = Object.values(alloc).reduce((acc, curr) => acc + curr.allocatedAmount, 0);
+        expect(sum).toBe(amount);
+        for (const item of Object.values(alloc)) {
+          expect(Number.isInteger(item.allocatedAmount)).toBe(true);
+          expect(item.allocatedAmount).toBeGreaterThanOrEqual(0);
+        }
+      }
+    });
+
+    it("1.10. computeAllocations: Gagal secara eksplisit bila input desimal, negatif, atau persentase tidak valid", () => {
+      expect(() => {
+        computeAllocations(100.5, policy.categories); // Desimal
+      }).toThrow(/bilangan bulat integer/i);
+
+      expect(() => {
+        computeAllocations(-500, policy.categories); // Negatif
+      }).toThrow(/non-negatif/i);
+
+      const invalidCategories = {
+        ...policy.categories,
+        cadangan: { ...policy.categories.cadangan, percentage: 30.01 },
+      };
+      expect(() => {
+        computeAllocations(1000000, invalidCategories);
+      }).toThrow(/tepat 100/i);
+    });
+
   });
 
   describe("2. Kinerja Keuangan & Hasil Usaha Bersih", () => {
@@ -110,10 +247,19 @@ describe("PHASE 7 — SHU Calculation Engine & Data Source Integrity Tests", () 
     });
 
     it("2.5. Hasil usaha bersih negatif (rugi) menghasilkan distributable SHU = 0 dan tidak ada distribusi positif", () => {
-      const alloc = computeAllocations(-50000000, policy.categories);
+      const netIncome = -50000000;
+      const distributableShu = Math.max(netIncome, 0);
+      expect(distributableShu).toBe(0);
+
+      const alloc = computeAllocations(distributableShu, policy.categories);
       expect(alloc.cadangan.allocatedAmount).toBe(0);
       expect(alloc.jasa_modal.allocatedAmount).toBe(0);
       expect(alloc.jasa_usaha.allocatedAmount).toBe(0);
+
+      // Memastikan input negatif pada computeAllocations langsung ditolak
+      expect(() => {
+        computeAllocations(-50000000, policy.categories);
+      }).toThrow(/non-negatif/i);
     });
   });
 

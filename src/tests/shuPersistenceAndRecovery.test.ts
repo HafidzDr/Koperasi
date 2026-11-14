@@ -1,7 +1,14 @@
 // @vitest-environment jsdom
 import { describe, it, expect, beforeEach } from "vitest";
-import { useShuStore, SHU_STORAGE_KEY } from "../features/shu/stores/shuStore";
-import { ShuActor } from "../features/shu/types";
+import { useShuStore, SHU_STORAGE_KEY, loadFromStorage } from "../features/shu/stores/shuStore";
+import {
+  ShuActor,
+  shuStoragePayloadSchema,
+  financialPerformanceInputStorageSchema,
+  shuCalculationSnapshotStorageSchema,
+  policyConfigStorageSchema,
+} from "../features/shu/types";
+import { defaultShuPolicyConfig, initialSeedShuPeriods } from "../features/shu/mocks/shuSeedData";
 
 describe("PHASE 7 — SHU Persistence, Recovery & Idempotency Tests", () => {
   beforeEach(() => {
@@ -159,5 +166,127 @@ describe("PHASE 7 — SHU Persistence, Recovery & Idempotency Tests", () => {
     const periods = useShuStore.getState().periods;
     expect(periods.some((p) => p.name === "Periode Negatif")).toBe(false);
     expect(periods.some((p) => p.id === "SHU-2024")).toBe(true);
+  });
+
+  it("8. Skema validasi menolak nominal keuangan desimal (wajib integer Rupiah)", () => {
+    // totalRevenue desimal
+    const decimalInput = {
+      totalRevenue: 100000.5,
+      totalExpense: 50000,
+      operatingIncome: 50000.5,
+      adjustmentAmount: 0,
+      netIncome: 50000.5,
+      distributableShu: 50000,
+      isSimulation: true,
+    };
+    expect(financialPerformanceInputStorageSchema.safeParse(decimalInput).success).toBe(false);
+  });
+
+  it("9. Skema validasi menolak nominal negatif pada snapshot dan distribusi anggota", () => {
+    const validSnapshot = initialSeedShuPeriods[0].snapshots[0];
+    const negativeSnapshot = {
+      ...validSnapshot,
+      totalDistributableShu: -100000,
+    };
+    expect(shuCalculationSnapshotStorageSchema.safeParse(negativeSnapshot).success).toBe(false);
+
+    const negativeMemberDist = {
+      ...validSnapshot,
+      memberDistributions: [
+        {
+          ...validSnapshot.memberDistributions[0],
+          jasaModalFinal: -50000,
+        },
+      ],
+    };
+    expect(shuCalculationSnapshotStorageSchema.safeParse(negativeMemberDist).success).toBe(false);
+  });
+
+  it("10. Skema validasi menolak policyConfig dengan categories kosong atau null", () => {
+    const nullCats = {
+      ...defaultShuPolicyConfig,
+      categories: null,
+    };
+    expect(policyConfigStorageSchema.safeParse(nullCats).success).toBe(false);
+
+    const emptyCats = {
+      ...defaultShuPolicyConfig,
+      categories: {},
+    };
+    expect(policyConfigStorageSchema.safeParse(emptyCats).success).toBe(false);
+  });
+
+  it("11. Skema validasi menolak policy configuration yang tidak lengkap (properti wajib hilang)", () => {
+    const missingProp = {
+      version: 1,
+      updatedAt: "2026-01-01",
+      // categories missing!
+    };
+    expect(policyConfigStorageSchema.safeParse(missingProp).success).toBe(false);
+  });
+
+  it("12. Skema validasi menolak snapshot dengan total distribusi tidak konsisten", () => {
+    const validSnapshot = initialSeedShuPeriods[0].snapshots[0];
+    const inconsistentSnapshot = {
+      ...validSnapshot,
+      totalMemberDistribution: 999999999, // Tidak sama dengan sum of memberDistributions!
+    };
+    expect(shuCalculationSnapshotStorageSchema.safeParse(inconsistentSnapshot).success).toBe(false);
+  });
+
+  it("13. Skema validasi menolak financial input yang tidak sesuai formula", () => {
+    // operatingIncome tidak sama dengan revenue - expense
+    const invalidFormula = {
+      totalRevenue: 200000,
+      totalExpense: 100000,
+      operatingIncome: 50000, // Harus 100000!
+      adjustmentAmount: 0,
+      netIncome: 50000,
+      distributableShu: 50000,
+      isSimulation: true,
+    };
+    expect(financialPerformanceInputStorageSchema.safeParse(invalidFormula).success).toBe(false);
+  });
+
+  it("14. Skema validasi menolak activeSnapshotId yang merujuk pada snapshot tidak ada", () => {
+    const validPeriod = initialSeedShuPeriods[0];
+    const ghostSnapshotPeriod = {
+      ...validPeriod,
+      activeSnapshotId: "SNAP-TIDAK-ADA",
+    };
+    const payload = {
+      periods: [ghostSnapshotPeriod],
+      policyConfig: defaultShuPolicyConfig,
+    };
+    expect(shuStoragePayloadSchema.safeParse(payload).success).toBe(false);
+  });
+
+  it("15. Seluruh payload fallback ke seed secara utuh tanpa partial hydration bila satu bagian rusak", () => {
+    // Payload dengan 1 periode valid (2024) dan 1 periode corrupt (2025 dengan revenue desimal)
+    const partialCorruptPayload = {
+      periods: [
+        initialSeedShuPeriods[0], // Valid
+        {
+          ...initialSeedShuPeriods[1],
+          financialInput: {
+            ...initialSeedShuPeriods[1].financialInput,
+            totalRevenue: 12345.67, // Desimal korup!
+          },
+        },
+      ],
+      policyConfig: defaultShuPolicyConfig,
+    };
+
+    localStorage.setItem(SHU_STORAGE_KEY, JSON.stringify(partialCorruptPayload));
+
+    // Reload from storage must reject entire payload and return pristine seed
+    const loaded = loadFromStorage();
+    expect(loaded.periods.length).toBe(initialSeedShuPeriods.length);
+    expect(loaded.periods.every((p) => Number.isInteger(p.financialInput.totalRevenue))).toBe(true);
+
+    useShuStore.getState().reloadFromStorage();
+    const storePeriods = useShuStore.getState().periods;
+    expect(storePeriods.length).toBe(initialSeedShuPeriods.length);
+    expect(storePeriods.some((p) => p.financialInput.totalRevenue === 12345.67)).toBe(false);
   });
 });
