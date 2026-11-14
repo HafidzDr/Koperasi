@@ -279,20 +279,285 @@ export const updatePolicyCategoriesSchema = z
   })
   .refine(
     (data) => {
-      const sum =
-        data.cadangan +
-        data.jasa_modal +
-        data.jasa_usaha +
-        data.dana_pengurus +
-        data.dana_pendidikan +
-        data.dana_sosial;
-      return Math.round(sum * 100) / 100 === 100;
+      const values = [
+        data.cadangan,
+        data.jasa_modal,
+        data.jasa_usaha,
+        data.dana_pengurus,
+        data.dana_pendidikan,
+        data.dana_sosial,
+      ];
+      for (const v of values) {
+        if (!Number.isFinite(v)) return false;
+        const decimals = (v.toString().split(".")[1] || "").length;
+        if (decimals > 2) return false;
+      }
+      const sumInCents = values.reduce((acc, v) => acc + Math.round(v * 100), 0);
+      return sumInCents === 10000;
     },
     {
-      message: "Total alokasi persentase SHU harus tepat 100%.",
+      message: "Total alokasi persentase SHU harus tepat 100.00% (maksimal 2 angka desimal).",
     }
   );
 
 export type CreateShuPeriodInput = z.infer<typeof createShuPeriodSchema>;
 export type UpdateFinancialInput = z.infer<typeof updateFinancialInputSchema>;
 export type UpdatePolicyCategoriesInput = z.infer<typeof updatePolicyCategoriesSchema>;
+
+// Comprehensive Storage Validation Schemas
+export const financialPerformanceInputStorageSchema = z
+  .object({
+    totalRevenue: z.number().int().min(0),
+    totalExpense: z.number().int().min(0),
+    operatingIncome: z.number().int(),
+    adjustmentAmount: z.number().int(),
+    adjustmentReason: z.string().optional(),
+    adjustmentActorId: z.string().optional(),
+    adjustmentActorName: z.string().optional(),
+    adjustmentActorRole: z.string().optional(),
+    netIncome: z.number().int(),
+    distributableShu: z.number().int().min(0),
+    isSimulation: z.literal(true),
+  })
+  .refine(
+    (f) => f.operatingIncome === f.totalRevenue - f.totalExpense,
+    { message: "operatingIncome must equal totalRevenue - totalExpense" }
+  )
+  .refine(
+    (f) => f.netIncome === f.operatingIncome + f.adjustmentAmount,
+    { message: "netIncome must equal operatingIncome + adjustmentAmount" }
+  )
+  .refine(
+    (f) => f.distributableShu === Math.max(f.netIncome, 0),
+    { message: "distributableShu must equal max(netIncome, 0)" }
+  )
+  .refine(
+    (f) => f.adjustmentAmount === 0 || Boolean(f.adjustmentReason && f.adjustmentReason.trim().length >= 3),
+    { message: "adjustmentReason must be valid if adjustmentAmount !== 0" }
+  );
+
+export const allocationCategoryConfigStorageSchema = z.object({
+  key: z.enum(["cadangan", "jasa_modal", "jasa_usaha", "dana_pengurus", "dana_pendidikan", "dana_sosial"]),
+  label: z.string().min(1),
+  percentage: z
+    .number()
+    .min(0)
+    .max(100)
+    .refine((v) => Number.isFinite(v) && (v.toString().split(".")[1] || "").length <= 2),
+  description: z.string(),
+  isConfigurable: z.boolean(),
+  status: z.enum(["illustrative", "determined"]),
+  policyNote: z.string(),
+});
+
+export const policyConfigStorageSchema = z
+  .object({
+    version: z.number().int().min(1),
+    updatedAt: z.string().min(1),
+    updatedById: z.string().min(1),
+    updatedByName: z.string().min(1),
+    updatedByRole: z.string().min(1),
+    categories: z.object({
+      cadangan: allocationCategoryConfigStorageSchema,
+      jasa_modal: allocationCategoryConfigStorageSchema,
+      jasa_usaha: allocationCategoryConfigStorageSchema,
+      dana_pengurus: allocationCategoryConfigStorageSchema,
+      dana_pendidikan: allocationCategoryConfigStorageSchema,
+      dana_sosial: allocationCategoryConfigStorageSchema,
+    }),
+    capitalSources: z.object({
+      includeSimpananPokok: z.boolean(),
+      includeSimpananWajib: z.boolean(),
+      includeSimpananSukarela: z.boolean(),
+      status: z.enum(["illustrative", "determined"]),
+      policyNote: z.string(),
+    }),
+    businessParticipationWeights: z.object({
+      weightSpending: z.number().min(0),
+      weightCommoditySupply: z.number().min(0),
+      minVerifiedAmount: z.number().int().min(0),
+      status: z.enum(["illustrative", "determined"]),
+      policyNote: z.string(),
+    }),
+    history: z.array(
+      z.object({
+        id: z.string().min(1),
+        timestamp: z.string().min(1),
+        actorId: z.string().min(1),
+        actorName: z.string().min(1),
+        actorRole: z.string().min(1),
+        changeSummary: z.string().min(1),
+        notes: z.string().optional(),
+      })
+    ),
+  })
+  .refine(
+    (p) => {
+      const cats = p.categories;
+      const sumInCents =
+        Math.round(cats.cadangan.percentage * 100) +
+        Math.round(cats.jasa_modal.percentage * 100) +
+        Math.round(cats.jasa_usaha.percentage * 100) +
+        Math.round(cats.dana_pengurus.percentage * 100) +
+        Math.round(cats.dana_pendidikan.percentage * 100) +
+        Math.round(cats.dana_sosial.percentage * 100);
+      return sumInCents === 10000;
+    },
+    { message: "Total alokasi kategori kebijakan harus tepat 100.00%." }
+  );
+export const memberShuDistributionItemStorageSchema = z
+  .object({
+    memberId: z.string().min(1),
+    memberName: z.string().min(1),
+    memberNumber: z.string().min(1),
+    qualifyingCapital: z.number().int().min(0),
+    jasaModalRaw: z.number().min(0),
+    jasaModalFinal: z.number().int().min(0),
+    verifiedParticipation: z.number().int().min(0),
+    jasaUsahaRaw: z.number().min(0),
+    jasaUsahaFinal: z.number().int().min(0),
+    totalShu: z.number().int().min(0),
+    status: z.enum(["eligible", "excluded"]),
+    exclusionReason: z.string().optional(),
+  })
+  .refine(
+    (item) => item.totalShu === item.jasaModalFinal + item.jasaUsahaFinal,
+    { message: "totalShu must equal jasaModalFinal + jasaUsahaFinal" }
+  );
+
+export const shuCalculationSnapshotStorageSchema = z
+  .object({
+    id: z.string().min(1),
+    periodId: z.string().min(1),
+    version: z.number().int().min(1),
+    calculatedAt: z.string().min(1),
+    calculatedById: z.string().min(1),
+    calculatedByName: z.string().min(1),
+    calculatedByRole: z.string().min(1),
+    financialInput: financialPerformanceInputStorageSchema,
+    policyConfigSnapshot: policyConfigStorageSchema,
+    allocationBreakdown: z.record(
+      z.string(),
+      z.object({
+        percentage: z.number().min(0).max(100),
+        allocatedAmount: z.number().int().min(0),
+      })
+    ),
+    totalDistributableShu: z.number().int().min(0),
+    totalMemberDistribution: z.number().int().min(0),
+    roundingCorrection: z.object({
+      modalResidual: z.number().int(),
+      usahaResidual: z.number().int(),
+      totalResidual: z.number().int(),
+      appliedToMemberId: z.string().optional(),
+    }),
+    isBalanced: z.boolean(),
+    unbalancedReason: z.string().optional(),
+    undistributedAmount: z.number().int().min(0).optional(),
+    memberDistributions: z.array(memberShuDistributionItemStorageSchema),
+    status: z.enum(["calculated", "under_review", "approved", "rejected", "published", "superseded"]),
+    statusHistory: z.array(
+      z.object({
+        id: z.string().min(1),
+        timestamp: z.string().min(1),
+        actorId: z.string().min(1),
+        actorName: z.string().min(1),
+        actorRole: z.string().min(1),
+        fromStatus: z.enum(["calculated", "under_review", "approved", "rejected", "published", "superseded"]),
+        toStatus: z.enum(["calculated", "under_review", "approved", "rejected", "published", "superseded"]),
+        notes: z.string().optional(),
+        rejectionReason: z.string().optional(),
+      })
+    ),
+    reviewNotes: z.string().optional(),
+    rejectionReason: z.string().optional(),
+    reviewedById: z.string().optional(),
+    reviewedByName: z.string().optional(),
+    reviewedByRole: z.string().optional(),
+    reviewedAt: z.string().optional(),
+    approvedById: z.string().optional(),
+    approvedByName: z.string().optional(),
+    approvedByRole: z.string().optional(),
+    approvedAt: z.string().optional(),
+    publishedById: z.string().optional(),
+    publishedByName: z.string().optional(),
+    publishedByRole: z.string().optional(),
+    publishedAt: z.string().optional(),
+  })
+  .refine(
+    (s) => {
+      const sumDist = s.memberDistributions.reduce((acc, curr) => acc + curr.totalShu, 0);
+      return sumDist === s.totalMemberDistribution;
+    },
+    { message: "totalMemberDistribution must equal sum of memberDistributions.totalShu" }
+  );
+
+export const shuPeriodStorageSchema = z
+  .object({
+    id: z.string().regex(/^SHU-\d{4}$/, "ID periode harus berformat SHU-YYYY"),
+    fiscalYear: z.number().int().min(2000).max(2100),
+    name: z.string().trim().min(3),
+    startDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+    endDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+    status: z.enum(["draft", "data_collection", "calculation_ready", "calculated", "under_review", "approved", "published", "closed", "rejected"]),
+    description: z.string(),
+    activePolicyConfig: policyConfigStorageSchema,
+    financialInput: financialPerformanceInputStorageSchema,
+    currentCalculationVersion: z.number().int().min(0),
+    activeSnapshotId: z.string().optional(),
+    snapshots: z.array(shuCalculationSnapshotStorageSchema),
+    auditLogs: z.array(
+      z.object({
+        id: z.string().min(1),
+        timestamp: z.string().min(1),
+        actorId: z.string().min(1),
+        actorName: z.string().min(1),
+        actorRole: z.string().min(1),
+        action: z.string().min(1),
+        details: z.string().min(1),
+      })
+    ),
+    adjustmentLogs: z.array(
+      z.object({
+        id: z.string().min(1),
+        timestamp: z.string().min(1),
+        actorId: z.string().min(1),
+        actorName: z.string().min(1),
+        actorRole: z.string().min(1),
+        snapshotId: z.string().min(1),
+        reason: z.string().min(3),
+        adjustmentSummary: z.string().min(3),
+      })
+    ),
+    createdAt: z.string().min(1),
+    updatedAt: z.string().min(1),
+    closedAt: z.string().optional(),
+    closedById: z.string().optional(),
+    closedByName: z.string().optional(),
+    closedByRole: z.string().optional(),
+  })
+  .refine(
+    (p) => p.id === `SHU-${p.fiscalYear}`,
+    { message: "period.id must match SHU-{fiscalYear}" }
+  )
+  .refine(
+    (p) => {
+      if (p.activeSnapshotId) {
+        const snap = p.snapshots.find((s) => s.id === p.activeSnapshotId);
+        if (!snap) return false;
+        if (snap.periodId !== p.id) return false;
+      }
+      return true;
+    },
+    { message: "activeSnapshotId must exist in snapshots array with matching periodId" }
+  )
+  .refine(
+    (p) => p.snapshots.every((s) => s.periodId === p.id),
+    { message: "all snapshots must reference this period" }
+  );
+
+export const shuStoragePayloadSchema = z.object({
+  periods: z.array(shuPeriodStorageSchema).min(1),
+  policyConfig: policyConfigStorageSchema,
+});
+

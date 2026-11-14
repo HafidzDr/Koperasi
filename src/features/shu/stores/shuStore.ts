@@ -5,7 +5,6 @@ import { useSavingsStore } from "@/features/savings/stores/savingsStore";
 import { useBusinessUnitStore } from "@/features/business-units/stores/businessUnitStore";
 import {
   ShuPeriod,
-  ShuPeriodStatus,
   ShuPolicyConfig,
   ShuCalculationSnapshot,
   ShuActor,
@@ -18,6 +17,7 @@ import {
   ShuPeriodAdjustmentLog,
   createShuPeriodSchema,
   updateFinancialInputSchema,
+  shuStoragePayloadSchema,
 } from "../types";
 import {
   defaultShuPolicyConfig,
@@ -112,95 +112,11 @@ export interface ShuStoreState {
   }[];
 
   // Maintenance & Reset
+  reloadFromStorage: () => void;
   resetToSeed: () => void;
 }
 
-function isValidPeriod(p: unknown): boolean {
-  if (!p || typeof p !== "object") return false;
-  const period = p as Record<string, unknown>;
-  if (typeof period.id !== "string" || !period.id.startsWith("SHU-")) return false;
-  if (typeof period.fiscalYear !== "number" || !Number.isInteger(period.fiscalYear) || period.fiscalYear < 2000 || period.fiscalYear > 2100) return false;
-  if (typeof period.name !== "string" || period.name.trim().length === 0) return false;
-  if (typeof period.startDate !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(period.startDate)) return false;
-  if (typeof period.endDate !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(period.endDate)) return false;
-  const validStatuses: ShuPeriodStatus[] = [
-    "draft",
-    "data_collection",
-    "calculation_ready",
-    "calculated",
-    "under_review",
-    "approved",
-    "published",
-    "closed",
-    "rejected",
-  ];
-  if (!validStatuses.includes(period.status as ShuPeriodStatus)) return false;
-  if (!period.financialInput || typeof period.financialInput !== "object") return false;
-  const fin = period.financialInput as Record<string, unknown>;
-  if (
-    typeof fin.totalRevenue !== "number" ||
-    fin.totalRevenue < 0 ||
-    typeof fin.totalExpense !== "number" ||
-    fin.totalExpense < 0 ||
-    typeof fin.netIncome !== "number" ||
-    typeof fin.distributableShu !== "number" ||
-    fin.distributableShu < 0
-  ) {
-    return false;
-  }
-  if (!period.activePolicyConfig || typeof period.activePolicyConfig !== "object") return false;
-  const pol = period.activePolicyConfig as Record<string, unknown>;
-  if (!pol.categories || typeof pol.categories !== "object") return false;
-  const cats = pol.categories as Record<string, { percentage?: unknown }>;
-  const requiredCategories: ShuAllocationCategoryKey[] = [
-    "cadangan",
-    "jasa_modal",
-    "jasa_usaha",
-    "dana_pengurus",
-    "dana_pendidikan",
-    "dana_sosial",
-  ];
-  let catSum = 0;
-  for (const rc of requiredCategories) {
-    const c = cats[rc];
-    if (!c || typeof c.percentage !== "number" || c.percentage < 0) return false;
-    catSum += c.percentage;
-  }
-  if (Math.round(catSum * 100) / 100 !== 100) return false;
-
-  if (!Array.isArray(period.snapshots)) return false;
-  for (const s of period.snapshots) {
-    if (!s || typeof s !== "object") return false;
-    const snap = s as Record<string, unknown>;
-    if (typeof snap.id !== "string" || typeof snap.version !== "number" || snap.version < 1) return false;
-    if (typeof snap.isBalanced !== "boolean") return false;
-    if (typeof snap.totalDistributableShu !== "number" || typeof snap.totalMemberDistribution !== "number") return false;
-    if (!Array.isArray(snap.memberDistributions)) return false;
-  }
-
-  if (period.activeSnapshotId) {
-    if (!period.snapshots.some((s: { id?: unknown }) => s.id === period.activeSnapshotId)) return false;
-  }
-
-  return true;
-}
-
-function validateStoragePayload(parsed: unknown): parsed is StoragePayload {
-  if (!parsed || typeof parsed !== "object") return false;
-  const payload = parsed as Record<string, unknown>;
-  if (!Array.isArray(payload.periods) || payload.periods.length === 0) return false;
-  for (const period of payload.periods) {
-    if (!isValidPeriod(period)) return false;
-  }
-  if (payload.policyConfig) {
-    if (typeof payload.policyConfig !== "object") return false;
-    const pol = payload.policyConfig as Record<string, unknown>;
-    if (typeof pol.categories !== "object") return false;
-  }
-  return true;
-}
-
-function loadFromStorage(): StoragePayload {
+export function loadFromStorage(): StoragePayload {
   if (typeof window === "undefined") {
     return {
       periods: initialSeedShuPeriods,
@@ -216,16 +132,14 @@ function loadFromStorage(): StoragePayload {
       };
     }
     const parsed = JSON.parse(raw);
-    if (!validateStoragePayload(parsed)) {
+    const parsedResult = shuStoragePayloadSchema.safeParse(parsed);
+    if (!parsedResult.success) {
       return {
         periods: initialSeedShuPeriods,
         policyConfig: defaultShuPolicyConfig,
       };
     }
-    return {
-      periods: parsed.periods,
-      policyConfig: parsed.policyConfig || defaultShuPolicyConfig,
-    };
+    return parsedResult.data as StoragePayload;
   } catch {
     return {
       periods: initialSeedShuPeriods,
@@ -1162,6 +1076,15 @@ export const useShuStore = create<ShuStoreState>((set, get) => ({
     }
 
     return results;
+  },
+
+  reloadFromStorage: () => {
+    const data = loadFromStorage();
+    set({
+      periods: data.periods,
+      policyConfig: data.policyConfig,
+      activePeriodId: data.periods[0]?.id || "SHU-2025",
+    });
   },
 
   resetToSeed: () => {

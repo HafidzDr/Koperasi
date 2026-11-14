@@ -81,34 +81,74 @@ export function validatePolicyPercentages(
   totalPercentage: number;
   error?: string;
 } {
-  const keys = Object.keys(categories) as ShuAllocationCategoryKey[];
-  let total = 0;
-  for (const k of keys) {
-    const pct = categories[k].percentage;
-    if (pct < 0) {
-      return { isValid: false, totalPercentage: total, error: `Persentase alokasi "${categories[k].label}" tidak boleh negatif.` };
-    }
-    total += pct;
+  if (!categories || typeof categories !== "object") {
+    return { isValid: false, totalPercentage: 0, error: "Objek kategori kebijakan tidak valid atau null." };
   }
-  const roundedTotal = Math.round(total * 100) / 100;
-  if (roundedTotal !== 100) {
+  const requiredKeys: ShuAllocationCategoryKey[] = [
+    "cadangan",
+    "jasa_modal",
+    "jasa_usaha",
+    "dana_pengurus",
+    "dana_pendidikan",
+    "dana_sosial",
+  ];
+  let sumInCents = 0;
+  for (const k of requiredKeys) {
+    const item = categories[k];
+    if (!item || typeof item.percentage !== "number") {
+      return { isValid: false, totalPercentage: 0, error: `Kategori alokasi "${k}" wajib ada dan memiliki persentase valid.` };
+    }
+    const pct = item.percentage;
+    if (!Number.isFinite(pct)) {
+      return { isValid: false, totalPercentage: 0, error: `Persentase alokasi "${item.label || k}" harus berupa angka terhingga.` };
+    }
+    if (pct < 0) {
+      return { isValid: false, totalPercentage: 0, error: `Persentase alokasi "${item.label || k}" tidak boleh negatif.` };
+    }
+    if (pct > 100) {
+      return { isValid: false, totalPercentage: 0, error: `Persentase alokasi "${item.label || k}" tidak boleh melebihi 100%.` };
+    }
+    const decStr = pct.toString().split(".")[1] || "";
+    if (decStr.length > 2) {
+      return {
+        isValid: false,
+        totalPercentage: pct,
+        error: `Persentase alokasi "${item.label || k}" memiliki presisi lebih dari 2 desimal (${pct}%). Maksimal 2 angka desimal diperbolehkan.`,
+      };
+    }
+    sumInCents += Math.round(pct * 100);
+  }
+
+  const exactTotal = sumInCents / 100;
+  if (sumInCents !== 10000) {
     return {
       isValid: false,
-      totalPercentage: roundedTotal,
-      error: `Total alokasi persentase SHU harus tepat 100%. Saat ini berjumlah ${roundedTotal}%.`,
+      totalPercentage: exactTotal,
+      error: `Total alokasi persentase SHU harus tepat 100% (100.00%). Saat ini berjumlah ${exactTotal}%.`,
     };
   }
   return { isValid: true, totalPercentage: 100 };
 }
+
 export function computeAllocations(
   distributableShu: number,
   categories: Record<ShuAllocationCategoryKey, AllocationCategoryConfig>
 ): Record<ShuAllocationCategoryKey, { percentage: number; allocatedAmount: number }> {
+  if (!Number.isFinite(distributableShu) || !Number.isInteger(distributableShu) || distributableShu < 0) {
+    throw new Error(`Nominal SHU yang dialokasikan harus berupa bilangan bulat integer non-negatif. Diterima: ${distributableShu}`);
+  }
+
+  const valResult = validatePolicyPercentages(categories);
+  if (!valResult.isValid) {
+    throw new Error(valResult.error || "Persentase kebijakan alokasi tidak valid.");
+  }
+
   const result = {} as Record<
     ShuAllocationCategoryKey,
     { percentage: number; allocatedAmount: number }
   >;
-  if (distributableShu <= 0) {
+
+  if (distributableShu === 0) {
     for (const key of Object.keys(categories) as ShuAllocationCategoryKey[]) {
       result[key] = { percentage: categories[key].percentage, allocatedAmount: 0 };
     }
@@ -128,12 +168,26 @@ export function computeAllocations(
     residuals.push({ key: k, frac: exact - fl });
   }
 
-  // Distribute residual rounding difference
+  // Distribute residual rounding difference using largest remainder method
   let diff = distributableShu - totalFloor;
   residuals.sort((a, b) => b.frac - a.frac);
-  for (let i = 0; i < residuals.length && diff > 0; i++) {
-    result[residuals[i].key].allocatedAmount += 1;
-    diff -= 1;
+
+  while (diff > 0) {
+    for (let i = 0; i < residuals.length && diff > 0; i++) {
+      result[residuals[i].key].allocatedAmount += 1;
+      diff -= 1;
+    }
+  }
+
+  // Strict invariant verification
+  const sumAllocated = (Object.keys(result) as ShuAllocationCategoryKey[]).reduce(
+    (acc, k) => acc + result[k].allocatedAmount,
+    0
+  );
+  if (sumAllocated !== distributableShu) {
+    throw new Error(
+      `Integritas alokasi gagal: total alokasi (Rp${sumAllocated.toLocaleString("id-ID")}) tidak sama dengan SHU yang dialokasikan (Rp${distributableShu.toLocaleString("id-ID")}).`
+    );
   }
 
   return result;
@@ -300,9 +354,11 @@ export function computeMemberDistributions(
   let modalResidual = targetModalPool - sumModalFloor;
   if (modalResidual > 0 && totalQualifyingCapital > 0) {
     items.sort((a, b) => b.fracModal - a.fracModal || b.capital - a.capital);
-    for (let i = 0; i < items.length && modalResidual > 0; i++) {
-      items[i].finalModal += 1;
-      modalResidual -= 1;
+    while (modalResidual > 0) {
+      for (let i = 0; i < items.length && modalResidual > 0; i++) {
+        items[i].finalModal += 1;
+        modalResidual -= 1;
+      }
     }
   }
 
@@ -310,9 +366,11 @@ export function computeMemberDistributions(
   let usahaResidual = targetUsahaPool - sumUsahaFloor;
   if (usahaResidual > 0 && totalVerifiedParticipation > 0) {
     items.sort((a, b) => b.fracUsaha - a.fracUsaha || b.participation - a.participation);
-    for (let i = 0; i < items.length && usahaResidual > 0; i++) {
-      items[i].finalUsaha += 1;
-      usahaResidual -= 1;
+    while (usahaResidual > 0) {
+      for (let i = 0; i < items.length && usahaResidual > 0; i++) {
+        items[i].finalUsaha += 1;
+        usahaResidual -= 1;
+      }
     }
   }
 
