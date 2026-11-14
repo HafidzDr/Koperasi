@@ -22,6 +22,8 @@ import { MemberLoanPortalView } from "@/features/loans/pages/MemberLoanPortalVie
 import { AdminLoanManagementView } from "@/features/loans/pages/AdminLoanManagementView";
 import { AdminBusinessUnitsView } from "@/features/business-units/pages/AdminBusinessUnitsView";
 import { MemberBusinessUnitsView } from "@/features/business-units/pages/MemberBusinessUnitsView";
+import { MemberShuPortalView } from "@/features/shu/pages/MemberShuPortalView";
+import { AdminShuView } from "@/features/shu/pages/AdminShuView";
 import { ModulePlaceholderView } from "@/components/common/ModulePlaceholderView";
 import { RouteGuard } from "@/components/common/RouteGuard";
 
@@ -99,15 +101,7 @@ export const router = createBrowserRouter([
       },
       {
         path: "shu",
-        element: (
-          <ModulePlaceholderView
-            moduleKey="shu"
-            title="Alokasi Sisa Hasil Usaha (SHU)"
-            description="Riwayat pembagian SHU dan proyeksi jasa modal serta jasa anggota."
-            environment="Portal"
-            phasePlanned={6}
-          />
-        ),
+        element: <MemberShuPortalView />,
       },
       {
         path: "unit-usaha",
@@ -189,6 +183,30 @@ export const router = createBrowserRouter([
             phasePlanned={6}
           />
         ),
+      },
+      {
+        path: "shu",
+        element: <AdminShuView initialTab="overview" />,
+      },
+      {
+        path: "shu/periode",
+        element: <AdminShuView initialTab="periode" />,
+      },
+      {
+        path: "shu/konfigurasi",
+        element: <AdminShuView initialTab="konfigurasi" />,
+      },
+      {
+        path: "shu/perhitungan",
+        element: <AdminShuView initialTab="perhitungan" />,
+      },
+      {
+        path: "shu/pemeriksaan",
+        element: <AdminShuView initialTab="pemeriksaan" />,
+      },
+      {
+        path: "shu/riwayat",
+        element: <AdminShuView initialTab="riwayat" />,
       },
       {
         path: "laporan",

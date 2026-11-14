@@ -258,7 +258,8 @@ export interface AdminNavItem {
     | "Vote"
     | "FileSpreadsheet"
     | "History"
-    | "Settings";
+    | "Settings"
+    | "PieChart";
   badge?: string;
 }
 
@@ -387,6 +388,20 @@ export function getPermittedAdminNavSections(
               },
             ]
           : []),
+        ...(activeModules.shu &&
+        (role === "manager" ||
+          role === "staff" ||
+          role === "finance_officer" ||
+          role === "treasurer" ||
+          role === "auditor")
+          ? [
+              {
+                label: "Pengelolaan SHU",
+                href: "/admin/shu",
+                iconName: "PieChart" as const,
+              },
+            ]
+          : []),
       ],
     },
     {
@@ -490,6 +505,12 @@ export const KNOWN_ADMIN_ROUTES = [
   "/admin/keuangan",
   "/admin/unit-usaha",
   "/admin/rapat",
+  "/admin/shu",
+  "/admin/shu/periode",
+  "/admin/shu/konfigurasi",
+  "/admin/shu/perhitungan",
+  "/admin/shu/pemeriksaan",
+  "/admin/shu/riwayat",
   "/admin/laporan",
   "/admin/audit",
   "/admin/pengaturan",
@@ -830,6 +851,26 @@ export function canAccessRoute(
         return {
           allowed: false,
           reason: "Anda tidak memiliki izin mengakses konfigurasi platform teknis.",
+        };
+      }
+      return { allowed: true };
+    }
+
+    // 3.12 /admin/shu and subroutes (Modul SHU)
+    if (cleanPath === "/admin/shu" || cleanPath.startsWith("/admin/shu/")) {
+      if (activeModules && !activeModules.shu) {
+        return {
+          allowed: false,
+          isModuleInactive: true,
+          moduleKey: "shu",
+          reason: "Modul SHU saat ini sedang dinonaktifkan dalam konfigurasi koperasi.",
+        };
+      }
+      if (role === "admin" || role === "super_admin") {
+        return {
+          allowed: false,
+          reason:
+            "Sesuai SoD: Administrator teknis dan Super Admin tidak memiliki kewenangan pengelolaan atau keputusan finansial SHU.",
         };
       }
       return { allowed: true };

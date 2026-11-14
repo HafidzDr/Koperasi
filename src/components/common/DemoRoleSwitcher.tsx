@@ -4,6 +4,7 @@ import { useConfigStore } from "@/stores/configStore";
 import { useToastStore } from "@/stores/toastStore";
 import { useMembershipStore } from "@/features/membership/stores/membershipStore";
 import { useSavingsStore } from "@/features/savings/stores/savingsStore";
+import { useShuStore } from "@/features/shu/stores/shuStore";
 import { demoRoleCatalog } from "@/mocks/seedData";
 import { Role, BusinessModuleKey } from "@/types";
 import { AUTHENTICATED_ROLES, PUBLIC_CONTEXTS, canPerformAction } from "@/lib/rbac";
@@ -71,6 +72,7 @@ export const DemoRoleSwitcher: React.FC = () => {
     useAuthStore.getState().resetToDefault();
     useMembershipStore.getState().resetToSeed();
     useSavingsStore.getState().resetToSeed();
+    useShuStore.getState().resetToSeed();
     addToast({
       type: "success",
       title: "Reset Data Demonstrasi Berhasil",
