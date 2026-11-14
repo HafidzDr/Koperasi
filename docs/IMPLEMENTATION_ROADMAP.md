@@ -31,10 +31,12 @@ Phase 4: Savings Management (Simpanan)     [SELESAI]
 Phase 5: Loan & Installment Management     [SELESAI]
    ↓
 Phase 6: Business Unit Management (Unit Usaha) [SELESAI]
+   ↓
+Phase 7: SHU Management (Pengelolaan Sisa Hasil Usaha) [SELESAI]
    ↓  (persetujuan pengguna wajib)
-Phase 7: Laporan Keuangan & Audit Simulasi [MENUNGGU]
+Phase 8: Laporan Keuangan Demonstrasi & Audit Trail [MENUNGGU]
    ↓  (persetujuan pengguna wajib)
-Phase 8: QA, Aksesibilitas & Penguatan Responsif [MENUNGGU]
+Phase 9: QA, Aksesibilitas & Penguatan Responsif [MENUNGGU]
 ```
 
 ---
