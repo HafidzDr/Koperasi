@@ -218,7 +218,6 @@ export const ROLE_PERMISSIONS: Record<Role, readonly Permission[]> = {
     "users:update",
     "users:deactivate",
     "platform_config:view",
-    "platform_config:update",
     "product_config:view",
     "product_config:update",
     "audit:view",

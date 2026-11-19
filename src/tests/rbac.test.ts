@@ -190,11 +190,12 @@ describe("PHASE 2.2 RBAC Hardening & Test Integrity", () => {
       expect(KNOWN_MEMBER_ROUTES.length).toBeGreaterThan(0);
     });
 
-    it("Only roles with platform_config:update (Admin & Super Admin) can modify module configuration", () => {
-      expect(canPerformAction("admin", "platform_config", "update")).toBe(true);
+    it("Only Super Administrator with platform_config:update can modify module configuration", () => {
+      expect(canPerformAction("admin", "platform_config", "update")).toBe(false);
       expect(canPerformAction("super_admin", "platform_config", "update")).toBe(true);
 
       const unauthorizedRoles: Role[] = [
+        "admin",
         "member",
         "staff",
         "finance_officer",

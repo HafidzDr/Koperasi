@@ -123,6 +123,33 @@ describe("STAGE 2 — Floating Settings Controller & Navigation Tests", () => {
       });
     });
 
+    it("strictly disables module toggles for standard admin role (super_admin only)", () => {
+      useAuthStore.getState().setRole("admin");
+      renderComponent();
+
+      fireEvent.click(
+        screen.getByRole("button", { name: /Pengaturan Demonstrasi & Peran/i })
+      );
+
+      // Navigate to Modul Bisnis tab
+      fireEvent.click(screen.getByText("Modul Bisnis"));
+
+      // Verify restricted access alert is shown for admin
+      expect(screen.getByText(/Hak Akses Terbatas \(SoD\)/i)).toBeDefined();
+
+      // Verify switches are disabled for admin
+      const switches = screen.getAllByRole("switch");
+      switches.forEach((sw) => {
+        expect(sw.hasAttribute("disabled")).toBe(true);
+      });
+
+      // Verify direct click on switch does not change store state
+      const initialSavingsState = useConfigStore.getState().config.activeModules.savings;
+      const savingsSwitch = screen.getByLabelText(/Toggle Savings Management \(Simpanan\)/i);
+      fireEvent.click(savingsSwitch);
+      expect(useConfigStore.getState().config.activeModules.savings).toBe(initialSavingsState);
+    });
+
     it("enables module toggles for authorized roles (e.g. super_admin)", () => {
       useAuthStore.getState().setRole("super_admin");
       renderComponent();

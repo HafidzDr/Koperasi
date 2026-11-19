@@ -71,7 +71,7 @@
       ]
     },
     "screenshot": "public_home_320.png",
-    "fileSize": 244197,
+    "fileSize": 244200,
     "status": "PASS"
   },
   {
@@ -371,7 +371,7 @@
       ]
     },
     "screenshot": "public_home_1024.png",
-    "fileSize": 933848,
+    "fileSize": 933852,
     "status": "PASS"
   },
   {
@@ -734,7 +734,7 @@
       ]
     },
     "screenshot": "public_daftar_375.png",
-    "fileSize": 50032,
+    "fileSize": 50033,
     "status": "PASS"
   },
   {
@@ -879,7 +879,7 @@
       ]
     },
     "screenshot": "public_daftar_768.png",
-    "fileSize": 93721,
+    "fileSize": 93722,
     "status": "PASS"
   },
   {
@@ -1031,7 +1031,7 @@
       ]
     },
     "screenshot": "public_daftar_1280.png",
-    "fileSize": 74989,
+    "fileSize": 74987,
     "status": "PASS"
   },
   {
@@ -1183,7 +1183,7 @@
       ]
     },
     "screenshot": "public_daftar_1920.png",
-    "fileSize": 111483,
+    "fileSize": 111486,
     "status": "PASS"
   }
 ]

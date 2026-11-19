@@ -209,6 +209,18 @@ export const PlatformSettingsView: React.FC = () => {
     });
   };
 
+  const handleToggleModule = (key: BusinessModuleKey) => {
+    if (!canUpdatePlatformConfig) {
+      addToast({
+        type: "danger",
+        title: "Akses Ditolak (SoD)",
+        message: "Hanya Super Administrator yang memiliki wewenang (platform_config:update) untuk mengubah status modul platform.",
+      });
+      return;
+    }
+    toggleModule(key);
+  };
+
   return (
     <div className="space-y-6 text-left max-w-5xl mx-auto">
       {/* Page Header */}
@@ -336,7 +348,7 @@ export const PlatformSettingsView: React.FC = () => {
                         <Button
                           variant={isEnabled ? "outline" : "primary"}
                           size="sm"
-                          onClick={() => toggleModule(mod.key)}
+                          onClick={() => handleToggleModule(mod.key)}
                           className="shrink-0"
                         >
                           {isEnabled ? "Nonaktifkan Modul" : "Aktifkan Modul"}

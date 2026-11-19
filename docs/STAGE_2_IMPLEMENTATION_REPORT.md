@@ -46,7 +46,8 @@ Komponen `FloatingSettingsController` menggantikan bar navigasi demo lama (`Demo
    - Pergantian peran memicu pembaruan `authStore`, diseminasi notifikasi toast (`Peran Demonstrasi Diubah`), penutupan panel, dan navigasi otomatis ke rute default peran terkait.
 2. **Tab 2: Modul Bisnis (Platform Module Toggles)**
    - Menampilkan sakelar (Switch) untuk 9 modul bisnis terisolasi: Simpanan, Pinjaman, Angsuran, Unit Usaha, SHU, Rapat & Voting (RAT Digital), Notifikasi, Laporan Keuangan, dan Audit Trail.
-   - **Enforcement RBAC Ketat:** Izin pengubahan modul strictly memerlukan permission `platform_config:update`. Hanya peran Administrator Sistem dan Super Administrator yang diizinkan mengubah status modul. Bagi peran lain (misal Anggota atau Staf), seluruh sakelar otomatis berstatus `disabled` dan disertai banner peringatan Segregation of Duties (SoD).
+   - **Enforcement RBAC Ketat (Kebijakan Terpadu):** Sesuai kesepakatan tata kelola, hak akses `platform_config:update` dibatasi **secara eksklusif untuk peran Super Administrator (`super_admin`)**. Administrator Sistem (`admin`) hanya memiliki `platform_config:view` (arsitektur teknis baca-saja). Seluruh peran lain (termasuk `admin`, `member`, `staff`, `treasurer`, dll.) melihat sakelar dalam status `disabled` (terkunci) dan disertai banner peringatan Segregation of Duties (SoD).
+   - **Proteksi Pemanggilan Langsung:** Handler `handleToggleModule` baik pada `FloatingSettingsController` maupun `PlatformSettingsView` dilengkapi validasi otorisasi aktif yang menolak eksekusi dan memunculkan toast bahaya jika dipanggil oleh pengguna tanpa hak `platform_config:update`.
 3. **Tab 3: Alat Demo (Prototype Reset & Tools)**
    - Menyediakan fitur pemulihan (*reset*) lingkungan prototipe ke kondisi data awal (seed).
    - Mengembalikan data ke kondisi awal secara terkoordinasi pada `authStore`, `configStore`, `membershipStore`, `savingsStore`, `loanStore`, `businessUnitStore`, dan `shuStore`.
@@ -80,25 +81,26 @@ Komponen `FloatingSettingsController` menggantikan bar navigasi demo lama (`Demo
 ## 4. Pengujian Otomatis & Quality Gates
 
 ### 4.1 Unit & Integration Test Baru (`src/tests/floatingSettingsController.test.tsx`)
-Dibuat pengujian komprehensif mencakup 10 skenario pengujian:
+Dibuat pengujian komprehensif mencakup 11 skenario pengujian:
 1. Render tombol pemicu dengan ARIA label aksesibel dan pembukaan panel dialog saat diklik.
 2. Penutupan panel saat menekan tombol `Escape`.
 3. Penutupan panel saat tombol silang (close icon) diklik.
 4. Pergantian peran demo dengan pembaruan state pada `authStore` dan diseminasi toast notifikasi.
 5. Render lengkap 8 akun peran terautentikasi dan 2 konteks pratinjau publik.
-6. Penonaktifan (*disabled state*) sakelar modul bisnis bagi peran tanpa izin `platform_config:update`.
-7. Pengaktifan sakelar modul bisnis bagi peran berwenang (Super Admin).
-8. Penonaktifan tombol Reset Demonstrasi bagi peran non-Super Admin (misal Admin biasa).
-9. Eksekusi reset data prototipe oleh Super Admin melalui dialog konfirmasi konfirmasi ganda.
-10. **Invarian Hak Akses:** Membuka dan menutup panel terbukti 100% tidak mengubah peran atau menaikkan hak akses pengguna secara tidak sah.
+6. Penonaktifan (*disabled state*) sakelar modul bisnis bagi peran tanpa izin `platform_config:update` (misal Anggota).
+7. Penonaktifan ketat (*strict disabled state*) sakelar modul bisnis bagi peran Administrator Sistem biasa (`admin`) yang tidak memiliki `platform_config:update`.
+8. Pengaktifan sakelar modul bisnis bagi peran berwenang (Super Admin).
+9. Penonaktifan tombol Reset Demonstrasi bagi peran non-Super Admin (misal Admin biasa).
+10. Eksekusi reset data prototipe oleh Super Admin melalui dialog konfirmasi konfirmasi ganda.
+11. **Invarian Hak Akses:** Membuka dan menutup panel terbukti 100% tidak mengubah peran atau menaikkan hak akses pengguna secara tidak sah.
 
 ### 4.2 Hasil Eksekusi Quality Gates
 | Gate | Perintah | Target | Hasil Aktual | Status |
 | :--- | :--- | :--- | :--- | :--- |
 | **Type Check** | `pnpm typecheck` | 0 type errors | `tsc --noEmit` keluar dengan kode 0 (0 error) | **PASS** |
 | **Lint** | `pnpm lint` | 0 warnings / errors | `eslint "src/**/*.{ts,tsx}" --max-warnings 0` keluar dengan kode 0 | **PASS** |
-| **Unit & Integration Tests** | `pnpm test` | Seluruh test lulus (0 regressions) | **21 test files passed, 366 tests passed (100%)** | **PASS** |
-| **Production Build** | `pnpm build` | Bundle sukses tanpa error | `tsc --noEmit && vite build` sukses dalam 8.74s | **PASS** |
+| **Unit & Integration Tests** | `pnpm test` | Seluruh test lulus (0 regressions) | **21 test files passed, 367 tests passed (100%)** | **PASS** |
+| **Production Build** | `pnpm build` | Bundle sukses tanpa error | `tsc --noEmit && vite build` sukses dalam 8.73s | **PASS** |
 | **Responsive Verification** | `node scripts/verify_responsive.js` | 16 skenario viewport (320px – 1920px) | **16 / 16 passed** (0 horizontal overflow, 0 clipping, DOM valid) | **PASS** |
 | **Platform Screenshots** | `node scripts/capture_platform_pages.js` | 10 halaman platform tertangkap | **10 / 10 captured** di `public/screenshots/` | **PASS** |
 
@@ -112,15 +114,38 @@ Dibuat pengujian komprehensif mencakup 10 skenario pengujian:
 4. `src/layouts/PublicLayout.tsx` (Diperbarui): Pembersihan top demo bar; Floating Fill navbar diposisikan rapi di top floating position; penyertaan `FloatingSettingsController`.
 5. `src/layouts/MemberLayout.tsx` (Diperbarui): Pembersihan top demo bar; penyertaan `FloatingSettingsController`.
 6. `src/layouts/AdminLayout.tsx` (Diperbarui): Pembersihan top demo bar; penyertaan `FloatingSettingsController`.
-7. `src/tests/floatingSettingsController.test.tsx` (**BARU**): 10 skenario pengujian unit & integrasi untuk navigasi dan floating controller.
-8. `docs/STAGE_2_IMPLEMENTATION_REPORT.md` (**BARU**): Dokumen laporan teknis implementasi Stage 2.
+7. `src/lib/rbac.ts` (Diperbarui): Penyelarasan permission `platform_config:update` strictly eksklusif untuk `super_admin`; `admin` hanya memiliki `platform_config:view`.
+8. `src/features/admin/PlatformSettingsView.tsx` (Diperbarui): Handler pengubahan modul diperkuat dengan guard otorisasi `platform_config:update`.
+9. `src/tests/floatingSettingsController.test.tsx` (**BARU**): 11 skenario pengujian unit & integrasi untuk navigasi dan floating controller.
+10. `src/tests/rbac.test.ts` (Diperbarui): Penyelarasan pengujian otorisasi bahwa hanya Super Admin yang memegang `platform_config:update`.
+11. `docs/STAGE_2_IMPLEMENTATION_REPORT.md` (**BARU**): Dokumen laporan teknis implementasi Stage 2.
 
 ---
 
-## 6. Pernyataan Kepatuhan & Status Proyek
+## 6. Laporan Verifikasi Kebijakan Otorisasi (Authorization Policy Final Check)
+
+1. **Verifikasi Permission Konfigurasi:**
+   - Ditemukan bahwa berkas `src/lib/rbac.ts` sebelumnya memetakan `platform_config:update` pada peran `admin`.
+   - Dilakukan koreksi minimal: menghapus `platform_config:update` dari `admin`, sehingga `admin` murni memegang `platform_config:view` (read-only architectural visibility).
+   - Hak `platform_config:update` kini 100% eksklusif untuk `super_admin`.
+   - Admin biasa terverifikasi tidak dapat mengubah konfigurasi modul; Super Admin dapat mengubah konfigurasi modul; pemanggilan action langsung dicegah dengan guard toast peringatan; membuka panel terbukti tidak mengubah peran atau permission.
+2. **Verifikasi DemoRoleSwitcher:**
+   - `DemoRoleSwitcher` tidak lagi dirender terpisah pada `PublicLayout`, `MemberLayout`, maupun `AdminLayout`.
+   - Tidak ada duplikasi atau render ganda `FloatingSettingsController`.
+   - Fungsi navigasi dan role switching berjalan lancar tanpa kendala.
+3. **Verifikasi Floating Fill Navbar:**
+   - Bentuk kapsul, dimensi, padding, posisi floating (`sticky top-2 sm:top-3.5 z-40`), efek frosted fill, dan responsive drawer mobile 100% identik dengan sebelum Stage 2 (tidak ada redesign).
+4. **Verifikasi Tampilan Mobile (320px, 375px, 390px):**
+   - Panel floating controller bertransformasi menjadi bottom sheet drawer yang aman (`w-full max-h-[85vh]` dengan `overflow-y-auto`).
+   - Tombol pemicu berada di zona jempol yang mudah dijangkau (`bottom-5 right-5`).
+   - Tidak menutupi kontrol navigasi penting dan 0 horizontal overflow terverifikasi pada seluruh 16 skenario responsif.
+
+---
+
+## 7. Pernyataan Kepatuhan & Status Proyek
 
 - [x] Floating Fill navbar tidak diubah dari spesifikasi aslinya (bentuk kapsul, dimensi, floating fill dipertahankan).
 - [x] Tidak ada modifikasi pada kalkulasi keuangan, SHU, loan logic, savings logic, atau store schemas.
-- [x] Seluruh 366 pengujian otomatis lulus tanpa regresi.
+- [x] Seluruh 367 pengujian otomatis lulus tanpa regresi.
 - [x] Tidak melakukan merge ke branch `main`.
 - [x] Tidak memulai Stage 3 sebelum instruksi dan persetujuan dari pengguna.
