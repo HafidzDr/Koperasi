@@ -13,7 +13,7 @@
         "h": 101
       },
       "visibleButtonCount": 17,
-      "bodyTextLength": 6826,
+      "bodyTextLength": 6815,
       "reason": "OK"
     },
     "metrics": {
@@ -71,7 +71,7 @@
       ]
     },
     "screenshot": "public_home_320.png",
-    "fileSize": 170692,
+    "fileSize": 196114,
     "status": "PASS"
   },
   {
@@ -88,7 +88,7 @@
         "h": 101
       },
       "visibleButtonCount": 17,
-      "bodyTextLength": 6826,
+      "bodyTextLength": 6815,
       "reason": "OK"
     },
     "metrics": {
@@ -146,7 +146,7 @@
       ]
     },
     "screenshot": "public_home_375.png",
-    "fileSize": 202780,
+    "fileSize": 237101,
     "status": "PASS"
   },
   {
@@ -163,7 +163,7 @@
         "h": 101
       },
       "visibleButtonCount": 17,
-      "bodyTextLength": 6826,
+      "bodyTextLength": 6815,
       "reason": "OK"
     },
     "metrics": {
@@ -221,7 +221,7 @@
       ]
     },
     "screenshot": "public_home_390.png",
-    "fileSize": 223000,
+    "fileSize": 263059,
     "status": "PASS"
   },
   {
@@ -238,7 +238,7 @@
         "h": 155
       },
       "visibleButtonCount": 19,
-      "bodyTextLength": 6868,
+      "bodyTextLength": 6857,
       "reason": "OK"
     },
     "metrics": {
@@ -296,7 +296,7 @@
       ]
     },
     "screenshot": "public_home_768.png",
-    "fileSize": 503164,
+    "fileSize": 671576,
     "status": "PASS"
   },
   {
@@ -313,7 +313,7 @@
         "h": 180
       },
       "visibleButtonCount": 19,
-      "bodyTextLength": 6868,
+      "bodyTextLength": 6857,
       "reason": "OK"
     },
     "metrics": {
@@ -371,7 +371,7 @@
       ]
     },
     "screenshot": "public_home_1024.png",
-    "fileSize": 635311,
+    "fileSize": 868042,
     "status": "PASS"
   },
   {
@@ -388,7 +388,7 @@
         "h": 180
       },
       "visibleButtonCount": 18,
-      "bodyTextLength": 6952,
+      "bodyTextLength": 6941,
       "reason": "OK"
     },
     "metrics": {
@@ -446,7 +446,7 @@
       ]
     },
     "screenshot": "public_home_1280.png",
-    "fileSize": 866837,
+    "fileSize": 1121790,
     "status": "PASS"
   },
   {
@@ -463,7 +463,7 @@
         "h": 180
       },
       "visibleButtonCount": 18,
-      "bodyTextLength": 6952,
+      "bodyTextLength": 6941,
       "reason": "OK"
     },
     "metrics": {
@@ -521,7 +521,7 @@
       ]
     },
     "screenshot": "public_home_1440.png",
-    "fileSize": 1032625,
+    "fileSize": 1296242,
     "status": "PASS"
   },
   {
@@ -538,7 +538,7 @@
         "h": 180
       },
       "visibleButtonCount": 18,
-      "bodyTextLength": 6952,
+      "bodyTextLength": 6941,
       "reason": "OK"
     },
     "metrics": {
@@ -596,7 +596,7 @@
       ]
     },
     "screenshot": "public_home_1920.png",
-    "fileSize": 1356379,
+    "fileSize": 1609051,
     "status": "PASS"
   },
   {
@@ -614,7 +614,7 @@
       },
       "visibleInputCount": 2,
       "visibleButtonCount": 3,
-      "bodyTextLength": 1303,
+      "bodyTextLength": 1285,
       "reason": "OK"
     },
     "metrics": {
@@ -665,7 +665,7 @@
       ]
     },
     "screenshot": "public_daftar_320.png",
-    "fileSize": 42634,
+    "fileSize": 42636,
     "status": "PASS"
   },
   {
@@ -683,7 +683,7 @@
       },
       "visibleInputCount": 2,
       "visibleButtonCount": 3,
-      "bodyTextLength": 1303,
+      "bodyTextLength": 1285,
       "reason": "OK"
     },
     "metrics": {
@@ -752,7 +752,7 @@
       },
       "visibleInputCount": 2,
       "visibleButtonCount": 3,
-      "bodyTextLength": 1303,
+      "bodyTextLength": 1285,
       "reason": "OK"
     },
     "metrics": {
@@ -821,7 +821,7 @@
       },
       "visibleInputCount": 2,
       "visibleButtonCount": 5,
-      "bodyTextLength": 1357,
+      "bodyTextLength": 1339,
       "reason": "OK"
     },
     "metrics": {
@@ -879,7 +879,7 @@
       ]
     },
     "screenshot": "public_daftar_768.png",
-    "fileSize": 93721,
+    "fileSize": 91625,
     "status": "PASS"
   },
   {
@@ -897,7 +897,7 @@
       },
       "visibleInputCount": 2,
       "visibleButtonCount": 5,
-      "bodyTextLength": 1357,
+      "bodyTextLength": 1339,
       "reason": "OK"
     },
     "metrics": {
@@ -955,7 +955,7 @@
       ]
     },
     "screenshot": "public_daftar_1024.png",
-    "fileSize": 69322,
+    "fileSize": 69337,
     "status": "PASS"
   },
   {
@@ -973,7 +973,7 @@
       },
       "visibleInputCount": 2,
       "visibleButtonCount": 4,
-      "bodyTextLength": 1441,
+      "bodyTextLength": 1423,
       "reason": "OK"
     },
     "metrics": {
@@ -1049,7 +1049,7 @@
       },
       "visibleInputCount": 2,
       "visibleButtonCount": 4,
-      "bodyTextLength": 1441,
+      "bodyTextLength": 1423,
       "reason": "OK"
     },
     "metrics": {
@@ -1125,7 +1125,7 @@
       },
       "visibleInputCount": 2,
       "visibleButtonCount": 4,
-      "bodyTextLength": 1441,
+      "bodyTextLength": 1423,
       "reason": "OK"
     },
     "metrics": {
@@ -1183,7 +1183,7 @@
       ]
     },
     "screenshot": "public_daftar_1920.png",
-    "fileSize": 111486,
+    "fileSize": 109169,
     "status": "PASS"
   }
 ]

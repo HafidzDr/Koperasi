@@ -59,24 +59,24 @@ export const HomeView: React.FC = () => {
 
   const stats = [
     {
-      value: "30+",
-      label: "Portofolio Usaha Produktif",
-      desc: "Fasilitas pembiayaan riil bagi pelaku UMKM anggota",
-    },
-    {
-      value: "Rp 4,5M+",
-      label: "Simpanan Terkelola",
-      desc: "Akumulasi saldo pokok, wajib, dan sukarela anggota",
-    },
-    {
       value: "100%",
-      label: "Pencatatan Digital Terverifikasi",
-      desc: "Sistem pencatatan terpadu dengan jejak audit akuntabel",
+      label: "Transparansi Mutasi",
+      desc: "Pencatatan digital buku tabungan dan riwayat transaksi terpadu",
     },
     {
-      value: "24/7",
+      value: "1 Suara",
+      label: "Demokrasi Koperasi",
+      desc: "Kedaulatan setara bagi seluruh anggota dalam forum tahunan RAT",
+    },
+    {
+      value: "3 Lapis",
+      label: "Tata Kelola & SoD",
+      desc: "Pemisahan wewenang verifikasi staf, kasir, dan persetujuan pengurus",
+    },
+    {
+      value: "24 Jam",
       label: "Akses Layanan Mandiri",
-      desc: "Pemantauan saldo dan jadwal angsuran setiap saat",
+      desc: "Pemantauan saldo dan jadwal angsuran setiap saat di portal",
     },
   ];
 
@@ -168,7 +168,7 @@ export const HomeView: React.FC = () => {
                 <Button
                   variant="outline"
                   size="lg"
-                  className="w-full sm:w-auto border-white/60 text-white hover:bg-white/10 font-medium px-7 backdrop-blur-sm"
+                  className="w-full sm:w-auto bg-transparent border-white/70 text-white hover:bg-white/10 font-medium px-7 backdrop-blur-sm"
                 >
                   Pelajari Layanan Simpanan
                 </Button>
@@ -372,11 +372,11 @@ export const HomeView: React.FC = () => {
               <div className="relative h-48 overflow-hidden bg-ink-100">
                 <img
                   src="/images/public/03-simpanan.webp"
-                  alt="Anggota mengakses buku simpanan digital koperasi via perangkat mobile"
+                  alt="Unit usaha dan produk kebutuhan anggota koperasi"
                   className="w-full h-full object-cover"
                 />
                 <div className="absolute bottom-3 right-3 bg-white/95 backdrop-blur-sm px-2.5 py-1 rounded text-[11px] font-semibold text-forest-800 shadow-subtle">
-                  Bunga Sukarela 2,0% p.a.*
+                  Buku Tabungan Digital
                 </div>
               </div>
               <div className="p-6 flex-1 flex flex-col justify-between space-y-4">
@@ -416,11 +416,11 @@ export const HomeView: React.FC = () => {
               <div className="relative h-48 overflow-hidden bg-ink-100">
                 <img
                   src="/images/public/04-pinjaman.webp"
-                  alt="Usaha produktif anggota yang didukung pembiayaan modal koperasi"
+                  alt="Pelaku UMKM dan pedagang binaan yang didukung pembiayaan koperasi"
                   className="w-full h-full object-cover"
                 />
                 <div className="absolute bottom-3 right-3 bg-white/95 backdrop-blur-sm px-2.5 py-1 rounded text-[11px] font-semibold text-forest-800 shadow-subtle">
-                  Bunga Flat 10,0% p.a.*
+                  Angsuran Flat Terencana
                 </div>
               </div>
               <div className="p-6 flex-1 flex flex-col justify-between space-y-4">
@@ -460,7 +460,7 @@ export const HomeView: React.FC = () => {
               <div className="relative h-48 overflow-hidden bg-ink-100">
                 <img
                   src="/images/public/07-transparansi.webp"
-                  alt="Musyawarah Rapat Anggota Tahunan (RAT) dan pertanggungjawaban terbuka"
+                  alt="Amanah tata kelola dan keberlanjutan ekonomi anggota koperasi"
                   className="w-full h-full object-cover"
                 />
                 <div className="absolute bottom-3 right-3 bg-white/95 backdrop-blur-sm px-2.5 py-1 rounded text-[11px] font-semibold text-forest-800 shadow-subtle">
@@ -608,18 +608,18 @@ export const HomeView: React.FC = () => {
                 <div className="space-y-3">
                   <Quote className="w-6 h-6 text-forest-300/60" />
                   <p className="text-xs sm:text-sm text-forest-50 leading-relaxed italic">
-                    &quot;Pengajuan pinjaman modal usaha di Nusantara Maju sangat jelas dan transparan. Tidak ada potongan tersembunyi yang membingungkan. Simulasi angsuran di portal sangat membantu saya merencanakan arus kas usaha.&quot;
+                    &quot;Buku simpanan digital memudahkan saya memantau setoran simpanan wajib dan sukarela langsung dari ponsel. Transparansi pencatatan mutasi membuat pengelolaan keuangan keluarga jauh lebih teratur.&quot;
                   </p>
                 </div>
                 <div className="flex items-center gap-3.5 pt-4 border-t border-forest-700/60">
                   <img
-                    src="/images/landing/testimonial-member-1.jpg"
-                    alt="Budi Santoso, anggota pengelola hasil usaha"
+                    src="/images/landing/testimonial-member-2.jpg"
+                    alt="Siti Rahma, anggota aktif koperasi"
                     className="w-12 h-12 rounded-full object-cover border-2 border-forest-500 shrink-0"
                   />
                   <div>
-                    <h3 className="text-sm font-semibold text-white">Budi Santoso</h3>
-                    <p className="text-xs text-forest-200">Anggota Aktif & Pelaku Agribisnis</p>
+                    <h3 className="text-sm font-semibold text-white">Siti Rahma</h3>
+                    <p className="text-xs text-forest-200">Anggota Koperasi</p>
                   </div>
                 </div>
               </div>
@@ -629,18 +629,18 @@ export const HomeView: React.FC = () => {
                 <div className="space-y-3">
                   <Quote className="w-6 h-6 text-forest-300/60" />
                   <p className="text-xs sm:text-sm text-forest-50 leading-relaxed italic">
-                    &quot;Buku simpanan digital membuat saya sangat tenang karena setiap rupiah simpanan wajib dan sukarela dapat saya pantau dari ponsel. Saat pembagian SHU tahun lalu, laporannya sangat rapi dan adil.&quot;
+                    &quot;Fasilitas kalkulator simulasi pinjaman di portal sangat transparan dan informatif. Jadwal angsuran flat dapat dihitung terlebih dahulu sehingga arus kas usaha binaan dapat direncanakan dengan tenang.&quot;
                   </p>
                 </div>
                 <div className="flex items-center gap-3.5 pt-4 border-t border-forest-700/60">
                   <img
-                    src="/images/landing/testimonial-member-2.jpg"
-                    alt="Siti Rahmawati, anggota pengusaha kuliner binaan"
+                    src="/images/landing/testimonial-member-1.jpg"
+                    alt="Mitra binaan usaha produktif koperasi"
                     className="w-12 h-12 rounded-full object-cover border-2 border-forest-500 shrink-0"
                   />
                   <div>
-                    <h3 className="text-sm font-semibold text-white">Siti Rahmawati</h3>
-                    <p className="text-xs text-forest-200">Anggota Aktif & Pemilik Usaha Kuliner</p>
+                    <h3 className="text-sm font-semibold text-white">Kelompok Mitra Usaha Binaan</h3>
+                    <p className="text-xs text-forest-200">Mitra Usaha Produktif Anggota</p>
                   </div>
                 </div>
               </div>
@@ -670,7 +670,7 @@ export const HomeView: React.FC = () => {
               <div className="relative rounded-2xl overflow-hidden border border-ink-200 shadow-subtle aspect-[4/3]">
                 <img
                   src="/images/public/09-kolaborasi-anggota.webp"
-                  alt="Musyawarah anggota koperasi dalam suasana kekeluargaan"
+                  alt="Kegiatan pengolahan lahan produktif kemitraan anggota koperasi"
                   className="w-full h-full object-cover"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-ink-900/60 via-transparent to-transparent" />
@@ -773,7 +773,7 @@ export const HomeView: React.FC = () => {
                 <div className="relative rounded-2xl overflow-hidden border-2 border-forest-700/80 shadow-md w-full max-w-xs aspect-square">
                   <img
                     src="/images/public/10-tumbuh-bersama.webp"
-                    alt="Petugas dan anggota koperasi tersenyum menyambut anggota baru"
+                    alt="Petugas koperasi melayani transaksi anggota dengan ramah di kasir modern"
                     className="w-full h-full object-cover"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-forest-950/70 via-transparent to-transparent" />

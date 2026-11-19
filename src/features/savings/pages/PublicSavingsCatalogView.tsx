@@ -283,7 +283,7 @@ export const PublicSavingsCatalogView: React.FC = () => {
             <Button
               variant="outline"
               size="md"
-              className="w-full text-white border-white/40 hover:bg-forest-800/60 px-6"
+              className="w-full sm:w-auto bg-transparent text-white border-white/50 hover:bg-forest-800/60 px-6"
             >
               Profil & Tata Kelola
             </Button>

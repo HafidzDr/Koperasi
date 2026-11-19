@@ -38,36 +38,36 @@ export const AboutView: React.FC = () => {
                   </div>
                   <div>
                     <CardTitle className="text-lg text-ink-900">Legalitas & Kelembagaan</CardTitle>
-                    <p className="text-xs text-ink-500">Legalitas resmi dan ketetapan organisasi</p>
+                    <p className="text-xs text-ink-500">Profil ketetapan organisasi dan basis kepengurusan</p>
                   </div>
                 </div>
-                <Badge variant="forest" size="sm">Terdaftar Resmi</Badge>
+                <Badge variant="forest" size="sm">Kelembagaan Koperasi</Badge>
               </div>
             </CardHeader>
             <CardContent className="space-y-3.5 text-xs text-ink-700 pt-5">
               <div className="flex justify-between items-center py-2 border-b border-ink-100">
-                <span className="text-ink-500 font-medium">Nama Resmi</span>
+                <span className="text-ink-500 font-medium">Nama Organisasi</span>
                 <span className="font-semibold text-ink-900">{config.name}</span>
               </div>
               <div className="flex justify-between items-center py-2 border-b border-ink-100">
-                <span className="text-ink-500 font-medium">Sebutan Singkat</span>
-                <span className="font-semibold text-ink-900">{config.shortName}</span>
-              </div>
-              <div className="flex justify-between items-center py-2 border-b border-ink-100 gap-2">
-                <span className="text-ink-500 font-medium shrink-0">Nomor Badan Hukum</span>
-                <span className="font-mono font-semibold text-forest-800 break-all text-right">{config.legalNumber}</span>
-              </div>
-              <div className="flex justify-between items-center py-2 border-b border-ink-100 gap-2">
-                <span className="text-ink-500 font-medium shrink-0">NIKOP Registrasi</span>
-                <span className="font-mono font-semibold text-forest-800 break-all text-right">{config.cooperativeRegistrationNumber}</span>
+                <span className="text-ink-500 font-medium">Bentuk Entitas</span>
+                <span className="font-semibold text-ink-900">Koperasi Konsumen Primer</span>
               </div>
               <div className="flex justify-between items-center py-2 border-b border-ink-100">
-                <span className="text-ink-500 font-medium">Tahun Berdiri</span>
+                <span className="text-ink-500 font-medium">Dasar Tata Kelola</span>
+                <span className="font-semibold text-ink-900">AD / ART Koperasi</span>
+              </div>
+              <div className="flex justify-between items-center py-2 border-b border-ink-100">
+                <span className="text-ink-500 font-medium">Tahun Pembentukan</span>
                 <span className="font-semibold text-ink-900 font-tabular">{config.establishedYear}</span>
               </div>
-              <div className="flex justify-between items-start py-2">
-                <span className="text-ink-500 font-medium shrink-0">Domisili Kantor</span>
-                <span className="text-right text-ink-700 max-w-xs">{config.address.street}, {config.address.city}, {config.address.province}</span>
+              <div className="flex justify-between items-center py-2 border-b border-ink-100">
+                <span className="text-ink-500 font-medium">Wilayah Operasional</span>
+                <span className="font-semibold text-ink-900">{config.address.city}, {config.address.province}</span>
+              </div>
+              <div className="flex justify-between items-center py-2">
+                <span className="text-ink-500 font-medium">Prinsip Kepemilikan</span>
+                <span className="font-semibold text-forest-800">Milik Bersama Seluruh Anggota</span>
               </div>
             </CardContent>
           </Card>
