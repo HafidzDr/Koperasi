@@ -80,7 +80,7 @@ export const ModulePlaceholderView: React.FC<ModulePlaceholderViewProps> = ({
                 Status Rute & Desain Sistem Terintegrasi
               </strong>
               <p className="text-ink-600 leading-relaxed">
-                Rute dan skema arsitektur informasi modul ini telah siap. Seluruh tata kelola RBAC, breadcrumbs, dan layout navigasi telah terhubung dengan design system KMB.
+                Rute dan skema arsitektur informasi modul ini telah siap. Seluruh tata kelola RBAC, breadcrumbs, dan layout navigasi telah terhubung dengan design system Nusantara Maju.
               </p>
             </div>
           </div>

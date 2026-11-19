@@ -20,10 +20,10 @@ const PAGES = [
   {
     name: 'public_home',
     path: '/',
-    expectedTitleSnippet: 'Koperasi',
+    expectedTitleSnippet: 'Nusantara',
     domReadyCondition: `Boolean(
       document.querySelector('h1') &&
-      document.querySelector('h1').innerText.includes('Koperasi') &&
+      (document.querySelector('h1').innerText.includes('Nusantara') || document.querySelector('h1').innerText.includes('Tumbuh Bersama')) &&
       Array.from(document.querySelectorAll('button, a[role="button"]')).some(b => 
         (b.innerText || '').includes('Daftar') && b.offsetWidth > 0
       )

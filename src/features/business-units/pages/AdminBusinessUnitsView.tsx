@@ -563,7 +563,7 @@ export const AdminBusinessUnitsView: React.FC = () => {
         <Info className="w-5 h-5 text-forest-700 shrink-0 mt-0.5" />
         <div className="text-xs text-forest-900 leading-relaxed">
           <span className="font-semibold block mb-0.5">
-            Prinsip Transparansi & Integritas Finansial Koperasi Digital KMB:
+            Prinsip Transparansi & Integritas Finansial Nusantara Maju:
           </span>
           Penerimaan Bruto mencerminkan akumulasi perputaran omzet kotor unit usaha riil non-simpan-pinjam dan{" "}
           <strong className="underline">BUKAN Laba Bersih (Net Profit)</strong> maupun Sisa Hasil Usaha (SHU).
@@ -1139,7 +1139,7 @@ export const AdminBusinessUnitsView: React.FC = () => {
         isOpen={isCreateUnitModalOpen}
         onClose={() => setIsCreateUnitModalOpen(false)}
         title="Tambah Unit Usaha Baru"
-        description="Daftarkan entitas unit bisnis operasional baru di lingkungan Koperasi Digital KMB."
+        description="Daftarkan entitas unit bisnis operasional baru di lingkungan Nusantara Maju."
         maxWidth="lg"
       >
         <form onSubmit={handleCreateUnitSubmit} className="space-y-4">

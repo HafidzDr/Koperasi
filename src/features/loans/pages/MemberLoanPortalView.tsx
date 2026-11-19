@@ -81,7 +81,7 @@ export const MemberLoanPortalView: React.FC = () => {
       <div className="py-8">
         <EmptyState
           title="Profil Anggota Tidak Ditemukan"
-          description="Akun Anda belum memiliki tautan identitas anggota aktif pada buku induk KMB. Silakan hubungi pengurus atau periksa akun demonstrasi Anda."
+          description="Akun Anda belum memiliki tautan identitas anggota aktif pada buku induk Nusantara Maju. Silakan hubungi pengurus atau periksa akun demonstrasi Anda."
           actionLabel="Buka Beranda"
           onAction={() => window.location.assign("/")}
           icon={<AlertCircle className="w-10 h-10 text-ink-400" />}
@@ -1135,7 +1135,7 @@ export const MemberLoanPortalView: React.FC = () => {
                 onChange={(e) => setPaymentMethod(e.target.value)}
               >
                 <option value="Transfer Bank (Simulasi)">Transfer Bank (Simulasi)</option>
-                <option value="Virtual Account KMB (Simulasi)">Virtual Account KMB (Simulasi)</option>
+                <option value="Virtual Account Nusantara Maju (Simulasi)">Virtual Account Nusantara Maju (Simulasi)</option>
                 <option value="QRIS Mockup (Simulasi)">QRIS Mockup (Simulasi)</option>
                 <option value="Kasir Tunai (Simulasi)">Kasir Kantor Koperasi (Simulasi)</option>
               </select>

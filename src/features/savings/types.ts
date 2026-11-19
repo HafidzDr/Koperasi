@@ -1,6 +1,6 @@
 /**
  * Tipe Data Domain Simpanan (Savings Management)
- * Koperasi Konsumen Makmur Bersama Nusantara (KMB)
+ * Nusantara Maju
  *
  * Mengacu pada PRD, Information Architecture Seksi 5.4, dan Business Rules BR-02.
  */

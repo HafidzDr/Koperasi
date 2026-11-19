@@ -62,13 +62,13 @@ export const PublicLoanCatalogView: React.FC = () => {
       {/* 1. Header Hero */}
       <div className="text-center space-y-3 max-w-3xl mx-auto">
         <Badge variant="forest" size="md">
-          Layanan Pembiayaan Koperasi KMB
+          Layanan Pembiayaan Nusantara Maju
         </Badge>
         <h1 className="text-3xl sm:text-4xl font-bold text-ink-900 tracking-tight">
           Pembiayaan Adil, Transparan, dan Menumbuhkan Usaha Anggota
         </h1>
         <p className="text-sm text-ink-600 leading-relaxed">
-          Koperasi Konsumen Makmur Bersama Nusantara menghadirkan fasilitas pembiayaan dengan prinsip gotong royong dan kesetaraan. Seluruh perhitungan di bawah ini adalah simulasi demonstrasi frontend yang transparan dan dapat disesuaikan.
+          Nusantara Maju menghadirkan fasilitas pembiayaan dengan prinsip gotong royong dan kesetaraan. Seluruh perhitungan di bawah ini adalah simulasi demonstrasi frontend yang transparan dan dapat disesuaikan.
         </p>
       </div>
 
@@ -418,7 +418,7 @@ export const PublicLoanCatalogView: React.FC = () => {
           <CardContent className="space-y-2 text-xs text-ink-600 leading-relaxed">
             <div className="flex items-start gap-2">
               <span className="text-forest-700 font-bold">•</span>
-              <span>Terdaftar sebagai Anggota Koperasi KMB dengan masa keanggotaan minimal 3 bulan (ilustrasi demonstrasi).</span>
+              <span>Terdaftar sebagai Anggota Nusantara Maju dengan masa keanggotaan minimal 3 bulan (ilustrasi demonstrasi).</span>
             </div>
             <div className="flex items-start gap-2">
               <span className="text-forest-700 font-bold">•</span>
@@ -466,7 +466,7 @@ export const PublicLoanCatalogView: React.FC = () => {
       {/* 6. Footer Call to Action */}
       <div className="bg-ink-100 rounded-xl p-8 text-center space-y-4">
         <h3 className="text-lg font-bold text-ink-900">
-          Belum Menjadi Anggota Koperasi KMB?
+          Belum Menjadi Anggota Nusantara Maju?
         </h3>
         <p className="text-xs text-ink-600 max-w-xl mx-auto">
           Daftarkan diri Anda untuk menikmati kemudahan fasilitas pembiayaan berbunga bersahabat dan bagi hasil sisa hasil usaha (SHU) setiap akhir tahun buku.

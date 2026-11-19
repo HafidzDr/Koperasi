@@ -518,7 +518,7 @@ export const MemberVerificationView: React.FC = () => {
                   },
                   {
                     key: "adArtVerified" as keyof VerificationChecklist,
-                    title: "Kesepakatan AD/ART Koperasi KMB",
+                    title: "Kesepakatan AD/ART Nusantara Maju",
                     desc: "Pernyataan tunduk pada ketentuan anggaran dasar dan keputusan rapat anggota.",
                   },
                 ].map((item) => {

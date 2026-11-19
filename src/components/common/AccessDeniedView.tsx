@@ -38,7 +38,7 @@ export const AccessDeniedView: React.FC<AccessDeniedViewProps> = ({
     ? "Modul Nonaktif"
     : badgeText || "Prinsip SoD";
   const displayDesc = isModuleInactive
-    ? "Modul bisnis ini sedang dinonaktifkan dalam konfigurasi platform koperasi KMB."
+    ? "Modul bisnis ini sedang dinonaktifkan dalam konfigurasi platform Nusantara Maju."
     : "Sistem Pengendalian Internal & Hak Akses Berbasis Peran";
 
   return (

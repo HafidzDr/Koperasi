@@ -143,7 +143,7 @@ export const AdminDashboardView: React.FC = () => {
       default:
         return {
           title: "Dashboard Operasional Koperasi",
-          subtitle: "Tinjauan menyeluruh aktivitas koperasi KMB.",
+          subtitle: "Tinjauan menyeluruh aktivitas Nusantara Maju.",
           badgeVariant: "neutral" as const,
           badgeText: currentUser.roleName,
         };

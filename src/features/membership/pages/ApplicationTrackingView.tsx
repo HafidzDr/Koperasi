@@ -310,7 +310,7 @@ export const ApplicationTrackingView: React.FC = () => {
                       <strong className="font-mono text-sm underline">
                         {matchedApp.approvedMemberNumber}
                       </strong>
-                      . Anda kini terdaftar secara sah dalam Buku Induk Anggota KMB.
+                      . Anda kini terdaftar secara sah dalam Buku Induk Anggota Nusantara Maju.
                     </p>
                     <div className="pt-2">
                       <Link to="/portal">

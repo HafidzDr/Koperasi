@@ -51,7 +51,7 @@ export const AboutView: React.FC = () => {
               </div>
               <div className="flex justify-between items-center py-2 border-b border-ink-100">
                 <span className="text-ink-500 font-medium">Sebutan Singkat</span>
-                <span className="font-semibold text-ink-900">{config.shortName} ({config.acronym})</span>
+                <span className="font-semibold text-ink-900">{config.shortName}</span>
               </div>
               <div className="flex justify-between items-center py-2 border-b border-ink-100 gap-2">
                 <span className="text-ink-500 font-medium shrink-0">Nomor Badan Hukum (Demo)</span>

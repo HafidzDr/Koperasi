@@ -215,7 +215,7 @@ export const AdminLayout: React.FC = () => {
               )}
 
               <Badge variant="forest" size="sm" className="hidden sm:inline-flex">
-                KMB Operational Live
+                Nusantara Maju Operational Live
               </Badge>
 
               <div className="flex items-center gap-2.5 pl-3 border-l border-ink-200">

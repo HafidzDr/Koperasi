@@ -88,7 +88,7 @@ export const MemberListView: React.FC = () => {
             </Badge>
           </div>
           <p className="text-xs text-ink-600">
-            Daftar resmi seluruh anggota terdaftar Koperasi Konsumen Makmur Bersama Nusantara dengan nomor unik dan catatan simpanan awal.
+            Daftar resmi seluruh anggota terdaftar Nusantara Maju dengan nomor unik dan catatan simpanan awal.
           </p>
         </div>
       </div>
@@ -231,7 +231,7 @@ export const MemberListView: React.FC = () => {
               <div className="flex justify-between items-start mb-4">
                 <div>
                   <span className="text-[10px] uppercase tracking-wider text-forest-200">
-                    Kartu Anggota Digital KMB
+                    Kartu Anggota Digital Nusantara Maju
                   </span>
                   <h3 className="text-base font-bold tracking-tight">
                     {selectedMember.fullName}

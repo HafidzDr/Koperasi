@@ -1,6 +1,6 @@
 /**
  * Tipe Data Domain Pinjaman dan Angsuran (Loan & Installment Management)
- * Koperasi Konsumen Makmur Bersama Nusantara (KMB)
+ * Nusantara Maju
  *
  * Mengacu pada PRD, Information Architecture Seksi 5.4,
  * Business Rules BR-03 & BR-04, serta DEMO_SIMULATION_SPEC.md Seksi 3.2.

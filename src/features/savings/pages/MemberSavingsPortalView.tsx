@@ -77,7 +77,7 @@ export const MemberSavingsPortalView: React.FC = () => {
       <div className="py-8">
         <EmptyState
           title="Rekening Simpanan Tidak Ditemukan"
-          description="Akun Anda belum memiliki tautan identitas anggota aktif pada buku induk KMB. Silakan hubungi pengurus atau periksa profil keanggotaan Anda."
+          description="Akun Anda belum memiliki tautan identitas anggota aktif pada buku induk Nusantara Maju. Silakan hubungi pengurus atau periksa profil keanggotaan Anda."
           actionLabel="Buka Profil Keanggotaan"
           onAction={() => window.location.assign("/portal/profil")}
           icon={<AlertCircle className="w-10 h-10 text-ink-400" />}
@@ -538,7 +538,7 @@ export const MemberSavingsPortalView: React.FC = () => {
               <span>Prinsip Tata Kelola dan Perlindungan Simpanan Anggota</span>
             </div>
             <p className="leading-relaxed">
-              Seluruh transaksi simpanan anggota dicatat secara akuntabel dalam buku kas demonstrasi KMB. Transaksi setoran maupun penarikan yang diajukan secara daring akan melalui tahapan verifikasi bukti transaksi oleh Staf Operasional dan otorisasi oleh Pengurus/Bendahara sebelum memengaruhi saldo buku simpanan. Contoh kebijakan produk dalam demonstrasi; ketentuan final mengenai simpanan, hak suara, dan alokasi SHU mengikuti AD/ART serta keputusan Rapat Anggota setelah ditetapkan secara resmi.
+              Seluruh transaksi simpanan anggota dicatat secara akuntabel dalam buku kas demonstrasi Nusantara Maju. Transaksi setoran maupun penarikan yang diajukan secara daring akan melalui tahapan verifikasi bukti transaksi oleh Staf Operasional dan otorisasi oleh Pengurus/Bendahara sebelum memengaruhi saldo buku simpanan. Contoh kebijakan produk dalam demonstrasi; ketentuan final mengenai simpanan, hak suara, dan alokasi SHU mengikuti AD/ART serta keputusan Rapat Anggota setelah ditetapkan secara resmi.
             </p>
           </div>
         </div>
@@ -884,7 +884,7 @@ export const MemberSavingsPortalView: React.FC = () => {
           </div>
 
           <div className="p-3 bg-ink-50 rounded border border-ink-200 text-[11px] text-ink-600">
-            * <strong>Aturan Penarikan Simpanan:</strong> Sesuai AD/ART KMB, hanya Simpanan Sukarela yang dapat ditarik selama keanggotaan aktif. Simpanan Pokok dan Simpanan Wajib tidak dapat ditarik.
+            * <strong>Aturan Penarikan Simpanan:</strong> Sesuai AD/ART Nusantara Maju, hanya Simpanan Sukarela yang dapat ditarik selama keanggotaan aktif. Simpanan Pokok dan Simpanan Wajib tidak dapat ditarik.
           </div>
 
           <div className="flex items-center justify-end gap-2 pt-2 border-t border-ink-100">

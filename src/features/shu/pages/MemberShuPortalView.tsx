@@ -81,7 +81,7 @@ export const MemberShuPortalView: React.FC = () => {
       <div className="space-y-6">
         <PageHeader
           title="Sisa Hasil Usaha (SHU) Saya"
-          subtitle="Transparansi alokasi dan riwayat penerimaan SHU anggota KMB."
+          subtitle="Transparansi alokasi dan riwayat penerimaan SHU anggota Nusantara Maju."
         />
         <EmptyState
           icon={<PieChart className="w-6 h-6 text-ink-600" />}
@@ -97,7 +97,7 @@ export const MemberShuPortalView: React.FC = () => {
       <div className="space-y-6">
         <PageHeader
           title="Sisa Hasil Usaha (SHU) Saya"
-          subtitle="Transparansi alokasi dan riwayat penerimaan SHU anggota KMB."
+          subtitle="Transparansi alokasi dan riwayat penerimaan SHU anggota Nusantara Maju."
         />
 
         <div className="p-4 bg-forest-50/70 border border-forest-200/60 rounded-xl text-left flex items-start gap-3">
@@ -125,7 +125,7 @@ export const MemberShuPortalView: React.FC = () => {
     <div className="space-y-6">
       <PageHeader
         title="Sisa Hasil Usaha (SHU) Saya"
-        subtitle="Transparansi perolehan Jasa Modal dan Jasa Usaha anggota KMB."
+        subtitle="Transparansi perolehan Jasa Modal dan Jasa Usaha anggota Nusantara Maju."
       />
 
       {/* 1. Header Banner & Period Selector */}
@@ -142,7 +142,7 @@ export const MemberShuPortalView: React.FC = () => {
               </Badge>
             </div>
             <p className="text-xs text-ink-500 mt-0.5">
-              Nomor Anggota: <span className="font-medium text-ink-800">{dist.memberNumber}</span> • Disahkan: {snapshot.publishedAt ? formatDate(snapshot.publishedAt) : "RAT KMB"}
+              Nomor Anggota: <span className="font-medium text-ink-800">{dist.memberNumber}</span> • Disahkan: {snapshot.publishedAt ? formatDate(snapshot.publishedAt) : "RAT Nusantara Maju"}
             </p>
           </div>
         </div>

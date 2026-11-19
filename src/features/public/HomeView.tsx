@@ -85,7 +85,7 @@ export const HomeView: React.FC = () => {
 
   const faqItems = [
     {
-      question: "Apa saja persyaratan untuk mendaftar sebagai anggota KMB?",
+      question: "Apa saja persyaratan untuk mendaftar sebagai anggota Nusantara Maju?",
       answer:
         "Warga Negara Indonesia, memiliki KTP yang sah, menyetujui Anggaran Dasar/Anggaran Rumah Tangga (AD/ART), serta menyetorkan Simpanan Pokok awal yang terkonfirmasi oleh staf koperasi (alur verifikasi administrasi simulatif).",
     },
@@ -100,7 +100,7 @@ export const HomeView: React.FC = () => {
     {
       question: "Bagaimana ketentuan suku bunga, denda, dan plafon pinjaman?",
       answer:
-        "Pada simulasi sistem KMB: Pinjaman Modal Usaha Produktif memiliki bunga flat 10,0% p.a. (tenor 6–36 bulan, plafon s.d. Rp 100 Jt), sedangkan Pinjaman Konsumtif memiliki bunga flat 12,0% p.a. (tenor 3–36 bulan, plafon s.d. Rp 50 Jt). Denda keterlambatan disimulasikan sebesar 0,5% per hari setelah grace period 3 hari. Syarat pengajuan: telah menjadi anggota aktif minimal 3 bulan.",
+        "Pada simulasi sistem Nusantara Maju: Pinjaman Modal Usaha Produktif memiliki bunga flat 10,0% p.a. (tenor 6–36 bulan, plafon s.d. Rp 100 Jt), sedangkan Pinjaman Konsumtif memiliki bunga flat 12,0% p.a. (tenor 3–36 bulan, plafon s.d. Rp 50 Jt). Denda keterlambatan disimulasikan sebesar 0,5% per hari setelah grace period 3 hari. Syarat pengajuan: telah menjadi anggota aktif minimal 3 bulan.",
     },
     {
       question: "Kapan dan bagaimana Sisa Hasil Usaha (SHU) dibagikan?",
@@ -110,7 +110,7 @@ export const HomeView: React.FC = () => {
     {
       question: "Bagaimana keamanan saldo dan integritas data anggota dijamin?",
       answer:
-        "KMB menerapkan arsitektur fail-closed dengan Segregation of Duties (SoD) 3-tingkat (Staff Verifier, Finance Officer, Manager Approval), pencegahan mutasi saldo ganda, audit trail digital, dan otorisasi berbasis peran (RBAC).",
+        "Nusantara Maju menerapkan arsitektur fail-closed dengan Segregation of Duties (SoD) 3-tingkat (Staff Verifier, Finance Officer, Manager Approval), pencegahan mutasi saldo ganda, audit trail digital, dan otorisasi berbasis peran (RBAC).",
     },
   ];
 
@@ -124,7 +124,7 @@ export const HomeView: React.FC = () => {
         <div className="absolute inset-0">
           <img
             src="/images/landing/hero-kmb.jpg"
-            alt="Petani dan pengurus Koperasi KMB berdiskusi di hamparan persawahan Nusantara"
+            alt="Petani dan pengurus Nusantara Maju berdiskusi di hamparan persawahan Nusantara"
             className="w-full h-full object-cover object-[75%_center] sm:object-center"
           />
           {/* Dark Ambient Gradient Overlays for High Contrast Text Readability */}
@@ -139,7 +139,7 @@ export const HomeView: React.FC = () => {
             <h1 className="text-3xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-white leading-[1.12] sm:leading-[1.08] break-words mb-5">
               {/* Top Pill from Image 2 */}
               <span className="inline-flex items-center gap-2 px-3.5 py-1 sm:px-4 sm:py-1.5 rounded-full border border-white/35 bg-black/30 text-white/95 text-xs sm:text-sm font-medium tracking-wide mb-5 sm:mb-6 backdrop-blur-md shadow-sm block w-fit">
-                <span>Koperasi Digital KMB</span>
+                <span>Nusantara Maju</span>
                 <span className="text-[10px] font-mono font-semibold px-1.5 py-0.2 rounded bg-white/20 text-[#A3E635]">
                   SIMULASI
                 </span>
@@ -248,7 +248,7 @@ export const HomeView: React.FC = () => {
                 Setiap mutasi saldo dan alur persetujuan tercatat pada audit trail digital simulatif.
               </p>
               <span className="block text-[10px] text-ink-500 mt-2 italic">
-                *Indikator pencatatan mutasi otomatis pada sistem demonstrasi KMB.
+                *Indikator pencatatan mutasi otomatis pada sistem demonstrasi Nusantara Maju.
               </span>
             </div>
 
@@ -256,7 +256,7 @@ export const HomeView: React.FC = () => {
             <div className="relative rounded-2xl overflow-hidden border border-ink-200 shadow-sm aspect-[4/3]">
               <img
                 src="/images/landing/about-soil.jpg"
-                alt="Pelaku UMKM dan pedagang pasar anggota binaan Koperasi KMB"
+                alt="Pelaku UMKM dan pedagang pasar anggota binaan Nusantara Maju"
                 className="w-full h-full object-cover"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-ink-900/60 via-transparent to-transparent" />
@@ -278,7 +278,7 @@ export const HomeView: React.FC = () => {
           <div className="lg:col-span-7 space-y-6">
             <div>
               <span className="inline-block text-xs font-bold text-forest-700 tracking-wider uppercase mb-2">
-                TENTANG KOPERASI KMB
+                TENTANG NUSANTARA MAJU
               </span>
               <h2 className="text-2xl sm:text-3xl font-bold text-ink-900 tracking-tight leading-snug">
                 Menjembatani Nilai Kekeluargaan dengan Standar Tata Kelola Digital Terkini.
@@ -286,7 +286,7 @@ export const HomeView: React.FC = () => {
             </div>
 
             <p className="text-sm sm:text-base text-ink-600 leading-relaxed">
-              Koperasi Konsumen Makmur Bersama Nusantara (KMB) didesain untuk menjawab kebutuhan layanan keuangan inklusif bagi pelaku usaha mikro, keluarga, dan masyarakat luas. Kami memadukan kearifan gotong royong dengan sistem administrasi digital modern agar setiap rupiah yang diamanahkan dikelola secara akuntabel dan transparan.
+              Nusantara Maju didesain untuk menjawab kebutuhan layanan keuangan inklusif bagi pelaku usaha mikro, keluarga, dan masyarakat luas. Kami memadukan kearifan gotong royong dengan sistem administrasi digital modern agar setiap rupiah yang diamanahkan dikelola secara akuntabel dan transparan.
             </p>
 
             {/* 3 Value Pillars with Demo Compliance Notice */}
@@ -336,7 +336,7 @@ export const HomeView: React.FC = () => {
               <div className="relative rounded-xl overflow-hidden border border-ink-200 h-28 sm:w-48 shrink-0">
                 <img
                   src="/images/landing/about-field.jpg"
-                  alt="Distribusi produk dan gerai unit usaha konsumsi anggota KMB"
+                  alt="Distribusi produk dan gerai unit usaha konsumsi anggota Nusantara Maju"
                   className="w-full h-full object-cover"
                 />
               </div>
@@ -458,7 +458,7 @@ export const HomeView: React.FC = () => {
           </div>
           <div className="mt-6 text-center">
             <span className="inline-flex items-center gap-1.5 text-[11px] text-ink-600 bg-ink-200/60 px-3.5 py-1.5 rounded-full font-medium">
-              <span>* Seluruh metrik, portofolio, dan nominal di atas merupakan data sintetis simulasi demonstrasi Koperasi KMB.</span>
+              <span>* Seluruh metrik, portofolio, dan nominal di atas merupakan data sintetis simulasi demonstrasi Nusantara Maju.</span>
             </span>
           </div>
         </div>
@@ -649,7 +649,7 @@ export const HomeView: React.FC = () => {
                 ALUR KERJA MODERN
               </span>
               <h2 className="text-2xl sm:text-3xl font-bold text-ink-900 tracking-tight">
-                Tiga Langkah Mudah Mengakses Ekosistem KMB
+                Tiga Langkah Mudah Mengakses Ekosistem Nusantara Maju
               </h2>
               <p className="text-xs sm:text-sm text-ink-600 mt-1">
                 Proses terstruktur yang menjamin kenyamanan anggota dan keamanan seluruh transaksi.
@@ -733,7 +733,7 @@ export const HomeView: React.FC = () => {
               Aspirasi Anggota & Pelaku Usaha Mikro Binaan
             </h2>
             <p className="text-xs sm:text-sm text-forest-100/90 mt-2">
-              Kutipan pengalaman anggota dalam memanfaatkan keterbukaan informasi dan kemudahan pembiayaan di Koperasi KMB.
+              Kutipan pengalaman anggota dalam memanfaatkan keterbukaan informasi dan kemudahan pembiayaan di Nusantara Maju.
             </p>
           </div>
 
@@ -744,7 +744,7 @@ export const HomeView: React.FC = () => {
               <div className="space-y-3">
                 <Quote className="w-6 h-6 text-forest-300/60" />
                 <p className="text-xs sm:text-sm text-forest-50 leading-relaxed italic">
-                  "Pengajuan pinjaman modal usaha di KMB sangat jelas dan transparan. Tidak ada potongan tersembunyi yang membingungkan. Simulasi angsuran di portal sangat membantu saya merencanakan arus kas masa panen."
+                  "Pengajuan pinjaman modal usaha di Nusantara Maju sangat jelas dan transparan. Tidak ada potongan tersembunyi yang membingungkan. Simulasi angsuran di portal sangat membantu saya merencanakan arus kas masa panen."
                 </p>
               </div>
               <div className="flex items-center gap-3.5 pt-4 border-t border-forest-700/60">
@@ -787,7 +787,7 @@ export const HomeView: React.FC = () => {
           </div>
 
           <div className="mt-8 text-center sm:text-left text-[11px] text-forest-300">
-            * Seluruh kutipan dan profil di atas merupakan data sintetis simulasi untuk ilustrasi demonstrasi platform Koperasi KMB.
+            * Seluruh kutipan dan profil di atas merupakan data sintetis simulasi untuk ilustrasi demonstrasi platform Nusantara Maju.
           </div>
         </div>
       </section>
@@ -807,7 +807,7 @@ export const HomeView: React.FC = () => {
                 Pertanyaan yang Sering Diajukan
               </h2>
               <p className="text-xs sm:text-sm text-ink-600 mt-2 leading-relaxed">
-                Ketahui lebih banyak mengenai ketentuan keanggotaan, simpanan, pembiayaan, dan mekanisme tata kelola di Koperasi KMB.
+                Ketahui lebih banyak mengenai ketentuan keanggotaan, simpanan, pembiayaan, dan mekanisme tata kelola di Nusantara Maju.
               </p>
             </div>
 
@@ -819,7 +819,7 @@ export const HomeView: React.FC = () => {
               />
               <div className="absolute inset-0 bg-gradient-to-t from-ink-900/60 via-transparent to-transparent" />
               <span className="absolute bottom-3 left-4 right-4 text-[11px] text-white/95 font-medium">
-                Musyawarah mufakat dan keterbukaan informasi adalah pondasi utama KMB.
+                Musyawarah mufakat dan keterbukaan informasi adalah pondasi utama Nusantara Maju.
               </span>
             </div>
 
@@ -920,7 +920,7 @@ export const HomeView: React.FC = () => {
                 <div className="absolute inset-0 bg-gradient-to-t from-forest-950/70 via-transparent to-transparent" />
                 <div className="absolute bottom-3 left-3 right-3 text-center">
                   <span className="inline-block text-[11px] font-semibold text-white/95 bg-forest-950/80 px-2.5 py-1 rounded backdrop-blur-sm">
-                    Keluarga Besar KMB Nusantara
+                    Keluarga Besar Nusantara Maju
                   </span>
                 </div>
               </div>

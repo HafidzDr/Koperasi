@@ -78,7 +78,7 @@ describe("PHASE 3.3 — MemberProfilePortalView Real DOM Component Privacy & Rea
     // Must render EmptyState mentioning the unknown ID
     expect(screen.getByText("Profil Keanggotaan Tidak Ditemukan")).toBeTruthy();
     expect(
-      screen.getByText(/tidak ditemukan dalam Buku Induk Anggota KMB/i)
+      screen.getByText(/tidak ditemukan dalam Buku Induk Anggota Nusantara Maju/i)
     ).toBeTruthy();
 
     // Must NOT render any valid member data

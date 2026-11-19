@@ -133,7 +133,7 @@ describe("PHASE 6 — Business Units Real DOM Components & User Interaction Test
       expect(screen.getByText("Unit Usaha & Belanja Anggota")).toBeTruthy();
       expect(screen.getByText("Total Belanja di Waserda")).toBeTruthy();
       expect(screen.getByText("Pasokan Komoditas Hasil Usaha")).toBeTruthy();
-      expect(screen.getByText(/Katalog Unit Usaha Koperasi KMB/i)).toBeTruthy();
+      expect(screen.getByText(/Katalog Unit Usaha Nusantara Maju/i)).toBeTruthy();
       expect(screen.getByText(/Riwayat Partisipasi & Belanja Anda/i)).toBeTruthy();
       expect(screen.getByText(/Privasi Terjaga/i)).toBeTruthy();
     });
@@ -188,7 +188,7 @@ describe("PHASE 6 — Business Units Real DOM Components & User Interaction Test
       expect(screen.queryByText(/Riwayat Partisipasi & Belanja Anda/i)).toBeNull();
 
       // But public active units catalog remains visible
-      expect(screen.getByText(/Katalog Unit Usaha Koperasi KMB/i)).toBeTruthy();
+      expect(screen.getByText(/Katalog Unit Usaha Nusantara Maju/i)).toBeTruthy();
     });
   });
 });

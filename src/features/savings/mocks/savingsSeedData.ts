@@ -19,7 +19,7 @@ export const defaultSavingsProducts: SavingsProduct[] = [
     code: "SP",
     name: "Simpanan Pokok",
     description:
-      "Simpanan awal yang disetor satu kali saat resmi terdaftar menjadi Anggota Koperasi Makmur Bersama Nusantara.",
+      "Simpanan awal yang disetor satu kali saat resmi terdaftar menjadi Anggota Nusantara Maju.",
     withdrawable: false,
     status: "active",
     badgeLabel: "Ketentuan Keanggotaan",

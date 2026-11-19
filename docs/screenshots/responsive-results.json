@@ -7,13 +7,13 @@
     "domReady": true,
     "domValidation": {
       "isValid": true,
-      "h1Text": "Koperasi Digital KMB\nSIMULASI\nTumbuh Bersama,\nSejahtera Bersama.",
+      "h1Text": "Nusantara Maju\nSIMULASI\nTumbuh Bersama,\nSejahtera Bersama.",
       "h1Size": {
         "w": 273,
         "h": 123
       },
       "visibleButtonCount": 17,
-      "bodyTextLength": 8445,
+      "bodyTextLength": 8374,
       "reason": "OK"
     },
     "metrics": {
@@ -71,7 +71,7 @@
       ]
     },
     "screenshot": "public_home_320.png",
-    "fileSize": 278261,
+    "fileSize": 277034,
     "status": "PASS"
   },
   {
@@ -82,13 +82,13 @@
     "domReady": true,
     "domValidation": {
       "isValid": true,
-      "h1Text": "Koperasi Digital KMB\nSIMULASI\nTumbuh Bersama,\nSejahtera Bersama.",
+      "h1Text": "Nusantara Maju\nSIMULASI\nTumbuh Bersama,\nSejahtera Bersama.",
       "h1Size": {
         "w": 328,
         "h": 123
       },
       "visibleButtonCount": 17,
-      "bodyTextLength": 8445,
+      "bodyTextLength": 8374,
       "reason": "OK"
     },
     "metrics": {
@@ -146,7 +146,7 @@
       ]
     },
     "screenshot": "public_home_375.png",
-    "fileSize": 340834,
+    "fileSize": 339532,
     "status": "PASS"
   },
   {
@@ -157,13 +157,13 @@
     "domReady": true,
     "domValidation": {
       "isValid": true,
-      "h1Text": "Koperasi Digital KMB\nSIMULASI\nTumbuh Bersama,\nSejahtera Bersama.",
+      "h1Text": "Nusantara Maju\nSIMULASI\nTumbuh Bersama,\nSejahtera Bersama.",
       "h1Size": {
         "w": 343,
         "h": 123
       },
       "visibleButtonCount": 17,
-      "bodyTextLength": 8445,
+      "bodyTextLength": 8374,
       "reason": "OK"
     },
     "metrics": {
@@ -221,7 +221,7 @@
       ]
     },
     "screenshot": "public_home_390.png",
-    "fileSize": 407861,
+    "fileSize": 406883,
     "status": "PASS"
   },
   {
@@ -232,13 +232,13 @@
     "domReady": true,
     "domValidation": {
       "isValid": true,
-      "h1Text": "Koperasi Digital KMB\nSIMULASI\nTumbuh Bersama,\nSejahtera Bersama.",
+      "h1Text": "Nusantara Maju\nSIMULASI\nTumbuh Bersama,\nSejahtera Bersama.",
       "h1Size": {
         "w": 576,
         "h": 183
       },
       "visibleButtonCount": 19,
-      "bodyTextLength": 8508,
+      "bodyTextLength": 8437,
       "reason": "OK"
     },
     "metrics": {
@@ -296,7 +296,7 @@
       ]
     },
     "screenshot": "public_home_768.png",
-    "fileSize": 824608,
+    "fileSize": 822527,
     "status": "PASS"
   },
   {
@@ -307,13 +307,13 @@
     "domReady": true,
     "domValidation": {
       "isValid": true,
-      "h1Text": "Koperasi Digital KMB\nSIMULASI\nTumbuh Bersama,\nSejahtera Bersama.",
+      "h1Text": "Nusantara Maju\nSIMULASI\nTumbuh Bersama,\nSejahtera Bersama.",
       "h1Size": {
         "w": 672,
         "h": 208
       },
       "visibleButtonCount": 19,
-      "bodyTextLength": 8508,
+      "bodyTextLength": 8437,
       "reason": "OK"
     },
     "metrics": {
@@ -371,7 +371,7 @@
       ]
     },
     "screenshot": "public_home_1024.png",
-    "fileSize": 982586,
+    "fileSize": 980112,
     "status": "PASS"
   },
   {
@@ -382,13 +382,13 @@
     "domReady": true,
     "domValidation": {
       "isValid": true,
-      "h1Text": "Koperasi Digital KMB\nSIMULASI\nTumbuh Bersama,\nSejahtera Bersama.",
+      "h1Text": "Nusantara Maju\nSIMULASI\nTumbuh Bersama,\nSejahtera Bersama.",
       "h1Size": {
         "w": 672,
         "h": 208
       },
       "visibleButtonCount": 18,
-      "bodyTextLength": 8592,
+      "bodyTextLength": 8521,
       "reason": "OK"
     },
     "metrics": {
@@ -446,7 +446,7 @@
       ]
     },
     "screenshot": "public_home_1280.png",
-    "fileSize": 1281990,
+    "fileSize": 1279665,
     "status": "PASS"
   },
   {
@@ -457,13 +457,13 @@
     "domReady": true,
     "domValidation": {
       "isValid": true,
-      "h1Text": "Koperasi Digital KMB\nSIMULASI\nTumbuh Bersama,\nSejahtera Bersama.",
+      "h1Text": "Nusantara Maju\nSIMULASI\nTumbuh Bersama,\nSejahtera Bersama.",
       "h1Size": {
         "w": 672,
         "h": 208
       },
       "visibleButtonCount": 18,
-      "bodyTextLength": 8592,
+      "bodyTextLength": 8521,
       "reason": "OK"
     },
     "metrics": {
@@ -521,7 +521,7 @@
       ]
     },
     "screenshot": "public_home_1440.png",
-    "fileSize": 1566704,
+    "fileSize": 1564697,
     "status": "PASS"
   },
   {
@@ -532,13 +532,13 @@
     "domReady": true,
     "domValidation": {
       "isValid": true,
-      "h1Text": "Koperasi Digital KMB\nSIMULASI\nTumbuh Bersama,\nSejahtera Bersama.",
+      "h1Text": "Nusantara Maju\nSIMULASI\nTumbuh Bersama,\nSejahtera Bersama.",
       "h1Size": {
         "w": 672,
         "h": 208
       },
       "visibleButtonCount": 18,
-      "bodyTextLength": 8592,
+      "bodyTextLength": 8521,
       "reason": "OK"
     },
     "metrics": {
@@ -596,7 +596,7 @@
       ]
     },
     "screenshot": "public_home_1920.png",
-    "fileSize": 1838872,
+    "fileSize": 1836541,
     "status": "PASS"
   },
   {
@@ -614,7 +614,7 @@
       },
       "visibleInputCount": 2,
       "visibleButtonCount": 3,
-      "bodyTextLength": 1438,
+      "bodyTextLength": 1341,
       "reason": "OK"
     },
     "metrics": {
@@ -665,7 +665,7 @@
       ]
     },
     "screenshot": "public_daftar_320.png",
-    "fileSize": 41050,
+    "fileSize": 39544,
     "status": "PASS"
   },
   {
@@ -683,7 +683,7 @@
       },
       "visibleInputCount": 2,
       "visibleButtonCount": 3,
-      "bodyTextLength": 1438,
+      "bodyTextLength": 1341,
       "reason": "OK"
     },
     "metrics": {
@@ -734,7 +734,7 @@
       ]
     },
     "screenshot": "public_daftar_375.png",
-    "fileSize": 46808,
+    "fileSize": 45283,
     "status": "PASS"
   },
   {
@@ -752,7 +752,7 @@
       },
       "visibleInputCount": 2,
       "visibleButtonCount": 3,
-      "bodyTextLength": 1438,
+      "bodyTextLength": 1341,
       "reason": "OK"
     },
     "metrics": {
@@ -803,7 +803,7 @@
       ]
     },
     "screenshot": "public_daftar_390.png",
-    "fileSize": 57978,
+    "fileSize": 56500,
     "status": "PASS"
   },
   {
@@ -821,7 +821,7 @@
       },
       "visibleInputCount": 2,
       "visibleButtonCount": 5,
-      "bodyTextLength": 1513,
+      "bodyTextLength": 1416,
       "reason": "OK"
     },
     "metrics": {
@@ -879,7 +879,7 @@
       ]
     },
     "screenshot": "public_daftar_768.png",
-    "fileSize": 101884,
+    "fileSize": 97426,
     "status": "PASS"
   },
   {
@@ -897,7 +897,7 @@
       },
       "visibleInputCount": 2,
       "visibleButtonCount": 5,
-      "bodyTextLength": 1513,
+      "bodyTextLength": 1416,
       "reason": "OK"
     },
     "metrics": {
@@ -955,7 +955,7 @@
       ]
     },
     "screenshot": "public_daftar_1024.png",
-    "fileSize": 73609,
+    "fileSize": 71518,
     "status": "PASS"
   },
   {
@@ -973,7 +973,7 @@
       },
       "visibleInputCount": 2,
       "visibleButtonCount": 4,
-      "bodyTextLength": 1597,
+      "bodyTextLength": 1500,
       "reason": "OK"
     },
     "metrics": {
@@ -1031,7 +1031,7 @@
       ]
     },
     "screenshot": "public_daftar_1280.png",
-    "fileSize": 79227,
+    "fileSize": 77322,
     "status": "PASS"
   },
   {
@@ -1049,7 +1049,7 @@
       },
       "visibleInputCount": 2,
       "visibleButtonCount": 4,
-      "bodyTextLength": 1597,
+      "bodyTextLength": 1500,
       "reason": "OK"
     },
     "metrics": {
@@ -1107,7 +1107,7 @@
       ]
     },
     "screenshot": "public_daftar_1440.png",
-    "fileSize": 86684,
+    "fileSize": 82941,
     "status": "PASS"
   },
   {
@@ -1125,7 +1125,7 @@
       },
       "visibleInputCount": 2,
       "visibleButtonCount": 4,
-      "bodyTextLength": 1597,
+      "bodyTextLength": 1500,
       "reason": "OK"
     },
     "metrics": {
@@ -1183,7 +1183,7 @@
       ]
     },
     "screenshot": "public_daftar_1920.png",
-    "fileSize": 120678,
+    "fileSize": 113674,
     "status": "PASS"
   }
 ]

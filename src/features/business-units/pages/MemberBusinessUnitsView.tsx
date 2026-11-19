@@ -163,7 +163,7 @@ export const MemberBusinessUnitsView: React.FC = () => {
           <span className="font-semibold block mb-0.5">
             Kontribusi Belanja Terverifikasi Menjadi Dasar Sisa Hasil Usaha (SHU):
           </span>
-          Sesuai prinsip koperasi, transaksi belanja sembako di Waserda KMB dan pasokan komoditas yang telah{" "}
+          Sesuai prinsip koperasi, transaksi belanja sembako di Waserda Nusantara Maju dan pasokan komoditas yang telah{" "}
           <strong>terverifikasi</strong> otomatis menjadi dasar perhitungan <strong>Jasa Usaha</strong> Anda pada
           pembagian SHU tahunan. Transaksi berstatus tercatat (menunggu verifikasi) atau dibatalkan tidak
           diperhitungkan ke dalam SHU.
@@ -176,7 +176,7 @@ export const MemberBusinessUnitsView: React.FC = () => {
           <div>
             <h2 className="text-base font-bold text-ink-900 flex items-center gap-2">
               <Layers className="w-4 h-4 text-forest-700" />
-              <span>Katalog Unit Usaha Koperasi KMB</span>
+              <span>Katalog Unit Usaha Nusantara Maju</span>
             </h2>
             <p className="text-xs text-ink-500">
               Layanan fisik dan sentra produksi riil yang siap melayani anggota dan masyarakat.
@@ -245,7 +245,7 @@ export const MemberBusinessUnitsView: React.FC = () => {
               <div>
                 <CardTitle className="text-base">Riwayat Partisipasi & Belanja Anda</CardTitle>
                 <CardDescription className="text-xs">
-                  Daftar transaksi belanja sembako dan penyaluran komoditas Anda di seluruh unit usaha KMB.
+                  Daftar transaksi belanja sembako dan penyaluran komoditas Anda di seluruh unit usaha Nusantara Maju.
                 </CardDescription>
               </div>
               <div className="w-full sm:w-48">
@@ -348,7 +348,7 @@ export const MemberBusinessUnitsView: React.FC = () => {
           <Info className="w-4 h-4 text-ink-400 shrink-0" />
           <span>
             Privasi Terjaga: Halaman ini hanya menampilkan data partisipasi pribadi Anda ({participation.memberName}).
-            Kerahasiaan transaksi anggota lain dan catatan buku besar internal koperasi dilindungi oleh sistem keamanan KMB.
+            Kerahasiaan transaksi anggota lain dan catatan buku besar internal koperasi dilindungi oleh sistem keamanan Nusantara Maju.
           </span>
         </div>
       )}

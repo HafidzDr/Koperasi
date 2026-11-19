@@ -2,9 +2,9 @@ import { Role, CooperativeConfig, RoleInfo, DemoUser, SavingsSummary, LoanSummar
 
 export const defaultCooperativeConfig: CooperativeConfig = {
   id: "kmb-jakarta-01",
-  name: "Koperasi Konsumen Makmur Bersama Nusantara",
-  shortName: "Koperasi Makmur Bersama",
-  acronym: "KMB",
+  name: "Nusantara Maju",
+  shortName: "Nusantara Maju",
+  acronym: "Nusantara Maju",
   legalNumber: "DEMO-AHU-0001",
   cooperativeRegistrationNumber: "DEMO-KOP-0001",
   establishedYear: 2018,

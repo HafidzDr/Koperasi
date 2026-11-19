@@ -901,6 +901,6 @@ export function canAccessRoute(
   // --------------------------------------------------------------------------
   return {
     allowed: false,
-    reason: `Rute "${cleanPath}" tidak terdaftar dalam sistem platform digital KMB (Deny by Default).`,
+    reason: `Rute "${cleanPath}" tidak terdaftar dalam sistem platform digital Nusantara Maju (Deny by Default).`,
   };
 }

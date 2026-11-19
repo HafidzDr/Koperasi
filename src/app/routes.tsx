@@ -47,7 +47,7 @@ export const router = createBrowserRouter([
         path: "cara-bergabung",
         element: (
           <ModulePlaceholderView
-            title="Tata Cara & Syarat Keanggotaan KMB"
+            title="Tata Cara & Syarat Keanggotaan Nusantara Maju"
             description="Langkah pendaftaran anggota, pembayaran simpanan awal, dan hak bersuara."
             environment="Public"
             phasePlanned={4}

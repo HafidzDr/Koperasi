@@ -383,7 +383,7 @@ export const PlatformSettingsView: React.FC = () => {
                 <CardTitle className="text-sm">Identitas Koperasi Terkonfigurasi</CardTitle>
               </div>
               <CardDescription>
-                Data institusional demonstrasi KMB dimuat secara dinamis melalui objek konfigurasi.
+                Data institusional demonstrasi Nusantara Maju dimuat secara dinamis melalui objek konfigurasi.
               </CardDescription>
             </CardHeader>
             <CardContent className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
@@ -393,7 +393,7 @@ export const PlatformSettingsView: React.FC = () => {
               </div>
               <div className="p-3 bg-ink-50 rounded border border-ink-200">
                 <span className="text-ink-500 block">Sebutan / Singkatan:</span>
-                <strong className="text-ink-900 text-sm">{config.shortName} ({config.acronym})</strong>
+                <strong className="text-ink-900 text-sm">{config.shortName}</strong>
               </div>
               <div className="p-3 bg-ink-50 rounded border border-ink-200">
                 <span className="text-ink-500 block">Nomor Badan Hukum (Demo):</span>
@@ -413,7 +413,7 @@ export const PlatformSettingsView: React.FC = () => {
                 <div>
                   <CardTitle className="text-sm">Parameter Simpanan Demonstrasi (Simulasi Frontend)</CardTitle>
                   <CardDescription>
-                    Pengaturan nilai simulasi simpanan pokok dan wajib untuk demonstrasi platform KMB.
+                    Pengaturan nilai simulasi simpanan pokok dan wajib untuk demonstrasi platform Nusantara Maju.
                   </CardDescription>
                 </div>
                 <Badge variant="warning" size="sm">

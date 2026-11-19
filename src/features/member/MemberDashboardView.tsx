@@ -429,7 +429,7 @@ export const MemberDashboardView: React.FC = () => {
               </div>
             </div>
             <div className="pt-2 border-t border-forest-100 flex items-center justify-between text-[11px] text-forest-800">
-              <span className="font-mono">Sekretariat KMB</span>
+              <span className="font-mono">Sekretariat Nusantara Maju</span>
               <span className="text-ink-500">Info Demonstrasi</span>
             </div>
           </Card>

@@ -1,6 +1,6 @@
 /**
  * Seed Data Pinjaman Demonstrasi (30 Rekord Lengkap)
- * Koperasi Konsumen Makmur Bersama Nusantara (KMB)
+ * Nusantara Maju
  *
  * Mengacu pada DEMO_SIMULATION_SPEC.md Seksi 3.2:
  * - Format ID: PJ-2026-0001 hingga PJ-2026-0030

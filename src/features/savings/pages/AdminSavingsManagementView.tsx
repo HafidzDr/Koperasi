@@ -360,7 +360,7 @@ export const AdminSavingsManagementView: React.FC = () => {
             <div className="text-lg font-bold text-ink-900 font-mono">
               {formatIDR(reportSummary.totalSimpananPokok)}
             </div>
-            <div className="text-[10px] text-ink-500">Modal dasar anggota KMB</div>
+            <div className="text-[10px] text-ink-500">Modal dasar anggota Nusantara Maju</div>
           </CardContent>
         </Card>
 
@@ -767,7 +767,7 @@ export const AdminSavingsManagementView: React.FC = () => {
               <div>
                 <CardTitle className="text-base">Direktori Buku Simpanan Anggota</CardTitle>
                 <CardDescription>
-                  Daftar saldo simpanan pokok, wajib, dan sukarela per anggota KMB yang disinkronkan secara konsisten dengan transaksi disetujui.
+                  Daftar saldo simpanan pokok, wajib, dan sukarela per anggota Nusantara Maju yang disinkronkan secara konsisten dengan transaksi disetujui.
                 </CardDescription>
               </div>
               <div className="relative w-full sm:w-64">
@@ -845,7 +845,7 @@ export const AdminSavingsManagementView: React.FC = () => {
           <CardHeader>
             <CardTitle className="text-base">Pencatatan Transaksi Loket / Kasir Koperasi</CardTitle>
             <CardDescription>
-              Staf operasional mencatat setoran atau permohonan penarikan anggota di kantor fisik KMB. Transaksi akan masuk antrean verifikasi/persetujuan pejabat keuangan.
+              Staf operasional mencatat setoran atau permohonan penarikan anggota di kantor fisik Nusantara Maju. Transaksi akan masuk antrean verifikasi/persetujuan pejabat keuangan.
             </CardDescription>
           </CardHeader>
           <CardContent>

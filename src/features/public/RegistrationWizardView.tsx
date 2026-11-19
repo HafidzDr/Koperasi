@@ -164,7 +164,7 @@ export const RegistrationWizardView: React.FC = () => {
             Pendaftaran Berhasil Diajukan
           </h2>
           <p className="text-xs text-ink-600 mb-6 leading-relaxed">
-            Terima kasih telah mendaftar menjadi anggota Koperasi Konsumen Makmur Bersama Nusantara. Berkas Anda kini berstatus <strong>&quot;Menunggu Verifikasi Staf&quot;</strong>.
+            Terima kasih telah mendaftar menjadi anggota Nusantara Maju. Berkas Anda kini berstatus <strong>&quot;Menunggu Verifikasi Staf&quot;</strong>.
           </p>
 
           <div className="p-4 bg-ink-50 border border-ink-200 rounded-lg text-left mb-6 space-y-2">
@@ -341,7 +341,7 @@ export const RegistrationWizardView: React.FC = () => {
                 />
 
                 <div className="p-3 bg-ink-50 border border-ink-200 rounded text-xs text-ink-600">
-                  Koperasi Konsumen Makmur Bersama terbuka untuk seluruh warga yang berdomisili atau berusaha di wilayah operasional KMB.
+                  Nusantara Maju terbuka untuk seluruh warga yang berdomisili atau berusaha di wilayah operasional Nusantara Maju.
                 </div>
               </div>
             )}
@@ -401,7 +401,7 @@ export const RegistrationWizardView: React.FC = () => {
               <div className="space-y-4">
                 <div className="p-3.5 sm:p-4 bg-ink-100 rounded-lg space-y-2 text-xs">
                   <div className="flex items-center justify-between gap-2 flex-wrap">
-                    <h4 className="font-bold text-ink-900">Kewajiban Keanggotaan KMB:</h4>
+                    <h4 className="font-bold text-ink-900">Kewajiban Keanggotaan Nusantara Maju:</h4>
                     <Badge variant="warning" size="sm">
                       {savingsConfig.badgeLabel}
                     </Badge>
@@ -445,7 +445,7 @@ export const RegistrationWizardView: React.FC = () => {
                 )}
 
                 <Checkbox
-                  label="Saya menyatakan tunduk pada Anggaran Dasar dan Anggaran Rumah Tangga (AD/ART) Koperasi Makmur Bersama."
+                  label="Saya menyatakan tunduk pada Anggaran Dasar dan Anggaran Rumah Tangga (AD/ART) Nusantara Maju."
                   {...register("adArtAgreed")}
                 />
                 {errors.adArtAgreed && (

@@ -32,7 +32,7 @@ describe("Loan Components DOM Rendering & Interaction Tests", () => {
       );
 
       // Hero & Disclaimer
-      expect(screen.getByText("Layanan Pembiayaan Koperasi KMB")).toBeTruthy();
+      expect(screen.getByText("Layanan Pembiayaan Nusantara Maju")).toBeTruthy();
       expect(screen.getByText(/Parameter kebijakan pinjaman/i)).toBeTruthy();
 
       // Product cards

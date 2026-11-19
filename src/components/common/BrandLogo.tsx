@@ -48,20 +48,12 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({
         <div className="flex flex-col text-left leading-tight shrink-0">
           <span
             className={cn(
-              "font-semibold tracking-tight text-ink-900 whitespace-nowrap",
+              "font-bold tracking-tight text-ink-900 whitespace-nowrap",
               variant === "light" && "text-white",
               textSizes[size]
             )}
           >
-            Koperasi Makmur Bersama
-          </span>
-          <span
-            className={cn(
-              "text-[9px] sm:text-[10px] uppercase tracking-widest text-ink-600 font-medium whitespace-nowrap",
-              variant === "light" && "text-forest-100/80"
-            )}
-          >
-            Nusantara
+            Nusantara Maju
           </span>
         </div>
       )}

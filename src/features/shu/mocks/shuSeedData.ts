@@ -18,7 +18,7 @@ export const defaultShuPolicyConfig: ShuPolicyConfig = {
       description: "Pemupukan modal sendiri dan penutup risiko kerugian koperasi",
       isConfigurable: true,
       status: "illustrative",
-      policyNote: "Ilustratif — persentase mengacu pada estimasi RAT KMB.",
+      policyNote: "Ilustratif — persentase mengacu pada estimasi RAT Nusantara Maju.",
     },
     jasa_modal: {
       key: "jasa_modal",
@@ -154,7 +154,7 @@ const snapshot2024v1: ShuCalculationSnapshot = {
       actorRole: "manager",
       fromStatus: "approved",
       toStatus: "published",
-      notes: "Dipublikasikan resmi ke Portal Anggota KMB.",
+      notes: "Dipublikasikan resmi ke Portal Anggota Nusantara Maju.",
     },
   ],
   reviewedById: "user-treasurer-01",

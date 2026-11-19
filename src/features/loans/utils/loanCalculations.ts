@@ -1,6 +1,6 @@
 /**
  * Utilitas dan Fungsi Kalkulasi Finansial Pinjaman (Loan Calculations)
- * Koperasi Konsumen Makmur Bersama Nusantara (KMB)
+ * Nusantara Maju
  *
  * Mengacu pada Business Rules BR-03.3, BR-03.8, dan BR-04.3:
  * - Integer Rupiah precision (tanpa desimal, Math.round).

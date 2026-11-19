@@ -3,7 +3,7 @@ import { Role } from "@/types";
 
 /**
  * PHASE 7 — SHU Management Domain Types
- * Koperasi Konsumen Makmur Bersama Nusantara (KMB)
+ * Nusantara Maju
  */
 
 export type ShuPeriodStatus =

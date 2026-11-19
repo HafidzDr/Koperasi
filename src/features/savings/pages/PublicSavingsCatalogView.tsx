@@ -31,7 +31,7 @@ export const PublicSavingsCatalogView: React.FC = () => {
       {/* 1. Hero Section */}
       <div className="text-center space-y-3 max-w-3xl mx-auto">
         <Badge variant="forest" size="md">
-          Produk Simpanan Koperasi KMB
+          Produk Simpanan Nusantara Maju
         </Badge>
         <h1 className="text-3xl sm:text-4xl font-bold text-ink-900 tracking-tight">
           Pemupukan Modal Bersama yang Aman, Berkeadilan, dan Berkah
@@ -65,7 +65,7 @@ export const PublicSavingsCatalogView: React.FC = () => {
             </div>
             <CardTitle className="text-lg mt-2">Simpanan Pokok</CardTitle>
             <CardDescription>
-              Bukti penyertaan modal awal yang disetorkan saat seseorang resmi terdaftar menjadi Anggota KMB.
+              Bukti penyertaan modal awal yang disetorkan saat seseorang resmi terdaftar menjadi Anggota Nusantara Maju.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4 text-xs">
@@ -199,7 +199,7 @@ export const PublicSavingsCatalogView: React.FC = () => {
         <CardHeader>
           <CardTitle className="text-base">Matriks Perbandingan Karakteristik Simpanan</CardTitle>
           <CardDescription>
-            Tinjauan cepat perbedaan ketentuan Simpanan Pokok, Wajib, dan Sukarela pada KMB.
+            Tinjauan cepat perbedaan ketentuan Simpanan Pokok, Wajib, dan Sukarela pada Nusantara Maju.
           </CardDescription>
         </CardHeader>
         <CardContent className="p-0">
@@ -259,12 +259,12 @@ export const PublicSavingsCatalogView: React.FC = () => {
           <div className="flex items-center justify-center sm:justify-start gap-2">
             <Building className="w-5 h-5 text-forest-200" />
             <span className="text-xs text-forest-200 font-semibold uppercase tracking-wider">
-              Koperasi Konsumen Makmur Bersama Nusantara
+              Nusantara Maju
             </span>
           </div>
-          <h2 className="text-xl sm:text-2xl font-bold">Siap Mengembangkan Usaha Bersama KMB?</h2>
+          <h2 className="text-xl sm:text-2xl font-bold">Siap Mengembangkan Usaha Bersama Nusantara Maju?</h2>
           <p className="text-xs text-forest-100 max-w-xl">
-            Mari bergabung sebagai anggota resmi KMB dan nikmati kemudahan akses permodalan, pembagian SHU tahunan, dan pengelolaan simpanan yang berkeadilan.
+            Mari bergabung sebagai anggota resmi Nusantara Maju dan nikmati kemudahan akses permodalan, pembagian SHU tahunan, dan pengelolaan simpanan yang berkeadilan.
           </p>
         </div>
 
@@ -285,7 +285,7 @@ export const PublicSavingsCatalogView: React.FC = () => {
               size="md"
               className="w-full text-white border-forest-700 hover:bg-forest-800"
             >
-              Pelajari KMB
+              Pelajari Nusantara Maju
             </Button>
           </Link>
         </div>

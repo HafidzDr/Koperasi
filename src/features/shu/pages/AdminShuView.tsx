@@ -417,7 +417,7 @@ export const AdminShuView: React.FC<AdminShuViewProps> = ({ initialTab = "overvi
     <div className="space-y-6">
       <PageHeader
         title="Pengelolaan Sisa Hasil Usaha (SHU)"
-        subtitle="Manajemen periode, alokasi kebijakan, simulasi perhitungan, dan persetujuan bertingkat SHU KMB."
+        subtitle="Manajemen periode, alokasi kebijakan, simulasi perhitungan, dan persetujuan bertingkat SHU Nusantara Maju."
         actions={
           <div className="flex items-center gap-2">
             {(actor.role === "manager" || actor.role === "treasurer" || actor.role === "finance_officer") && (

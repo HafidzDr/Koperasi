@@ -125,7 +125,7 @@ export const PublicLayout: React.FC = () => {
             <div className="md:col-span-2 space-y-3">
               <BrandLogo variant="light" size="md" to="/" />
               <p className="text-ink-400 text-xs leading-relaxed max-w-md mt-2">
-                {config.name} ({config.acronym}) adalah lembaga koperasi gotong royong digital yang berfokus pada kesejahteraan dan kemandirian ekonomi anggota.
+                {config.name} adalah lembaga koperasi gotong royong digital yang berfokus pada kesejahteraan dan kemandirian ekonomi anggota.
               </p>
               <div className="pt-2 text-ink-400 space-y-1 text-[11px] font-mono">
                 <p>Badan Hukum (Demo): {config.legalNumber}</p>
@@ -169,7 +169,7 @@ export const PublicLayout: React.FC = () => {
           {/* Legal Notice */}
           <div className="pt-6 border-t border-ink-800 flex flex-col sm:flex-row items-center justify-between gap-3 text-ink-500 text-[11px]">
             <p className="text-center sm:text-left">
-              © {new Date().getFullYear()} {config.name}. Seluruh hak cipta dilindungi.
+              © {new Date().getFullYear()} PT Nusantara Maju. Seluruh hak cipta dilindungi.
             </p>
             <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-4">
               <span className="flex items-center gap-1">

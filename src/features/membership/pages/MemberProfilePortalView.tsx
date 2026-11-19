@@ -34,7 +34,7 @@ export const MemberProfilePortalView: React.FC = () => {
           description={
             !memberDemoId
               ? "Akun Anda saat ini belum memiliki tautan identitas anggota (memberId). Silakan hubungi pengurus koperasi atau ajukan pendaftaran anggota baru."
-              : `Data anggota dengan ID "${memberDemoId}" tidak ditemukan dalam Buku Induk Anggota KMB. Permohonan Anda mungkin masih dalam proses verifikasi atau belum disetujui Pengurus.`
+              : `Data anggota dengan ID "${memberDemoId}" tidak ditemukan dalam Buku Induk Anggota Nusantara Maju. Permohonan Anda mungkin masih dalam proses verifikasi atau belum disetujui Pengurus.`
           }
         />
       </div>
@@ -55,7 +55,7 @@ export const MemberProfilePortalView: React.FC = () => {
             </Badge>
           </div>
           <p className="text-xs text-ink-600">
-            Data keanggotaan resmi yang tercatat di Buku Induk Koperasi Konsumen Makmur Bersama Nusantara.
+            Data keanggotaan resmi yang tercatat di Buku Induk Nusantara Maju.
           </p>
         </div>
         <div>
@@ -75,7 +75,7 @@ export const MemberProfilePortalView: React.FC = () => {
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
           <div>
             <span className="text-[11px] font-semibold tracking-wider text-forest-200 uppercase block">
-              Koperasi Konsumen Makmur Bersama Nusantara
+              Nusantara Maju
             </span>
             <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-white mt-0.5">
               {member.fullName}
@@ -152,7 +152,7 @@ export const MemberProfilePortalView: React.FC = () => {
                 <span className="font-semibold text-ink-900">{member.fullName}</span>
               </div>
               <div>
-                <span className="text-ink-500 block mb-0.5">Nomor Anggota (KMB):</span>
+                <span className="text-ink-500 block mb-0.5">Nomor Anggota (Nusantara Maju):</span>
                 <span className="font-mono font-bold text-forest-800">
                   {member.memberNumber}
                 </span>
@@ -202,7 +202,7 @@ export const MemberProfilePortalView: React.FC = () => {
               Kewajiban & Hak Anggota
             </CardTitle>
             <CardDescription className="text-xs text-ink-500">
-              Berdasarkan AD/ART Koperasi KMB
+              Berdasarkan AD/ART Nusantara Maju
             </CardDescription>
           </CardHeader>
           <CardContent className="p-4 space-y-3 text-xs">

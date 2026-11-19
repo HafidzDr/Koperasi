@@ -1,6 +1,6 @@
 /**
  * Zustand Store untuk Loan & Installment Management
- * Koperasi Konsumen Makmur Bersama Nusantara (KMB)
+ * Nusantara Maju
  *
  * Mengacu pada PRD, Information Architecture Seksi 5.4,
  * Business Rules BR-03 & BR-04, dan DEMO_SIMULATION_SPEC.md.
