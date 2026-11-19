@@ -15,6 +15,7 @@ export interface StatCardProps {
   };
   badge?: React.ReactNode;
   className?: string;
+  variant?: "default" | "featured";
   onClick?: () => void;
 }
 
@@ -26,26 +27,41 @@ export const StatCard: React.FC<StatCardProps> = ({
   trend,
   badge,
   className,
+  variant = "default",
   onClick,
 }) => {
+  const isFeatured = variant === "featured";
+
   return (
     <Card
       onClick={onClick}
       className={cn(
-        "p-5 flex flex-col justify-between transition-all duration-200 border-ink-200 hover:border-forest-600/40",
+        "p-5 flex flex-col justify-between transition-all duration-200 border-ink-200",
+        isFeatured
+          ? "border-forest-600/50 bg-forest-50/20 hover:border-forest-700"
+          : "hover:border-forest-600/40",
         onClick && "cursor-pointer hover:shadow-md",
         className
       )}
     >
       <div className="flex items-start justify-between gap-3">
-        <div className="space-y-1">
-          <p className="text-xs font-medium text-ink-500 uppercase tracking-wider">{title}</p>
+        <div className="space-y-1 min-w-0">
+          <p className="text-xs font-semibold text-ink-500 uppercase tracking-wider truncate">
+            {title}
+          </p>
           <div className="text-xl sm:text-2xl font-bold font-mono tabular-nums text-ink-900 tracking-tight">
             {value}
           </div>
         </div>
         {icon && (
-          <div className="w-10 h-10 rounded-lg bg-forest-50 border border-forest-100 text-forest-800 flex items-center justify-center shrink-0">
+          <div
+            className={cn(
+              "w-10 h-10 rounded-lg flex items-center justify-center shrink-0 border",
+              isFeatured
+                ? "bg-forest-100 border-forest-600/30 text-forest-900"
+                : "bg-forest-50 border-forest-100 text-forest-800"
+            )}
+          >
             {icon}
           </div>
         )}
@@ -57,7 +73,7 @@ export const StatCard: React.FC<StatCardProps> = ({
           {trend && (
             <span
               className={cn(
-                "inline-flex items-center gap-1 font-medium text-xs",
+                "inline-flex items-center gap-1 font-medium text-xs tabular-nums",
                 trend.direction === "up" && "text-forest-700",
                 trend.direction === "down" && "text-danger-700",
                 trend.direction === "neutral" && "text-ink-500"
@@ -76,4 +92,3 @@ export const StatCard: React.FC<StatCardProps> = ({
     </Card>
   );
 };
-

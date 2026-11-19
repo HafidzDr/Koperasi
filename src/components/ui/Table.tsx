@@ -18,7 +18,13 @@ export const TableHeader: React.FC<React.HTMLAttributes<HTMLTableSectionElement>
   children,
   ...props
 }) => (
-  <thead className={cn("bg-ink-100 border-b border-ink-200 text-ink-700 uppercase tracking-wider text-[11px] font-semibold", className)} {...props}>
+  <thead
+    className={cn(
+      "bg-ink-100/80 border-b border-ink-200 text-ink-700 uppercase tracking-wider text-[11px] font-semibold",
+      className
+    )}
+    {...props}
+  >
     {children}
   </thead>
 );
@@ -33,12 +39,28 @@ export const TableBody: React.FC<React.HTMLAttributes<HTMLTableSectionElement>> 
   </tbody>
 );
 
+export const TableFooter: React.FC<React.HTMLAttributes<HTMLTableSectionElement>> = ({
+  className,
+  children,
+  ...props
+}) => (
+  <tfoot
+    className={cn(
+      "bg-ink-50/80 border-t-2 border-ink-200 text-ink-900 font-semibold text-xs",
+      className
+    )}
+    {...props}
+  >
+    {children}
+  </tfoot>
+);
+
 export const TableRow: React.FC<React.HTMLAttributes<HTMLTableRowElement>> = ({
   className,
   children,
   ...props
 }) => (
-  <tr className={cn("hover:bg-ink-50/80 transition-colors", className)} {...props}>
+  <tr className={cn("hover:bg-ink-50/70 transition-colors", className)} {...props}>
     {children}
   </tr>
 );
@@ -62,4 +84,3 @@ export const TableCell: React.FC<React.TdHTMLAttributes<HTMLTableCellElement>> =
     {children}
   </td>
 );
-

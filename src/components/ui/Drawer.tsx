@@ -18,15 +18,24 @@ export const Drawer: React.FC<DrawerProps> = ({
   children,
 }) => {
   useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && isOpen) {
+        onClose();
+      }
+    };
+
     if (isOpen) {
       document.body.style.overflow = "hidden";
+      window.addEventListener("keydown", handleKeyDown);
     } else {
       document.body.style.overflow = "unset";
     }
+
     return () => {
       document.body.style.overflow = "unset";
+      window.removeEventListener("keydown", handleKeyDown);
     };
-  }, [isOpen]);
+  }, [isOpen, onClose]);
 
   if (!isOpen) return null;
 
@@ -37,7 +46,7 @@ export const Drawer: React.FC<DrawerProps> = ({
       className="fixed inset-0 z-50 flex bg-ink-900/60 transition-opacity"
     >
       {/* Backdrop click */}
-      <div className="fixed inset-0" onClick={onClose} />
+      <div className="fixed inset-0" onClick={onClose} aria-hidden="true" />
 
       {/* Drawer content */}
       <div
@@ -50,7 +59,7 @@ export const Drawer: React.FC<DrawerProps> = ({
           <h2 className="text-sm font-semibold text-ink-900">{title || "Menu"}</h2>
           <button
             onClick={onClose}
-            className="p-1 text-ink-500 hover:text-ink-800 rounded transition-colors"
+            className="p-1 text-ink-500 hover:text-ink-800 rounded transition-colors focus-visible:ring-2 focus-visible:ring-forest-600"
             aria-label="Tutup panel"
           >
             <X className="w-5 h-5" />
@@ -61,4 +70,3 @@ export const Drawer: React.FC<DrawerProps> = ({
     </div>
   );
 };
-

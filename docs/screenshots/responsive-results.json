@@ -71,7 +71,7 @@
       ]
     },
     "screenshot": "public_home_320.png",
-    "fileSize": 284949,
+    "fileSize": 233797,
     "status": "PASS"
   },
   {
@@ -146,7 +146,7 @@
       ]
     },
     "screenshot": "public_home_375.png",
-    "fileSize": 348861,
+    "fileSize": 281485,
     "status": "PASS"
   },
   {
@@ -221,7 +221,7 @@
       ]
     },
     "screenshot": "public_home_390.png",
-    "fileSize": 390149,
+    "fileSize": 307339,
     "status": "PASS"
   },
   {
@@ -296,7 +296,7 @@
       ]
     },
     "screenshot": "public_home_768.png",
-    "fileSize": 782739,
+    "fileSize": 690766,
     "status": "PASS"
   },
   {
@@ -371,7 +371,7 @@
       ]
     },
     "screenshot": "public_home_1024.png",
-    "fileSize": 1011931,
+    "fileSize": 903402,
     "status": "PASS"
   },
   {
@@ -446,7 +446,7 @@
       ]
     },
     "screenshot": "public_home_1280.png",
-    "fileSize": 1314779,
+    "fileSize": 1162314,
     "status": "PASS"
   },
   {
@@ -521,7 +521,7 @@
       ]
     },
     "screenshot": "public_home_1440.png",
-    "fileSize": 1518145,
+    "fileSize": 1338840,
     "status": "PASS"
   },
   {
@@ -596,7 +596,7 @@
       ]
     },
     "screenshot": "public_home_1920.png",
-    "fileSize": 1819119,
+    "fileSize": 1654063,
     "status": "PASS"
   },
   {
@@ -665,7 +665,7 @@
       ]
     },
     "screenshot": "public_daftar_320.png",
-    "fileSize": 40565,
+    "fileSize": 40551,
     "status": "PASS"
   },
   {
@@ -734,7 +734,7 @@
       ]
     },
     "screenshot": "public_daftar_375.png",
-    "fileSize": 46327,
+    "fileSize": 46137,
     "status": "PASS"
   },
   {
@@ -803,7 +803,7 @@
       ]
     },
     "screenshot": "public_daftar_390.png",
-    "fileSize": 57458,
+    "fileSize": 57444,
     "status": "PASS"
   },
   {
@@ -879,7 +879,7 @@
       ]
     },
     "screenshot": "public_daftar_768.png",
-    "fileSize": 92700,
+    "fileSize": 93366,
     "status": "PASS"
   },
   {
@@ -955,7 +955,7 @@
       ]
     },
     "screenshot": "public_daftar_1024.png",
-    "fileSize": 71004,
+    "fileSize": 71033,
     "status": "PASS"
   },
   {
@@ -1031,7 +1031,7 @@
       ]
     },
     "screenshot": "public_daftar_1280.png",
-    "fileSize": 78138,
+    "fileSize": 78156,
     "status": "PASS"
   },
   {
@@ -1107,7 +1107,7 @@
       ]
     },
     "screenshot": "public_daftar_1440.png",
-    "fileSize": 80480,
+    "fileSize": 80511,
     "status": "PASS"
   },
   {
@@ -1183,7 +1183,7 @@
       ]
     },
     "screenshot": "public_daftar_1920.png",
-    "fileSize": 113662,
+    "fileSize": 114067,
     "status": "PASS"
   }
 ]

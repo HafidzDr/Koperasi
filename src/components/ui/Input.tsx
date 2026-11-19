@@ -1,5 +1,6 @@
-import React, { forwardRef, useId } from "react";
+import React, { forwardRef, useId, useState } from "react";
 import { cn } from "@/lib/utils";
+import { Eye, EyeOff, Search } from "lucide-react";
 
 export interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   label?: string;
@@ -8,6 +9,7 @@ export interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> 
   isTabular?: boolean;
   leftAddon?: React.ReactNode;
   rightAddon?: React.ReactNode;
+  showPasswordToggle?: boolean;
 }
 
 export const Input = forwardRef<HTMLInputElement, InputProps>(
@@ -15,12 +17,14 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
     {
       className,
       id: customId,
+      type = "text",
       label,
       helperText,
       errorMessage,
-      isTabular = false,
+      isTabular,
       leftAddon,
       rightAddon,
+      showPasswordToggle = false,
       disabled,
       ...props
     },
@@ -29,6 +33,16 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
     const generatedId = useId();
     const id = customId || generatedId;
     const hasError = Boolean(errorMessage);
+
+    const [isPasswordVisible, setIsPasswordVisible] = useState(false);
+    const isPasswordType = type === "password";
+    const resolvedType = isPasswordType && isPasswordVisible ? "text" : type;
+
+    // Default tabular-nums for number inputs if not explicitly specified
+    const shouldUseTabular = isTabular ?? (type === "number");
+
+    // Default left icon for search type if not specified
+    const effectiveLeftAddon = leftAddon || (type === "search" ? <Search className="w-4 h-4 text-ink-400" /> : null);
 
     return (
       <div className="w-full min-w-0 space-y-1.5 text-left">
@@ -41,14 +55,15 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
           </label>
         )}
         <div className="relative flex items-center min-w-0">
-          {leftAddon && (
-            <div className="absolute left-3 flex items-center pointer-events-none text-ink-500 text-sm">
-              {leftAddon}
+          {effectiveLeftAddon && (
+            <div className="absolute left-3 flex items-center pointer-events-none text-ink-500 text-sm shrink-0">
+              {effectiveLeftAddon}
             </div>
           )}
           <input
             ref={ref}
             id={id}
+            type={resolvedType}
             disabled={disabled}
             aria-invalid={hasError}
             aria-describedby={
@@ -64,18 +79,28 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
               "focus:outline-none focus:border-forest-600 focus:ring-1 focus:ring-forest-600",
               "disabled:bg-ink-100 disabled:text-ink-500 disabled:cursor-not-allowed",
               hasError && "border-danger-base focus:border-danger-700 focus:ring-danger-base",
-              isTabular && "tabular-nums",
-              leftAddon && "pl-9",
-              rightAddon && "pr-9",
+              shouldUseTabular && "tabular-nums",
+              effectiveLeftAddon && "pl-9",
+              (rightAddon || (isPasswordType && showPasswordToggle)) && "pr-9",
               className
             )}
             {...props}
           />
-          {rightAddon && (
-            <div className="absolute right-3 flex items-center pointer-events-none text-ink-500 text-sm">
+          {isPasswordType && showPasswordToggle ? (
+            <button
+              type="button"
+              onClick={() => setIsPasswordVisible(!isPasswordVisible)}
+              className="absolute right-3 p-0.5 text-ink-500 hover:text-ink-800 transition-colors focus:outline-none"
+              aria-label={isPasswordVisible ? "Sembunyikan kata sandi" : "Tampilkan kata sandi"}
+              tabIndex={-1}
+            >
+              {isPasswordVisible ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+            </button>
+          ) : rightAddon ? (
+            <div className="absolute right-3 flex items-center pointer-events-none text-ink-500 text-sm shrink-0">
               {rightAddon}
             </div>
-          )}
+          ) : null}
         </div>
         {hasError && (
           <p id={`${id}-error`} className="text-xs text-danger-700 font-medium">
@@ -93,4 +118,3 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
 );
 
 Input.displayName = "Input";
-

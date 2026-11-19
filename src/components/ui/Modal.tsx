@@ -58,6 +58,9 @@ export const Modal: React.FC<ModalProps> = ({
       aria-labelledby="modal-title"
       className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-ink-900/60 transition-opacity"
     >
+      {/* Clickable backdrop overlay */}
+      <div className="fixed inset-0 -z-10" onClick={onClose} aria-hidden="true" />
+
       <div
         ref={modalRef}
         className={cn(
@@ -77,7 +80,7 @@ export const Modal: React.FC<ModalProps> = ({
           </div>
           <button
             onClick={onClose}
-            className="p-1 text-ink-500 hover:text-ink-800 rounded transition-colors"
+            className="p-1 text-ink-500 hover:text-ink-800 rounded transition-colors focus-visible:ring-2 focus-visible:ring-forest-600"
             aria-label="Tutup dialog"
           >
             <X className="w-5 h-5" />
@@ -106,7 +109,7 @@ export interface ConfirmationDialogProps {
   message: string;
   confirmLabel?: string;
   cancelLabel?: string;
-  variant?: "danger" | "primary";
+  variant?: "danger" | "destructive" | "primary";
   isLoading?: boolean;
 }
 
@@ -121,6 +124,8 @@ export const ConfirmationDialog: React.FC<ConfirmationDialogProps> = ({
   variant = "primary",
   isLoading = false,
 }) => {
+  const isDestructive = variant === "danger" || variant === "destructive";
+
   return (
     <Modal
       isOpen={isOpen}
@@ -133,7 +138,7 @@ export const ConfirmationDialog: React.FC<ConfirmationDialogProps> = ({
             {cancelLabel}
           </Button>
           <Button
-            variant={variant === "danger" ? "danger" : "primary"}
+            variant={isDestructive ? "destructive" : "primary"}
             size="sm"
             onClick={onConfirm}
             isLoading={isLoading}
@@ -147,4 +152,3 @@ export const ConfirmationDialog: React.FC<ConfirmationDialogProps> = ({
     </Modal>
   );
 };
-

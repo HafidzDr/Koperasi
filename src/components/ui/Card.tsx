@@ -1,21 +1,30 @@
 import React from "react";
 import { cn } from "@/lib/utils";
 
-export const Card: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({
+export interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
+  variant?: "default" | "warm" | "outlined" | "interactive";
+}
+
+export const Card: React.FC<CardProps> = ({
   className,
+  variant = "default",
   children,
   ...props
-}) => (
-  <div
-    className={cn(
-      "bg-white rounded-lg border border-ink-200 shadow-subtle text-ink-800 transition-shadow",
-      className
-    )}
-    {...props}
-  >
-    {children}
-  </div>
-);
+}) => {
+  const variants = {
+    default: "bg-white rounded-lg border border-ink-200 shadow-subtle text-ink-800",
+    warm: "bg-ink-100/70 rounded-lg border border-ink-200 text-ink-800",
+    outlined: "bg-white rounded-lg border border-ink-300 text-ink-800",
+    interactive:
+      "bg-white rounded-lg border border-ink-200 shadow-subtle text-ink-800 hover:border-forest-600/40 hover:shadow-md transition-all duration-200 cursor-pointer",
+  };
+
+  return (
+    <div className={cn(variants[variant], className)} {...props}>
+      {children}
+    </div>
+  );
+};
 
 export const CardHeader: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({
   className,
@@ -70,7 +79,7 @@ export const CardFooter: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({
 }) => (
   <div
     className={cn(
-      "flex items-center justify-between p-4 bg-ink-50/50 border-t border-ink-100 rounded-b-lg",
+      "flex items-center justify-between p-4 bg-ink-50/60 border-t border-ink-100 rounded-b-lg",
       className
     )}
     {...props}
@@ -78,4 +87,3 @@ export const CardFooter: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({
     {children}
   </div>
 );
-

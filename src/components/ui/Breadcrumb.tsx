@@ -25,7 +25,10 @@ export const Breadcrumb: React.FC<BreadcrumbProps> = ({ items, className }) => {
           <React.Fragment key={index}>
             {index > 0 && <ChevronRight className="w-3.5 h-3.5 text-ink-400 shrink-0" />}
             {isLast || !item.href ? (
-              <span className="font-semibold text-ink-900 truncate max-w-[200px]">
+              <span
+                aria-current={isLast ? "page" : undefined}
+                className="font-semibold text-ink-900 truncate max-w-[200px]"
+              >
                 {item.label}
               </span>
             ) : (
@@ -42,4 +45,3 @@ export const Breadcrumb: React.FC<BreadcrumbProps> = ({ items, className }) => {
     </nav>
   );
 };
-

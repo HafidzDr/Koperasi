@@ -1,0 +1,86 @@
+[
+  {
+    "file": "01-dashboard-anggota-hero.webp",
+    "width": 718,
+    "height": 526,
+    "format": "WebP",
+    "recommended_use": "Banner sambutan portal anggota"
+  },
+  {
+    "file": "02-dashboard-admin-hero.webp",
+    "width": 720,
+    "height": 526,
+    "format": "WebP",
+    "recommended_use": "Banner sistem administrasi"
+  },
+  {
+    "file": "03-anggota-profil.webp",
+    "width": 720,
+    "height": 526,
+    "format": "WebP",
+    "recommended_use": "Profil dan identitas anggota"
+  },
+  {
+    "file": "04-simpanan-ilustrasi.webp",
+    "width": 714,
+    "height": 526,
+    "format": "WebP",
+    "recommended_use": "Ilustrasi simpanan"
+  },
+  {
+    "file": "05-pinjaman-ilustrasi.webp",
+    "width": 718,
+    "height": 500,
+    "format": "WebP",
+    "recommended_use": "Ilustrasi pengelolaan pinjaman"
+  },
+  {
+    "file": "06-angsuran-ilustrasi.webp",
+    "width": 720,
+    "height": 500,
+    "format": "WebP",
+    "recommended_use": "Jadwal dan pembayaran angsuran"
+  },
+  {
+    "file": "07-shu-ilustrasi.webp",
+    "width": 720,
+    "height": 500,
+    "format": "WebP",
+    "recommended_use": "Ringkasan SHU dan distribusi"
+  },
+  {
+    "file": "08-unit-usaha-ilustrasi.webp",
+    "width": 714,
+    "height": 500,
+    "format": "WebP",
+    "recommended_use": "Pengelolaan unit usaha"
+  },
+  {
+    "file": "09-keanggotaan-ilustrasi.webp",
+    "width": 718,
+    "height": 488,
+    "format": "WebP",
+    "recommended_use": "Keanggotaan dan verifikasi"
+  },
+  {
+    "file": "10-transaksi-ilustrasi.webp",
+    "width": 720,
+    "height": 488,
+    "format": "WebP",
+    "recommended_use": "Riwayat transaksi"
+  },
+  {
+    "file": "11-laporan-analitik.webp",
+    "width": 720,
+    "height": 488,
+    "format": "WebP",
+    "recommended_use": "Laporan dan analitik"
+  },
+  {
+    "file": "12-pengaturan-rbac.webp",
+    "width": 714,
+    "height": 488,
+    "format": "WebP",
+    "recommended_use": "Pengaturan dan hak akses"
+  }
+]

@@ -3,7 +3,7 @@ import { cn } from "@/lib/utils";
 import { Loader2 } from "lucide-react";
 
 export interface IconButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: "primary" | "secondary" | "outline" | "ghost" | "danger";
+  variant?: "primary" | "secondary" | "outline" | "ghost" | "danger" | "destructive";
   size?: "sm" | "md" | "lg";
   isLoading?: boolean;
   "aria-label": string;
@@ -26,6 +26,9 @@ export const IconButton = forwardRef<HTMLButtonElement, IconButtonProps>(
     const baseStyles =
       "inline-flex items-center justify-center font-medium rounded-md transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-forest-600 focus-visible:ring-offset-1 disabled:opacity-50 disabled:pointer-events-none select-none shrink-0";
 
+    const dangerStyle =
+      "bg-danger-700 text-white hover:bg-danger-base active:bg-danger-800 border border-transparent shadow-subtle";
+
     const variants = {
       primary:
         "bg-forest-700 text-white hover:bg-forest-800 active:bg-forest-900 border border-transparent shadow-subtle",
@@ -35,8 +38,8 @@ export const IconButton = forwardRef<HTMLButtonElement, IconButtonProps>(
         "bg-white text-forest-700 border border-forest-600 hover:bg-forest-50 active:bg-forest-100",
       ghost:
         "bg-transparent text-ink-700 hover:bg-ink-100 active:bg-ink-200 border border-transparent",
-      danger:
-        "bg-danger-700 text-white hover:bg-danger-base active:bg-danger-800 border border-transparent shadow-subtle",
+      danger: dangerStyle,
+      destructive: dangerStyle,
     };
 
     const sizes = {
@@ -60,4 +63,3 @@ export const IconButton = forwardRef<HTMLButtonElement, IconButtonProps>(
 );
 
 IconButton.displayName = "IconButton";
-

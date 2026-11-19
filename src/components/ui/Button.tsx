@@ -3,7 +3,7 @@ import { cn } from "@/lib/utils";
 import { Loader2 } from "lucide-react";
 
 export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: "primary" | "secondary" | "outline" | "neutral" | "ghost" | "danger";
+  variant?: "primary" | "secondary" | "outline" | "neutral" | "ghost" | "danger" | "destructive";
   size?: "sm" | "md" | "lg";
   isLoading?: boolean;
   leftIcon?: React.ReactNode;
@@ -28,6 +28,9 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
     const baseStyles =
       "inline-flex items-center justify-center font-medium rounded-md transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-forest-600 focus-visible:ring-offset-1 disabled:opacity-50 disabled:pointer-events-none select-none whitespace-nowrap shrink-0";
 
+    const dangerStyle =
+      "bg-danger-700 text-white hover:bg-danger-base active:bg-danger-800 border border-transparent shadow-subtle";
+
     const variants = {
       primary:
         "bg-forest-700 text-white hover:bg-forest-800 active:bg-forest-900 border border-transparent shadow-subtle",
@@ -39,8 +42,8 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         "bg-ink-100 text-ink-800 hover:bg-ink-200 active:bg-ink-300 border border-ink-300",
       ghost:
         "bg-transparent text-ink-700 hover:bg-ink-100 active:bg-ink-200 border border-transparent",
-      danger:
-        "bg-danger-700 text-white hover:bg-danger-base active:bg-danger-800 border border-transparent shadow-subtle",
+      danger: dangerStyle,
+      destructive: dangerStyle,
     };
 
     const sizes = {

@@ -35,9 +35,10 @@ export const Pagination: React.FC<PaginationProps> = ({
           disabled={currentPage <= 1}
           onClick={() => onPageChange(currentPage - 1)}
           aria-label="Halaman sebelumnya"
+          className="h-8 px-2.5"
         >
           <ChevronLeft className="w-4 h-4" />
-          <span className="hidden sm:inline">Sebelumnya</span>
+          <span className="hidden sm:inline ml-1">Sebelumnya</span>
         </Button>
         <Button
           variant="outline"
@@ -45,12 +46,12 @@ export const Pagination: React.FC<PaginationProps> = ({
           disabled={currentPage >= totalPages}
           onClick={() => onPageChange(currentPage + 1)}
           aria-label="Halaman berikutnya"
+          className="h-8 px-2.5"
         >
-          <span className="hidden sm:inline">Berikutnya</span>
+          <span className="hidden sm:inline mr-1">Berikutnya</span>
           <ChevronRight className="w-4 h-4" />
         </Button>
       </div>
     </nav>
   );
 };
-

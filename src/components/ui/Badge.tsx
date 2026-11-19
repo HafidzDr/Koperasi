@@ -3,7 +3,7 @@ import { cn } from "@/lib/utils";
 
 export interface BadgeProps extends React.HTMLAttributes<HTMLSpanElement> {
   variant?: "success" | "warning" | "danger" | "info" | "neutral" | "forest";
-  size?: "sm" | "md";
+  size?: "sm" | "md" | "lg";
   dot?: boolean;
 }
 
@@ -36,12 +36,13 @@ export const Badge: React.FC<BadgeProps> = ({
   const sizes = {
     sm: "px-2 py-0.5 text-[11px] font-medium leading-none",
     md: "px-2.5 py-1 text-xs font-semibold leading-tight",
+    lg: "px-3 py-1.5 text-xs font-semibold leading-tight",
   };
 
   return (
     <span
       className={cn(
-        "inline-flex items-center gap-1.5 rounded border select-none",
+        "inline-flex items-center gap-1.5 rounded border select-none whitespace-nowrap shrink-0",
         variants[variant],
         sizes[size],
         className
@@ -53,4 +54,3 @@ export const Badge: React.FC<BadgeProps> = ({
     </span>
   );
 };
-

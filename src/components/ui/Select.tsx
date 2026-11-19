@@ -1,16 +1,18 @@
 import React, { forwardRef, useId } from "react";
 import { cn } from "@/lib/utils";
+import { ChevronDown } from "lucide-react";
 
 export interface SelectOption {
   value: string;
   label: string;
+  disabled?: boolean;
 }
 
 export interface SelectProps extends React.SelectHTMLAttributes<HTMLSelectElement> {
   label?: string;
   helperText?: string;
   errorMessage?: string;
-  options: SelectOption[];
+  options?: SelectOption[];
 }
 
 export const Select = forwardRef<HTMLSelectElement, SelectProps>(
@@ -23,6 +25,7 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
       errorMessage,
       options,
       disabled,
+      children,
       ...props
     },
     ref
@@ -41,31 +44,49 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
             {label}
           </label>
         )}
-        <select
-          ref={ref}
-          id={id}
-          disabled={disabled}
-          aria-invalid={hasError}
-          className={cn(
-            "w-full min-w-0 h-10 px-3 bg-white border rounded-md text-sm text-ink-900 transition-colors",
-            "border-ink-300 focus:outline-none focus:border-forest-600 focus:ring-1 focus:ring-forest-600",
-            "disabled:bg-ink-100 disabled:text-ink-500 disabled:cursor-not-allowed",
-            hasError && "border-danger-base focus:border-danger-700",
-            className
-          )}
-          {...props}
-        >
-          {options.map((opt) => (
-            <option key={opt.value} value={opt.value}>
-              {opt.label}
-            </option>
-          ))}
-        </select>
+        <div className="relative flex items-center min-w-0">
+          <select
+            ref={ref}
+            id={id}
+            disabled={disabled}
+            aria-invalid={hasError}
+            aria-describedby={
+              hasError
+                ? `${id}-error`
+                : helperText
+                ? `${id}-helper`
+                : undefined
+            }
+            className={cn(
+              "w-full min-w-0 h-10 pl-3 pr-10 bg-white border rounded-md text-sm text-ink-900 transition-colors appearance-none cursor-pointer",
+              "border-ink-300 focus:outline-none focus:border-forest-600 focus:ring-1 focus:ring-forest-600",
+              "disabled:bg-ink-100 disabled:text-ink-500 disabled:cursor-not-allowed",
+              hasError && "border-danger-base focus:border-danger-700 focus:ring-danger-base",
+              className
+            )}
+            {...props}
+          >
+            {options
+              ? options.map((opt) => (
+                  <option key={opt.value} value={opt.value} disabled={opt.disabled}>
+                    {opt.label}
+                  </option>
+                ))
+              : children}
+          </select>
+          <div className="absolute right-3 flex items-center pointer-events-none text-ink-500">
+            <ChevronDown className="w-4 h-4" />
+          </div>
+        </div>
         {hasError && (
-          <p className="text-xs text-danger-700 font-medium">{errorMessage}</p>
+          <p id={`${id}-error`} className="text-xs text-danger-700 font-medium">
+            {errorMessage}
+          </p>
         )}
         {!hasError && helperText && (
-          <p className="text-xs text-ink-600">{helperText}</p>
+          <p id={`${id}-helper`} className="text-xs text-ink-600">
+            {helperText}
+          </p>
         )}
       </div>
     );
@@ -73,4 +94,3 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
 );
 
 Select.displayName = "Select";
-

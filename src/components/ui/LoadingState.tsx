@@ -1,6 +1,7 @@
 import React from "react";
 import { cn } from "@/lib/utils";
 import { Loader2 } from "lucide-react";
+import { Skeleton } from "./Skeleton";
 
 export interface LoadingStateProps {
   message?: string;
@@ -25,16 +26,4 @@ export const LoadingState: React.FC<LoadingStateProps> = ({
   );
 };
 
-export interface SkeletonProps extends React.HTMLAttributes<HTMLDivElement> {
-  className?: string;
-}
-
-export const Skeleton: React.FC<SkeletonProps> = ({ className, ...props }) => {
-  return (
-    <div
-      className={cn("animate-pulse bg-ink-200 rounded", className)}
-      {...props}
-    />
-  );
-};
-
+export { Skeleton };
