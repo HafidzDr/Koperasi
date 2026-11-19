@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Outlet, Link, useLocation } from "react-router-dom";
 import { BrandLogo } from "@/components/common/BrandLogo";
-import { DemoRoleSwitcher } from "@/components/common/DemoRoleSwitcher";
+import { FloatingSettingsController } from "@/components/common/FloatingSettingsController";
 import { useConfigStore } from "@/stores/configStore";
 import { Button } from "@/components/ui/Button";
 import { Drawer } from "@/components/ui/Drawer";
@@ -25,10 +25,7 @@ export const PublicLayout: React.FC = () => {
 
   return (
     <div className="min-h-screen flex flex-col bg-ink-50 text-ink-800">
-      {/* 1. Global Demo Switcher Bar */}
-      <DemoRoleSwitcher />
-
-      {/* 2. Public Header (Floating Fill Navbar) */}
+      {/* 1. Public Header (Floating Fill Navbar) */}
       <header
         className={`sticky top-2 sm:top-3.5 z-40 w-full px-3 sm:px-6 lg:px-8 pt-2 sm:pt-3.5 pointer-events-none transition-all duration-200 ${
           isHome ? "-mb-16 sm:-mb-20" : "mb-2 sm:mb-4"
@@ -190,6 +187,9 @@ export const PublicLayout: React.FC = () => {
           </div>
         </div>
       </footer>
+
+      {/* Floating Settings Controller */}
+      <FloatingSettingsController />
     </div>
   );
 };

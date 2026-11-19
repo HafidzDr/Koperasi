@@ -9,6 +9,8 @@ export interface SwitchProps {
   label?: React.ReactNode;
   description?: string;
   className?: string;
+  "aria-label"?: string;
+  "aria-labelledby"?: string;
 }
 
 export const Switch = forwardRef<HTMLButtonElement, SwitchProps>(
@@ -21,6 +23,8 @@ export const Switch = forwardRef<HTMLButtonElement, SwitchProps>(
       label,
       description,
       className,
+      "aria-label": ariaLabel,
+      "aria-labelledby": ariaLabelledBy,
     },
     ref
   ) => {
@@ -44,6 +48,8 @@ export const Switch = forwardRef<HTMLButtonElement, SwitchProps>(
           role="switch"
           id={id}
           aria-checked={checked}
+          aria-label={ariaLabel}
+          aria-labelledby={ariaLabelledBy}
           disabled={disabled}
           onClick={() => !disabled && onCheckedChange(!checked)}
           onKeyDown={handleKeyDown}

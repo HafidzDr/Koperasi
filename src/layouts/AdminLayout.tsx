@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Outlet, Link, useLocation } from "react-router-dom";
 import { BrandLogo } from "@/components/common/BrandLogo";
-import { DemoRoleSwitcher } from "@/components/common/DemoRoleSwitcher";
+import { FloatingSettingsController } from "@/components/common/FloatingSettingsController";
 import { AccessDeniedView } from "@/components/common/AccessDeniedView";
 import { useAuthStore } from "@/stores/authStore";
 import { useConfigStore } from "@/stores/configStore";
@@ -57,7 +57,6 @@ export const AdminLayout: React.FC = () => {
   if (isPublicContext(currentUser.role) || currentUser.role === "member") {
     return (
       <div className="min-h-screen bg-ink-50">
-        <DemoRoleSwitcher />
         <AccessDeniedView
           reason={
             currentUser.role === "member"
@@ -66,6 +65,7 @@ export const AdminLayout: React.FC = () => {
           }
           currentPath={location.pathname}
         />
+        <FloatingSettingsController />
       </div>
     );
   }
@@ -85,9 +85,6 @@ export const AdminLayout: React.FC = () => {
 
   return (
     <div className="min-h-screen flex flex-col bg-ink-50 text-ink-800">
-      {/* 1. Global Demo Switcher */}
-      <DemoRoleSwitcher />
-
       <div className="flex-1 flex overflow-hidden">
         {/* 2. Admin Desktop Sidebar */}
         <aside className="hidden lg:flex flex-col w-64 bg-white border-r border-ink-200 shrink-0">
@@ -317,6 +314,9 @@ export const AdminLayout: React.FC = () => {
           </div>
         </div>
       </Drawer>
+
+      {/* Floating Settings Controller */}
+      <FloatingSettingsController />
     </div>
   );
 };
