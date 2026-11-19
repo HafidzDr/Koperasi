@@ -463,23 +463,35 @@ export const PublicLoanCatalogView: React.FC = () => {
         </Card>
       </div>
 
-      {/* 6. Footer Call to Action */}
-      <div className="bg-ink-100 rounded-xl p-8 text-center space-y-4">
-        <h3 className="text-lg font-bold text-ink-900">
+      {/* 6. Footer Call to Action (Pola Baku Terpadu) */}
+      <div className="rounded-2xl sm:rounded-3xl bg-forest-900 text-white p-8 sm:p-12 text-center space-y-4 shadow-lg border border-forest-800">
+        <span className="inline-block text-xs font-bold text-forest-300 tracking-wider uppercase">
+          BERGABUNG BERSAMA KAMI
+        </span>
+        <h3 className="text-2xl sm:text-3xl font-bold tracking-tight text-white">
           Belum Menjadi Anggota Nusantara Maju?
         </h3>
-        <p className="text-xs text-ink-600 max-w-xl mx-auto">
-          Daftarkan diri Anda untuk menikmati kemudahan fasilitas pembiayaan berbunga bersahabat dan bagi hasil sisa hasil usaha (SHU) setiap akhir tahun buku.
+        <p className="text-xs sm:text-sm text-forest-100/90 max-w-xl mx-auto leading-relaxed">
+          Daftarkan diri Anda untuk menikmati kemudahan fasilitas pembiayaan berbunga bersahabat, buku simpanan digital mandiri, dan pembagian dividen SHU setiap akhir tahun buku.
         </p>
-        <div className="flex justify-center gap-3 pt-2">
-          <Link to="/daftar">
-            <Button variant="primary" size="sm" className="text-xs">
-              Daftar Jadi Anggota
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
+          <Link to="/daftar" className="w-full sm:w-auto">
+            <Button
+              variant="primary"
+              size="md"
+              className="bg-forest-700 hover:bg-forest-800 text-white font-semibold w-full sm:w-auto px-6 border-0 shadow-md"
+              rightIcon={<ArrowRight className="w-4 h-4 text-white" />}
+            >
+              Daftar Menjadi Anggota
             </Button>
           </Link>
-          <Link to="/masuk">
-            <Button variant="outline" size="sm" className="text-xs">
-              Masuk Portal Anggota
+          <Link to="/layanan/simpanan" className="w-full sm:w-auto">
+            <Button
+              variant="outline"
+              size="md"
+              className="bg-transparent text-white hover:bg-forest-800/60 border-white/40 w-full sm:w-auto px-6"
+            >
+              Pelajari Layanan Simpanan
             </Button>
           </Link>
         </div>

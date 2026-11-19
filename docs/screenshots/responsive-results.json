@@ -7,13 +7,13 @@
     "domReady": true,
     "domValidation": {
       "isValid": true,
-      "h1Text": "Nusantara Maju\nSIMULASI\nTumbuh Bersama,\nSejahtera Bersama.",
+      "h1Text": "Tumbuh Bersama,\nMenyejahterakan Anggota.",
       "h1Size": {
         "w": 273,
-        "h": 123
+        "h": 101
       },
       "visibleButtonCount": 17,
-      "bodyTextLength": 8336,
+      "bodyTextLength": 6826,
       "reason": "OK"
     },
     "metrics": {
@@ -35,16 +35,16 @@
         },
         {
           "tag": "button",
-          "text": "Bergabung Menjadi Anggota\n(Daf",
+          "text": "Daftar Menjadi Anggota",
           "width": 273,
-          "height": 44,
+          "height": 48,
           "isUsable": true
         },
         {
           "tag": "button",
-          "text": "Jelajahi Layanan",
+          "text": "Pelajari Layanan Simpanan",
           "width": 273,
-          "height": 46,
+          "height": 48,
           "isUsable": true
         },
         {
@@ -71,7 +71,7 @@
       ]
     },
     "screenshot": "public_home_320.png",
-    "fileSize": 244200,
+    "fileSize": 170692,
     "status": "PASS"
   },
   {
@@ -82,13 +82,13 @@
     "domReady": true,
     "domValidation": {
       "isValid": true,
-      "h1Text": "Nusantara Maju\nSIMULASI\nTumbuh Bersama,\nSejahtera Bersama.",
+      "h1Text": "Tumbuh Bersama,\nMenyejahterakan Anggota.",
       "h1Size": {
         "w": 328,
-        "h": 123
+        "h": 101
       },
       "visibleButtonCount": 17,
-      "bodyTextLength": 8336,
+      "bodyTextLength": 6826,
       "reason": "OK"
     },
     "metrics": {
@@ -110,16 +110,16 @@
         },
         {
           "tag": "button",
-          "text": "Bergabung Menjadi Anggota\n(Daf",
+          "text": "Daftar Menjadi Anggota",
           "width": 328,
-          "height": 44,
+          "height": 48,
           "isUsable": true
         },
         {
           "tag": "button",
-          "text": "Jelajahi Layanan",
+          "text": "Pelajari Layanan Simpanan",
           "width": 328,
-          "height": 46,
+          "height": 48,
           "isUsable": true
         },
         {
@@ -146,7 +146,7 @@
       ]
     },
     "screenshot": "public_home_375.png",
-    "fileSize": 287069,
+    "fileSize": 202780,
     "status": "PASS"
   },
   {
@@ -157,13 +157,13 @@
     "domReady": true,
     "domValidation": {
       "isValid": true,
-      "h1Text": "Nusantara Maju\nSIMULASI\nTumbuh Bersama,\nSejahtera Bersama.",
+      "h1Text": "Tumbuh Bersama,\nMenyejahterakan Anggota.",
       "h1Size": {
         "w": 343,
-        "h": 123
+        "h": 101
       },
       "visibleButtonCount": 17,
-      "bodyTextLength": 8336,
+      "bodyTextLength": 6826,
       "reason": "OK"
     },
     "metrics": {
@@ -185,16 +185,16 @@
         },
         {
           "tag": "button",
-          "text": "Bergabung Menjadi Anggota\n(Daf",
+          "text": "Daftar Menjadi Anggota",
           "width": 343,
-          "height": 44,
+          "height": 48,
           "isUsable": true
         },
         {
           "tag": "button",
-          "text": "Jelajahi Layanan",
+          "text": "Pelajari Layanan Simpanan",
           "width": 343,
-          "height": 46,
+          "height": 48,
           "isUsable": true
         },
         {
@@ -221,7 +221,7 @@
       ]
     },
     "screenshot": "public_home_390.png",
-    "fileSize": 308230,
+    "fileSize": 223000,
     "status": "PASS"
   },
   {
@@ -232,13 +232,13 @@
     "domReady": true,
     "domValidation": {
       "isValid": true,
-      "h1Text": "Nusantara Maju\nSIMULASI\nTumbuh Bersama,\nSejahtera Bersama.",
+      "h1Text": "Tumbuh Bersama,\nMenyejahterakan Anggota.",
       "h1Size": {
         "w": 576,
-        "h": 183
+        "h": 155
       },
       "visibleButtonCount": 19,
-      "bodyTextLength": 8378,
+      "bodyTextLength": 6868,
       "reason": "OK"
     },
     "metrics": {
@@ -274,16 +274,16 @@
         },
         {
           "tag": "button",
-          "text": "Bergabung Menjadi Anggota\n(Daf",
-          "width": 301,
-          "height": 52,
+          "text": "Daftar Menjadi Anggota",
+          "width": 265,
+          "height": 48,
           "isUsable": true
         },
         {
           "tag": "button",
-          "text": "Jelajahi Layanan",
-          "width": 207,
-          "height": 54,
+          "text": "Pelajari Layanan Simpanan",
+          "width": 263,
+          "height": 48,
           "isUsable": true
         },
         {
@@ -296,7 +296,7 @@
       ]
     },
     "screenshot": "public_home_768.png",
-    "fileSize": 687941,
+    "fileSize": 503164,
     "status": "PASS"
   },
   {
@@ -307,13 +307,13 @@
     "domReady": true,
     "domValidation": {
       "isValid": true,
-      "h1Text": "Nusantara Maju\nSIMULASI\nTumbuh Bersama,\nSejahtera Bersama.",
+      "h1Text": "Tumbuh Bersama,\nMenyejahterakan Anggota.",
       "h1Size": {
         "w": 672,
-        "h": 208
+        "h": 180
       },
       "visibleButtonCount": 19,
-      "bodyTextLength": 8378,
+      "bodyTextLength": 6868,
       "reason": "OK"
     },
     "metrics": {
@@ -349,16 +349,16 @@
         },
         {
           "tag": "button",
-          "text": "Bergabung Menjadi Anggota\n(Daf",
-          "width": 301,
-          "height": 52,
+          "text": "Daftar Menjadi Anggota",
+          "width": 265,
+          "height": 48,
           "isUsable": true
         },
         {
           "tag": "button",
-          "text": "Jelajahi Layanan",
-          "width": 207,
-          "height": 54,
+          "text": "Pelajari Layanan Simpanan",
+          "width": 263,
+          "height": 48,
           "isUsable": true
         },
         {
@@ -371,7 +371,7 @@
       ]
     },
     "screenshot": "public_home_1024.png",
-    "fileSize": 933852,
+    "fileSize": 635311,
     "status": "PASS"
   },
   {
@@ -382,13 +382,13 @@
     "domReady": true,
     "domValidation": {
       "isValid": true,
-      "h1Text": "Nusantara Maju\nSIMULASI\nTumbuh Bersama,\nSejahtera Bersama.",
+      "h1Text": "Tumbuh Bersama,\nMenyejahterakan Anggota.",
       "h1Size": {
         "w": 672,
-        "h": 208
+        "h": 180
       },
       "visibleButtonCount": 18,
-      "bodyTextLength": 8462,
+      "bodyTextLength": 6952,
       "reason": "OK"
     },
     "metrics": {
@@ -417,16 +417,16 @@
         },
         {
           "tag": "button",
-          "text": "Bergabung Menjadi Anggota\n(Daf",
-          "width": 301,
-          "height": 52,
+          "text": "Daftar Menjadi Anggota",
+          "width": 265,
+          "height": 48,
           "isUsable": true
         },
         {
           "tag": "button",
-          "text": "Jelajahi Layanan",
-          "width": 207,
-          "height": 54,
+          "text": "Pelajari Layanan Simpanan",
+          "width": 263,
+          "height": 48,
           "isUsable": true
         },
         {
@@ -446,7 +446,7 @@
       ]
     },
     "screenshot": "public_home_1280.png",
-    "fileSize": 1183186,
+    "fileSize": 866837,
     "status": "PASS"
   },
   {
@@ -457,13 +457,13 @@
     "domReady": true,
     "domValidation": {
       "isValid": true,
-      "h1Text": "Nusantara Maju\nSIMULASI\nTumbuh Bersama,\nSejahtera Bersama.",
+      "h1Text": "Tumbuh Bersama,\nMenyejahterakan Anggota.",
       "h1Size": {
         "w": 672,
-        "h": 208
+        "h": 180
       },
       "visibleButtonCount": 18,
-      "bodyTextLength": 8462,
+      "bodyTextLength": 6952,
       "reason": "OK"
     },
     "metrics": {
@@ -492,16 +492,16 @@
         },
         {
           "tag": "button",
-          "text": "Bergabung Menjadi Anggota\n(Daf",
-          "width": 301,
-          "height": 52,
+          "text": "Daftar Menjadi Anggota",
+          "width": 265,
+          "height": 48,
           "isUsable": true
         },
         {
           "tag": "button",
-          "text": "Jelajahi Layanan",
-          "width": 207,
-          "height": 54,
+          "text": "Pelajari Layanan Simpanan",
+          "width": 263,
+          "height": 48,
           "isUsable": true
         },
         {
@@ -521,7 +521,7 @@
       ]
     },
     "screenshot": "public_home_1440.png",
-    "fileSize": 1343016,
+    "fileSize": 1032625,
     "status": "PASS"
   },
   {
@@ -532,13 +532,13 @@
     "domReady": true,
     "domValidation": {
       "isValid": true,
-      "h1Text": "Nusantara Maju\nSIMULASI\nTumbuh Bersama,\nSejahtera Bersama.",
+      "h1Text": "Tumbuh Bersama,\nMenyejahterakan Anggota.",
       "h1Size": {
         "w": 672,
-        "h": 208
+        "h": 180
       },
       "visibleButtonCount": 18,
-      "bodyTextLength": 8462,
+      "bodyTextLength": 6952,
       "reason": "OK"
     },
     "metrics": {
@@ -567,16 +567,16 @@
         },
         {
           "tag": "button",
-          "text": "Bergabung Menjadi Anggota\n(Daf",
-          "width": 301,
-          "height": 52,
+          "text": "Daftar Menjadi Anggota",
+          "width": 265,
+          "height": 48,
           "isUsable": true
         },
         {
           "tag": "button",
-          "text": "Jelajahi Layanan",
-          "width": 207,
-          "height": 54,
+          "text": "Pelajari Layanan Simpanan",
+          "width": 263,
+          "height": 48,
           "isUsable": true
         },
         {
@@ -596,7 +596,7 @@
       ]
     },
     "screenshot": "public_home_1920.png",
-    "fileSize": 1654806,
+    "fileSize": 1356379,
     "status": "PASS"
   },
   {
@@ -665,7 +665,7 @@
       ]
     },
     "screenshot": "public_daftar_320.png",
-    "fileSize": 42636,
+    "fileSize": 42634,
     "status": "PASS"
   },
   {
@@ -879,7 +879,7 @@
       ]
     },
     "screenshot": "public_daftar_768.png",
-    "fileSize": 93722,
+    "fileSize": 93721,
     "status": "PASS"
   },
   {
@@ -1031,7 +1031,7 @@
       ]
     },
     "screenshot": "public_daftar_1280.png",
-    "fileSize": 74987,
+    "fileSize": 74991,
     "status": "PASS"
   },
   {
@@ -1107,7 +1107,7 @@
       ]
     },
     "screenshot": "public_daftar_1440.png",
-    "fileSize": 81265,
+    "fileSize": 81264,
     "status": "PASS"
   },
   {

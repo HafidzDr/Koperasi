@@ -10,10 +10,10 @@ export const AboutView: React.FC = () => {
   const { config } = useConfigStore();
 
   return (
-    <div className="space-y-16 py-8 sm:py-12">
+    <div className="space-y-16 py-8 sm:py-12 text-left">
       {/* Editorial Hero */}
       <section className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-4">
-        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-forest-50 border border-forest-200/60 text-forest-800 text-xs font-semibold">
+        <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-forest-50 border border-forest-200/60 text-forest-800 text-xs font-semibold">
           <BookOpen className="w-3.5 h-3.5 text-forest-700" />
           <span>Profil Kelembagaan & Tata Kelola</span>
         </div>
@@ -21,7 +21,7 @@ export const AboutView: React.FC = () => {
           Membangun Kedaulatan Finansial Melalui Gotong Royong Digital
         </h1>
         <p className="text-sm sm:text-base text-ink-600 max-w-2xl mx-auto leading-relaxed">
-          {config.name} berdedikasi mewujudkan tata kelola koperasi yang transparan, modern, dan berintegritas demi kesejahteraan bersama seluruh anggota.
+          {config.name} berdedikasi mewujudkan tata kelola koperasi yang transparan, profesional, dan berintegritas demi kemakmuran bersama seluruh anggota.
         </p>
       </section>
 
@@ -29,7 +29,7 @@ export const AboutView: React.FC = () => {
       <section className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-stretch">
           {/* Legalitas Card */}
-          <Card className="flex flex-col justify-between border-ink-200 shadow-subtle hover:border-forest-600/30 transition-all">
+          <Card className="flex flex-col justify-between border-ink-200 shadow-subtle hover:border-forest-600/30 transition-all bg-white">
             <CardHeader className="bg-forest-50/50 border-b border-ink-100 pb-4">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2.5 text-forest-800">
@@ -38,10 +38,10 @@ export const AboutView: React.FC = () => {
                   </div>
                   <div>
                     <CardTitle className="text-lg text-ink-900">Legalitas & Kelembagaan</CardTitle>
-                    <p className="text-xs text-ink-500">Legalitas resmi simulasi tata kelola</p>
+                    <p className="text-xs text-ink-500">Legalitas resmi dan ketetapan organisasi</p>
                   </div>
                 </div>
-                <Badge variant="forest" size="sm">SIMULASI DEMO</Badge>
+                <Badge variant="forest" size="sm">Terdaftar Resmi</Badge>
               </div>
             </CardHeader>
             <CardContent className="space-y-3.5 text-xs text-ink-700 pt-5">
@@ -54,16 +54,16 @@ export const AboutView: React.FC = () => {
                 <span className="font-semibold text-ink-900">{config.shortName}</span>
               </div>
               <div className="flex justify-between items-center py-2 border-b border-ink-100 gap-2">
-                <span className="text-ink-500 font-medium shrink-0">Nomor Badan Hukum (Demo)</span>
+                <span className="text-ink-500 font-medium shrink-0">Nomor Badan Hukum</span>
                 <span className="font-mono font-semibold text-forest-800 break-all text-right">{config.legalNumber}</span>
               </div>
               <div className="flex justify-between items-center py-2 border-b border-ink-100 gap-2">
-                <span className="text-ink-500 font-medium shrink-0">NIKOP Registrasi (Demo)</span>
+                <span className="text-ink-500 font-medium shrink-0">NIKOP Registrasi</span>
                 <span className="font-mono font-semibold text-forest-800 break-all text-right">{config.cooperativeRegistrationNumber}</span>
               </div>
               <div className="flex justify-between items-center py-2 border-b border-ink-100">
-                <span className="text-ink-500 font-medium">Tahun Berdiri (Demo)</span>
-                <span className="font-semibold text-ink-900">{config.establishedYear}</span>
+                <span className="text-ink-500 font-medium">Tahun Berdiri</span>
+                <span className="font-semibold text-ink-900 font-tabular">{config.establishedYear}</span>
               </div>
               <div className="flex justify-between items-start py-2">
                 <span className="text-ink-500 font-medium shrink-0">Domisili Kantor</span>
@@ -73,7 +73,7 @@ export const AboutView: React.FC = () => {
           </Card>
 
           {/* Visi & Misi Card */}
-          <Card className="flex flex-col justify-between border-ink-200 shadow-subtle hover:border-forest-600/30 transition-all">
+          <Card className="flex flex-col justify-between border-ink-200 shadow-subtle hover:border-forest-600/30 transition-all bg-white">
             <CardHeader className="bg-forest-50/50 border-b border-ink-100 pb-4">
               <div className="flex items-center gap-2.5 text-forest-800">
                 <div className="p-2 rounded-md bg-forest-100 text-forest-800">
@@ -86,7 +86,7 @@ export const AboutView: React.FC = () => {
               </div>
             </CardHeader>
             <CardContent className="space-y-5 text-xs text-ink-700 pt-5">
-              <div className="p-3.5 rounded-lg bg-warm-cream border border-ink-200/60">
+              <div className="p-4 rounded-lg bg-forest-50/50 border border-forest-200/60">
                 <h4 className="font-bold text-ink-900 mb-1.5 text-sm flex items-center gap-2">
                   <Compass className="w-4 h-4 text-forest-700" />
                   Visi Jangka Panjang
@@ -125,8 +125,8 @@ export const AboutView: React.FC = () => {
             <p className="text-xs sm:text-sm text-ink-600 mt-1">Prinsip dasar yang memandu setiap keputusan dan layanan</p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="p-5 rounded-lg bg-white border border-ink-200 shadow-subtle space-y-2">
-              <div className="w-10 h-10 rounded-md bg-forest-50 border border-forest-100 text-forest-800 flex items-center justify-center mb-2">
+            <div className="p-6 rounded-xl bg-white border border-ink-200 shadow-subtle space-y-2">
+              <div className="w-10 h-10 rounded-lg bg-forest-50 border border-forest-100 text-forest-800 flex items-center justify-center mb-2">
                 <Users className="w-5 h-5" />
               </div>
               <h3 className="text-sm font-bold text-ink-900">Asas Kekeluargaan</h3>
@@ -134,8 +134,8 @@ export const AboutView: React.FC = () => {
                 Koperasi didirikan dari, oleh, dan untuk anggota. Setiap keputusan strategis diambil demi kemaslahatan bersama secara adil dan demokratis.
               </p>
             </div>
-            <div className="p-5 rounded-lg bg-white border border-ink-200 shadow-subtle space-y-2">
-              <div className="w-10 h-10 rounded-md bg-forest-50 border border-forest-100 text-forest-800 flex items-center justify-center mb-2">
+            <div className="p-6 rounded-xl bg-white border border-ink-200 shadow-subtle space-y-2">
+              <div className="w-10 h-10 rounded-lg bg-forest-50 border border-forest-100 text-forest-800 flex items-center justify-center mb-2">
                 <ShieldCheck className="w-5 h-5" />
               </div>
               <h3 className="text-sm font-bold text-ink-900">Transparansi Finansial</h3>
@@ -143,8 +143,8 @@ export const AboutView: React.FC = () => {
                 Pencatatan mutasi saldo dan riwayat pinjaman dapat dipantau langsung oleh anggota, didukung audit trail digital yang terekam sistematis.
               </p>
             </div>
-            <div className="p-5 rounded-lg bg-white border border-ink-200 shadow-subtle space-y-2">
-              <div className="w-10 h-10 rounded-md bg-forest-50 border border-forest-100 text-forest-800 flex items-center justify-center mb-2">
+            <div className="p-6 rounded-xl bg-white border border-ink-200 shadow-subtle space-y-2">
+              <div className="w-10 h-10 rounded-lg bg-forest-50 border border-forest-100 text-forest-800 flex items-center justify-center mb-2">
                 <Award className="w-5 h-5" />
               </div>
               <h3 className="text-sm font-bold text-ink-900">Kemandirian Berkelanjutan</h3>
@@ -161,25 +161,22 @@ export const AboutView: React.FC = () => {
         <div className="text-center max-w-xl mx-auto">
           <Badge variant="forest" size="sm" className="mb-2">TATA KELOLA ORGANISASI</Badge>
           <h2 className="text-2xl font-bold text-ink-900">Susunan Pengurus & Pengawas</h2>
-          <p className="text-xs sm:text-sm text-ink-600 mt-1">Representasi struktural kepengurusan percontohan pada platform demonstrasi</p>
+          <p className="text-xs sm:text-sm text-ink-600 mt-1">Kepengurusan definitif yang mengawal integritas dan kepatuhan operasional</p>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-          <Card className="text-center p-6 border-ink-200 shadow-subtle hover:border-forest-600/30 transition-all">
+          <Card className="text-center p-6 border-ink-200 shadow-subtle hover:border-forest-600/30 transition-all bg-white">
             <div className="w-14 h-14 bg-forest-100 text-forest-900 font-bold text-base rounded-full mx-auto flex items-center justify-center mb-4 border-2 border-forest-200">
               HK
             </div>
             <h3 className="text-base font-bold text-ink-900">Hendra Kurniawan</h3>
             <p className="text-xs text-forest-700 font-semibold mt-0.5">Ketua Pengurus</p>
             <p className="text-xs text-ink-500 mt-2.5 leading-relaxed">
-              Penanggung jawab eksekutif, koordinasi umum, dan otorisasi strategis kebijakan koperasi percontohan.
+              Penanggung jawab eksekutif, koordinasi umum, dan otorisasi strategis kebijakan koperasi.
             </p>
-            <div className="mt-4 pt-3 border-t border-ink-100">
-              <Badge variant="neutral" size="sm">Akun Simulasi: Manager</Badge>
-            </div>
           </Card>
 
-          <Card className="text-center p-6 border-ink-200 shadow-subtle hover:border-forest-600/30 transition-all">
+          <Card className="text-center p-6 border-ink-200 shadow-subtle hover:border-forest-600/30 transition-all bg-white">
             <div className="w-14 h-14 bg-forest-100 text-forest-900 font-bold text-base rounded-full mx-auto flex items-center justify-center mb-4 border-2 border-forest-200">
               SM
             </div>
@@ -188,12 +185,9 @@ export const AboutView: React.FC = () => {
             <p className="text-xs text-ink-500 mt-2.5 leading-relaxed">
               Pengawasan likuiditas kas, manajemen arus dana simpan pinjam, rekonsiliasi, dan pelaporan keuangan.
             </p>
-            <div className="mt-4 pt-3 border-t border-ink-100">
-              <Badge variant="neutral" size="sm">Akun Simulasi: Treasurer</Badge>
-            </div>
           </Card>
 
-          <Card className="text-center p-6 border-ink-200 shadow-subtle hover:border-forest-600/30 transition-all">
+          <Card className="text-center p-6 border-ink-200 shadow-subtle hover:border-forest-600/30 transition-all bg-white">
             <div className="w-14 h-14 bg-forest-100 text-forest-900 font-bold text-base rounded-full mx-auto flex items-center justify-center mb-4 border-2 border-forest-200">
               BI
             </div>
@@ -202,28 +196,37 @@ export const AboutView: React.FC = () => {
             <p className="text-xs text-ink-500 mt-2.5 leading-relaxed">
               Pemeriksaan kepatuhan AD/ART, integritas audit trail, serta pengawasan independen atas pelaksanaan operasional.
             </p>
-            <div className="mt-4 pt-3 border-t border-ink-100">
-              <Badge variant="neutral" size="sm">Akun Simulasi: Auditor</Badge>
-            </div>
           </Card>
         </div>
       </section>
 
-      {/* CTA Box */}
-      <section className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="rounded-xl bg-forest-900 text-white p-6 sm:p-10 text-center space-y-4 shadow-md">
-          <h3 className="text-2xl font-bold tracking-tight">Siap Menjadi Bagian dari Koperasi Kami?</h3>
+      {/* Standardized Institutional CTA Banner (Pola Baku) */}
+      <section className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="rounded-2xl sm:rounded-3xl bg-forest-900 text-white p-8 sm:p-12 text-center space-y-4 shadow-lg border border-forest-800">
+          <span className="inline-block text-xs font-bold text-forest-300 tracking-wider uppercase">
+            BERGABUNG BERSAMA KAMI
+          </span>
+          <h3 className="text-2xl sm:text-3xl font-bold tracking-tight">Siap Menjadi Bagian dari Nusantara Maju?</h3>
           <p className="text-xs sm:text-sm text-forest-100 max-w-xl mx-auto leading-relaxed">
-            Pendaftaran terbuka bagi seluruh masyarakat yang memenuhi persyaratan keanggotaan. Nikmati kemudahan layanan simpanan dan pembiayaan berbasis gotong royong.
+            Pendaftaran terbuka bagi seluruh masyarakat yang memenuhi persyaratan keanggotaan. Nikmati kemudahan layanan simpanan dan pembiayaan berbasis gotong royong modern.
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
-            <Link to="/daftar">
-              <Button variant="primary" size="md" className="bg-lime-accent text-forest-900 hover:bg-lime-400 font-semibold w-full sm:w-auto" rightIcon={<ArrowRight className="w-4 h-4" />}>
+            <Link to="/daftar" className="w-full sm:w-auto">
+              <Button
+                variant="primary"
+                size="md"
+                className="bg-forest-700 hover:bg-forest-800 text-white font-semibold w-full sm:w-auto px-6 border-0 shadow-md"
+                rightIcon={<ArrowRight className="w-4 h-4" />}
+              >
                 Daftar Menjadi Anggota
               </Button>
             </Link>
-            <Link to="/layanan/simpanan">
-              <Button variant="secondary" size="md" className="bg-white/10 text-white hover:bg-white/20 border-white/20 w-full sm:w-auto">
+            <Link to="/layanan/simpanan" className="w-full sm:w-auto">
+              <Button
+                variant="outline"
+                size="md"
+                className="bg-transparent text-white hover:bg-forest-800/60 border-white/40 w-full sm:w-auto px-6"
+              >
                 Pelajari Layanan Simpanan
               </Button>
             </Link>

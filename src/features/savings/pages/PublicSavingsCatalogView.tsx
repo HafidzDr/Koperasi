@@ -254,16 +254,16 @@ export const PublicSavingsCatalogView: React.FC = () => {
       </Card>
 
       {/* 5. Institutional CTA Banner */}
-      <div className="p-6 sm:p-8 bg-forest-900 text-white rounded-xl flex flex-col sm:flex-row items-center justify-between gap-6 shadow-elevation">
+      <div className="p-6 sm:p-10 bg-forest-900 text-white rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-6 shadow-elevation border border-forest-800">
         <div className="space-y-2 text-center sm:text-left">
           <div className="flex items-center justify-center sm:justify-start gap-2">
-            <Building className="w-5 h-5 text-forest-200" />
-            <span className="text-xs text-forest-200 font-semibold uppercase tracking-wider">
+            <Building className="w-5 h-5 text-forest-300" />
+            <span className="text-xs text-forest-300 font-semibold uppercase tracking-wider">
               Nusantara Maju
             </span>
           </div>
-          <h2 className="text-xl sm:text-2xl font-bold">Siap Mengembangkan Usaha Bersama Nusantara Maju?</h2>
-          <p className="text-xs text-forest-100 max-w-xl">
+          <h2 className="text-xl sm:text-2xl font-bold text-white">Siap Mengembangkan Kesejahteraan Bersama?</h2>
+          <p className="text-xs sm:text-sm text-forest-100/90 max-w-xl leading-relaxed">
             Mari bergabung sebagai anggota resmi Nusantara Maju dan nikmati kemudahan akses permodalan, pembagian SHU tahunan, dan pengelolaan simpanan yang berkeadilan.
           </p>
         </div>
@@ -273,19 +273,19 @@ export const PublicSavingsCatalogView: React.FC = () => {
             <Button
               variant="primary"
               size="md"
-              className="w-full bg-forest-600 hover:bg-forest-500 text-white border-forest-500"
-              rightIcon={<ArrowRight className="w-4 h-4" />}
+              className="w-full bg-forest-700 hover:bg-forest-800 text-white font-semibold border-0 shadow-md px-6"
+              rightIcon={<ArrowRight className="w-4 h-4 text-white" />}
             >
-              Mulai Pendaftaran
+              Daftar Menjadi Anggota
             </Button>
           </Link>
           <Link to="/tentang" className="w-full sm:w-auto">
             <Button
               variant="outline"
               size="md"
-              className="w-full text-white border-forest-700 hover:bg-forest-800"
+              className="w-full text-white border-white/40 hover:bg-forest-800/60 px-6"
             >
-              Pelajari Nusantara Maju
+              Profil & Tata Kelola
             </Button>
           </Link>
         </div>
