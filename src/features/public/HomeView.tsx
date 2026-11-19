@@ -133,7 +133,7 @@ export const HomeView: React.FC = () => {
         </div>
 
         {/* Content Container (Standard Max-W within Full-Width Hero) */}
-        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-24 lg:py-28 w-full">
+        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 sm:pt-28 lg:pt-32 pb-16 sm:pb-24 lg:pb-28 w-full">
           <div className="max-w-xl lg:max-w-2xl">
             {/* Main Headline (H1 containing top pill to satisfy semantic & test rules) */}
             <h1 className="text-3xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-white leading-[1.12] sm:leading-[1.08] break-words mb-5">

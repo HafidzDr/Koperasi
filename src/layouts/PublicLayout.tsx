@@ -11,6 +11,7 @@ export const PublicLayout: React.FC = () => {
   const { config } = useConfigStore();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const location = useLocation();
+  const isHome = location.pathname === "/";
 
   const navLinks = [
     { label: "Beranda", href: "/" },
@@ -27,9 +28,13 @@ export const PublicLayout: React.FC = () => {
       {/* 1. Global Demo Switcher Bar */}
       <DemoRoleSwitcher />
 
-      {/* 2. Public Header */}
-      <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-none border-b border-ink-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-6 h-16 flex items-center justify-between gap-3 xl:gap-4">
+      {/* 2. Public Header (Floating Fill Navbar) */}
+      <header
+        className={`sticky top-2 sm:top-3.5 z-40 w-full px-3 sm:px-6 lg:px-8 pt-2 sm:pt-3.5 pointer-events-none transition-all duration-200 ${
+          isHome ? "-mb-16 sm:-mb-20" : "mb-2 sm:mb-4"
+        }`}
+      >
+        <div className="max-w-7xl mx-auto h-14 sm:h-16 px-4 sm:px-6 flex items-center justify-between gap-3 xl:gap-4 bg-white/95 backdrop-blur-md rounded-2xl border border-ink-200/90 shadow-md shadow-ink-950/5 pointer-events-auto">
           <div className="shrink-0 flex items-center">
             <BrandLogo size="md" to="/" />
           </div>
