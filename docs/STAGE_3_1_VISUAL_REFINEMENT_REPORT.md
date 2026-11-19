@@ -4,6 +4,8 @@
 **Tanggal:** 20 November 2026  
 **Fase Redesign:** Stage 3.1 — Visual Refinement & Scroll-Responsive Navbar  
 **Branch Aktif:** `feat/ui-redesign-stage-3-1`  
+**Full Commit SHA:** `9f4d8eaf97d69a1da36ffdc8c36e6adfe75751e9`  
+**Commit Message:** `feat(public-ui): refine public visuals, replace image assets, and add scroll-responsive navbar`  
 **Base Branch:** `feat/ui-redesign-stage-3`  
 **Base Commit SHA:** `452d94dfdf4ef302114955b795ae1d81a3e29f3d` (Implementation Commit Stage 3)  
 **Remote Branch:** `origin/feat/ui-redesign-stage-3-1`  
